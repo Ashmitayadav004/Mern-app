@@ -981,7 +981,7 @@ export default function SettingsPage() {
   const avatarRef = useRef();
 
   useEffect(() => {
-    if (activeTab === 'users' && canAccess('senior_engineer')) {
+    if (activeTab === 'users' && isSuperAdmin) {
       setLoading(true);
       usersApi.list().then(setUsers).catch(() => {}).finally(() => setLoading(false));
     }
@@ -1093,7 +1093,6 @@ export default function SettingsPage() {
     ...(isOwner ? [{ key: 'subscription', label: '💎 My Subscription' }] : []),
     ...(canAccess('admin') ? [{ key: 'n8n',       label: '🔄 n8n Integration' }] : []),
     ...(canAccess('admin') ? [{ key: 'encryption',label: '🔒 Encryption' }] : []),
-    ...(canAccess('senior_engineer') ? [{ key: 'users', label: '👥 Users' }] : []),
     ...(canAccess('admin') ? [{ key: 'activity',  label: '📊 Activity Log' }] : []),
     ...(canAccess('admin') ? [{ key: 'theme_picker', label: '🎨 Theme & Layout' }] : []),
     ...(canAccess('admin') ? [{ key: 'homepage_cms', label: '🌐 Homepage CMS' }] : []),

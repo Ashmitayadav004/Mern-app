@@ -73,7 +73,6 @@ function Sidebar({ open, onClose }) {
       ]
     // Regular user system items
     : [
-        { icon: '👤', label: 'Users & Roles', to: '/users' },
         ...(isOwner ? [{ icon: '💎', label: 'Subscription', to: '/subscription' }] : []),
         { icon: '🛡️', label: 'Security & Backup', to: '/security' },
         { icon: '💬', label: 'Team Chat', to: '/chat' },
@@ -106,6 +105,7 @@ function Sidebar({ open, onClose }) {
         { icon: '📬', label: 'Email Deliverability', to: '/super-admin', saTab: 'email_delivery' },
       ]},
       { group: 'Access', items: [
+        { icon: '👤', label: 'Users & Roles', to: '/users' },
         { icon: '🛡️', label: 'Security & Backup', to: '/security' },
         { icon: '⚙️', label: 'Settings',           to: '/settings' },
       ]},
@@ -312,7 +312,7 @@ function AppLayout() {
               <Route path="/settings"          element={<SettingsPage />} />
               <Route path="/super-admin"       element={<SuperAdminPage />} />
               <Route path="/marketing"         element={<MarketingPage />} />
-              <Route path="/users"             element={<UserManagementPage />} />
+              <Route path="/users"             element={<SuperAdminRoute><UserManagementPage /></SuperAdminRoute>} />
               <Route path="*"                  element={<Navigate to="/" replace />} />
             </Routes>
           </React.Suspense>
@@ -320,6 +320,14 @@ function AppLayout() {
       </div>
     </div>
   );
+}
+
+function SuperAdminRoute({ children }) {
+  const { user, loading, isSuperAdmin } = useAuth();
+  if (loading) return <LoadingScreen />;
+  if (!user) return <Navigate to="/login" replace />;
+  if (!isSuperAdmin) return <Navigate to="/" replace />;
+  return children;
 }
 
 function ProtectedRoute({ children }) {
