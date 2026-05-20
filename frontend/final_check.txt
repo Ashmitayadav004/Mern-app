@@ -1,0 +1,9 @@
+84: alert(`?? Razorpay Order Created (Demo):\nOrder ID: ${orderId}\nAmount: ???${selPlan.price * form.subscription_months}\n\nIn production this would open 
+182: ?? Generate Razorpay Payment Link
+287: ??
+323: ?? View
+708: ??
+837: <td><span style={{fontSize:'0.72rem',padding:'2px 8px',borderRadius:999,background:c.type==='global'?'rgba(59,130,246,0.1)':'rgba(139,92,246,0.1)',col
+1104: {invoices.length > 0 && <button className="btn btn-secondary btn-sm" onClick={() => alert('In production: exports all invoices as ZIP with PDFs')}>?? 
+1217: <button className="btn btn-sm" style={{ background: 'rgba(239,68,68,0.08)', color: '#ef4444', borderColor: 'rgba(239,68,68,0.2)', fontSize: '0.72rem' 
+1560: alert(`?? Now viewing as: ${tenant.company_name}\n\nYou'll see their CRM data. Click "Exit" in the banner to return.`);

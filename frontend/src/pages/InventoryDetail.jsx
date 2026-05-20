@@ -1,0 +1,568 @@
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { inventoryApi } from '../services/api';
+import { useAuth } from '../store/AuthContext';
+
+const BASE_URL = '/api';
+const getToken = () => localStorage.getItem('accessToken');
+
+const INV_CATEGORIES = [
+  { key: 'wd_35',      label: 'WD 3.5"',       icon: '💿', color: '#3b82f6' },
+  { key: 'wd_25',      label: 'WD 2.5"',       icon: '💽', color: '#22d3ee' },
+  { key: 'seagate_35', label: 'Seagate 3.5"',  icon: '💿', color: '#f59e0b' },
+  { key: 'seagate_25', label: 'Seagate 2.5"',  icon: '💽', color: '#fbbf24' },
+  { key: 'others_35',  label: 'Others 3.5"',   icon: '💿', color: '#8b5cf6' },
+  { key: 'others_25',  label: 'Others 2.5"',   icon: '💽', color: '#a78bfa' },
+  { key: 'pcb',        label: 'PCB',            icon: '🔌', color: '#10b981' },
+  { key: 'ssd',        label: 'SSD',            icon: '⚡', color: '#06b6d4' },
+  { key: 'phone',      label: 'Phone',          icon: '📱', color: '#ec4899' },
+];
+
+const HDD_COMPANIES = [
+  'Western Digital','Seagate','Toshiba','Samsung','Hitachi (HGST)',
+  'Fujitsu','IBM / HGST','Maxtor','Quantum','LaCie','Buffalo',
+  'Transcend','SanDisk','Kingston','Crucial','Lexar','Corsair',
+  'ADATA','SK Hynix','Micron','Intel','Other'
+];
+
+function formatSize(bytes) {
+  if (!bytes) return '—';
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+}
+
+function StatusBadge({ status }) {
+  const map = {
+    available: { color:'#10b981', bg:'rgba(16,185,129,0.12)' },
+    reserved:  { color:'#f59e0b', bg:'rgba(245,158,11,0.12)' },
+    used:      { color:'#94a3b8', bg:'rgba(100,116,139,0.12)' },
+    damaged:   { color:'#ef4444', bg:'rgba(239,68,68,0.12)' },
+    donated:   { color:'#8b5cf6', bg:'rgba(139,92,246,0.12)' },
+  };
+  const s = map[status] || map.available;
+  return <span style={{ fontSize:'0.68rem',fontWeight:700,padding:'3px 8px',borderRadius:999,color:s.color,background:s.bg,fontFamily:'var(--font-mono)',textTransform:'uppercase' }}>{status?.replace(/_/g,' ')}</span>;
+}
+
+function MediaLightbox({ items, startIdx, onClose }) {
+  const [idx, setIdx] = useState(startIdx || 0);
+  useEffect(() => {
+    const h = e => { if (e.key==='Escape') onClose(); if (e.key==='ArrowRight') setIdx(i=>Math.min(i+1,items.length-1)); if (e.key==='ArrowLeft') setIdx(i=>Math.max(i-1,0)); };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, [items, onClose]);
+  const item = items[idx];
+  const isVideo = item?.mimeType?.startsWith('video/') || item?.name?.match(/\.(mp4|webm|ogg|mov)$/i);
+  return (
+    <div style={{ position:'fixed',inset:0,background:'rgba(0,0,0,0.97)',zIndex:2000,display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column' }} onClick={onClose}>
+      <div style={{ position:'absolute',top:0,left:0,right:0,padding:'12px 20px',display:'flex',justifyContent:'space-between',alignItems:'center',background:'linear-gradient(rgba(0,0,0,0.8),transparent)' }}>
+        <span style={{ color:'rgba(255,255,255,0.7)',fontSize:'0.8rem' }}>{item?.name} · {formatSize(item?.size)}</span>
+        <div style={{ display:'flex',gap:12,alignItems:'center' }}>
+          <span style={{ color:'rgba(255,255,255,0.5)',fontSize:'0.75rem' }}>{idx+1}/{items.length}</span>
+          <button onClick={onClose} style={{ background:'rgba(255,255,255,0.1)',border:'none',color:'#fff',fontSize:'1.2rem',cursor:'pointer',padding:'4px 10px',borderRadius:6 }}>✕</button>
+        </div>
+      </div>
+      {idx > 0 && <button onClick={e=>{e.stopPropagation();setIdx(i=>i-1)}} style={{ position:'absolute',left:16,top:'50%',transform:'translateY(-50%)',background:'rgba(255,255,255,0.12)',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'50%',width:48,height:48,color:'#fff',fontSize:'1.4rem',cursor:'pointer' }}>‹</button>}
+      {idx < items.length-1 && <button onClick={e=>{e.stopPropagation();setIdx(i=>i+1)}} style={{ position:'absolute',right:16,top:'50%',transform:'translateY(-50%)',background:'rgba(255,255,255,0.12)',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'50%',width:48,height:48,color:'#fff',fontSize:'1.4rem',cursor:'pointer' }}>›</button>}
+      <div onClick={e=>e.stopPropagation()} style={{ maxWidth:'88vw',maxHeight:'84vh' }}>
+        {isVideo
+          ? <video src={item.data} controls style={{ maxWidth:'100%',maxHeight:'84vh',borderRadius:8 }} />
+          : <img src={item.data} alt={item.name} style={{ maxWidth:'88vw',maxHeight:'84vh',objectFit:'contain',borderRadius:8 }} />}
+      </div>
+    </div>
+  );
+}
+
+// ─── Comparison View (shown inline when caseId is in query params) ─────────────
+function DonorPatientComparison({ donor, patientCaseId }) {
+  const [patient, setPatient] = useState(null);
+  const [patientImages, setPatientImages] = useState([]);
+  const [donorImages, setDonorImages] = useState([]);
+
+  useEffect(() => {
+    if (!patientCaseId) return;
+    fetch(`${BASE_URL}/cases/${patientCaseId}`, { headers: { Authorization: `Bearer ${getToken()}` } })
+      .then(r => r.json()).then(d => setPatient(d)).catch(() => {});
+    fetch(`${BASE_URL}/inventory/${donor.id}/images`, { headers: { Authorization: `Bearer ${getToken()}` } })
+      .then(r => r.json()).then(d => setDonorImages(d.images || [])).catch(() => {});
+  }, [patientCaseId, donor.id]);
+
+  if (!patient) return <div style={{ display:'flex',justifyContent:'center',padding:40 }}><div className="spinner" style={{ width:28,height:28 }} /></div>;
+
+  const COMPARE_FIELDS = [
+    { label: 'Brand / Company', pKey: 'device_brand', dKey: 'company', fallback: d => d.brand },
+    { label: 'Model', pKey: 'device_model', dKey: 'model' },
+    { label: 'Serial Number', pKey: 'serial_number', dKey: 'serial_number' },
+    { label: 'PCB Number', pKey: 'pcb_number', dKey: 'pcb_number' },
+    { label: 'Capacity', pKey: 'capacity_gb', dKey: 'capacity', fmt: v => v ? v+'GB' : '—', dfmt: v => v || '—' },
+    { label: 'Firmware / SW Rev', pKey: 'firmware', dKey: 'firmware' },
+    { label: 'Site Code / DCM', pKey: 'site_code', dKey: 'site_code' },
+    { label: 'Date Code', pKey: 'date_code', dKey: 'date_code' },
+    { label: 'Head Map', pKey: 'head_map', dKey: 'head_map' },
+    { label: 'ROM Family', pKey: 'family', dKey: 'family' },
+    { label: 'Interface', pKey: 'interface', dKey: 'interface' },
+    { label: 'Form Factor', pKey: 'form_factor', dKey: 'form_factor' },
+  ];
+
+  const matchScore = COMPARE_FIELDS.filter(f => {
+    const pv = (patient[f.pKey] || '').toString().toLowerCase().trim();
+    const dv = (donor[f.dKey] || donor[f.fallback?.(donor)] || '').toString().toLowerCase().trim();
+    return pv && dv && pv === dv;
+  }).length;
+
+  const pct = Math.round((matchScore / COMPARE_FIELDS.filter(f => patient[f.pKey] && donor[f.dKey]).length) * 100) || 0;
+
+  return (
+    <div>
+      <div className="card" style={{ marginBottom:16,padding:20,background:'linear-gradient(135deg,rgba(0,212,255,0.06),rgba(124,58,237,0.06))' }}>
+        <div style={{ display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:12 }}>
+          <div>
+            <div style={{ fontSize:'1.1rem',fontWeight:800,marginBottom:4 }}>🔬 Donor ↔ Patient Comparison</div>
+            <div style={{ fontSize:'0.82rem',color:'var(--text-muted)' }}>
+              Patient: <strong style={{ color:'var(--accent-primary)' }}>{patient.case_number}</strong> —
+              {patient.first_name} {patient.last_name} · {patient.device_brand} {patient.device_model}
+            </div>
+          </div>
+          <div style={{ textAlign:'center' }}>
+            <div style={{ fontSize:'2rem',fontWeight:900,color:pct>=70?'#10b981':pct>=40?'#f59e0b':'#ef4444' }}>{pct}%</div>
+            <div style={{ fontSize:'0.72rem',color:'var(--text-muted)' }}>Compatibility Score</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Side-by-side table */}
+      <div className="card" style={{ overflow:'hidden',marginBottom:20 }}>
+        <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr 1fr',background:'var(--bg-elevated)',padding:'10px 16px',borderBottom:'1px solid var(--border-subtle)',fontWeight:700,fontSize:'0.8rem' }}>
+          <div style={{ textAlign:'center',color:'var(--status-warning)' }}>🔬 Patient Drive ({patient.case_number})</div>
+          <div style={{ textAlign:'center',color:'var(--text-muted)' }}>Field</div>
+          <div style={{ textAlign:'center',color:'var(--accent-primary)' }}>💿 Donor Drive ({donor.stock_number || donor.sku})</div>
+        </div>
+        {COMPARE_FIELDS.map(f => {
+          const pv = f.fmt ? f.fmt(patient[f.pKey]) : (patient[f.pKey] || '—');
+          const dv = f.dfmt ? f.dfmt(donor[f.dKey]) : (donor[f.dKey] || (f.fallback ? f.fallback(donor) : '—') || '—');
+          const match = pv !== '—' && dv !== '—' && pv.toString().toLowerCase() === dv.toString().toLowerCase();
+          const bg = match ? 'rgba(16,185,129,0.06)' : (pv==='—'||dv==='—') ? 'transparent' : 'rgba(239,68,68,0.04)';
+          return (
+            <div key={f.label} style={{ display:'grid',gridTemplateColumns:'1fr 1fr 1fr',padding:'8px 16px',borderBottom:'1px solid var(--border-subtle)',background:bg,alignItems:'center' }}>
+              <div className="font-mono" style={{ fontSize:'0.8rem',textAlign:'center',fontWeight:match?700:400,color:match?'var(--status-success)':'var(--text-primary)' }}>{pv}</div>
+              <div style={{ fontSize:'0.7rem',color:'var(--text-muted)',textAlign:'center',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.05em' }}>
+                {match ? <span style={{ color:'#10b981' }}>✓ {f.label}</span> : f.label}
+              </div>
+              <div className="font-mono" style={{ fontSize:'0.8rem',textAlign:'center',fontWeight:match?700:400,color:match?'var(--status-success)':'var(--text-primary)' }}>{dv}</div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Side-by-side images */}
+      {(patientImages.length > 0 || donorImages.length > 0) && (
+        <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:16 }}>
+          <div className="card" style={{ padding:16 }}>
+            <div style={{ fontWeight:700,marginBottom:10,fontSize:'0.85rem' }}>🔬 Patient Drive Photos</div>
+            {patientImages.length > 0 ? (
+              <div style={{ display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(80px,1fr))',gap:6 }}>
+                {patientImages.map(img => <img key={img.id} src={img.data} alt={img.name} style={{ width:'100%',aspectRatio:'1',objectFit:'cover',borderRadius:6,cursor:'pointer' }} />)}
+              </div>
+            ) : <div style={{ textAlign:'center',color:'var(--text-muted)',fontSize:'0.8rem',padding:20 }}>No photos</div>}
+          </div>
+          <div className="card" style={{ padding:16 }}>
+            <div style={{ fontWeight:700,marginBottom:10,fontSize:'0.85rem' }}>💿 Donor Drive Photos</div>
+            {donorImages.length > 0 ? (
+              <div style={{ display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(80px,1fr))',gap:6 }}>
+                {donorImages.map(img => <img key={img.id} src={img.data} alt={img.name} style={{ width:'100%',aspectRatio:'1',objectFit:'cover',borderRadius:6,cursor:'pointer' }} />)}
+              </div>
+            ) : <div style={{ textAlign:'center',color:'var(--text-muted)',fontSize:'0.8rem',padding:20 }}>No photos</div>}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Main InventoryDetail ──────────────────────────────────────────────────────
+export default function InventoryDetail() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { canAccess } = useAuth();
+  const [item, setItem] = useState(null);
+  const [images, setImages] = useState([]);
+  const [files, setFiles] = useState([]);
+  const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [lightboxIdx, setLightboxIdx] = useState(null);
+  const [editing, setEditing] = useState(false);
+  const [editForm, setEditForm] = useState({});
+  const [activeTab, setActiveTab] = useState('overview');
+  const [savingEdit, setSavingEdit] = useState(false);
+  const imgRef = useRef();
+  const fileRef = useRef();
+
+  const compareWithCase = searchParams.get('compare');
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${BASE_URL}/inventory/${id}`, { headers: { Authorization: `Bearer ${getToken()}` } });
+      const data = await res.json();
+      const item = data.item || data;
+      setItem(item);
+      setEditForm({ ...item });
+
+      const imgRes = await fetch(`${BASE_URL}/inventory/${id}/images`, { headers: { Authorization: `Bearer ${getToken()}` } });
+      const imgData = await imgRes.json();
+      setImages(imgData.images || []);
+    } catch (e) { console.error(e); } finally { setLoading(false); }
+  }, [id]);
+
+  useEffect(() => { load(); }, [load]);
+  useEffect(() => { if (compareWithCase) setActiveTab('compare'); }, [compareWithCase]);
+
+  const uploadMedia = async (fileList, isFile = false) => {
+    setUploading(true);
+    try {
+      for (const f of Array.from(fileList)) {
+        const reader = new FileReader();
+        await new Promise(resolve => {
+          reader.onload = async ev => {
+            await fetch(`${BASE_URL}/inventory/${id}/images`, {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ name: f.name, data: ev.target.result, size: f.size, mimeType: f.type }),
+            });
+            resolve();
+          };
+          reader.readAsDataURL(f);
+        });
+      }
+      load();
+    } finally { setUploading(false); }
+  };
+
+  const handleDeleteMedia = async (imgId) => {
+    if (!confirm('Delete this media?')) return;
+    await fetch(`${BASE_URL}/inventory/${id}/images/${imgId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${getToken()}` } });
+    load();
+  };
+
+  const handleSaveEdit = async () => {
+    setSavingEdit(true);
+    try {
+      await fetch(`${BASE_URL}/inventory/${id}`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(editForm),
+      });
+      setEditing(false);
+      load();
+    } catch (e) { alert(e.message); } finally { setSavingEdit(false); }
+  };
+
+  const handleDrop = e => { e.preventDefault(); uploadMedia(e.dataTransfer.files); };
+
+  if (loading) return <div style={{ display:'flex',justifyContent:'center',paddingTop:80 }}><div className="spinner" style={{ width:32,height:32,borderWidth:3 }} /></div>;
+  if (!item) return <div className="empty-state"><div className="empty-title">Stock item not found</div></div>;
+
+  const cat = INV_CATEGORIES.find(c => c.key === item.category) || INV_CATEGORIES[0];
+  const isHDD = ['wd_35','wd_25','seagate_35','seagate_25','others_35','others_25'].includes(item.category);
+  const isPCB = item.category === 'pcb';
+  const isSSD = item.category === 'ssd';
+
+  const TABS = [
+    { key: 'overview', label: '📋 Overview' },
+    { key: 'photos', label: `📷 Media (${images.length})` },
+    { key: 'files', label: '📁 Files' },
+    { key: 'history', label: '📜 History' },
+    ...(compareWithCase ? [{ key: 'compare', label: '🔬 Comparison' }] : []),
+  ];
+
+  // Tech fields by device type
+  const detailRows = isHDD ? [
+    ['Stock #', item.stock_number || item.sku],
+    ['Company', item.company || item.brand],
+    ['Model', item.model],
+    ['Serial Number', item.serial_number],
+    ['PCB Number', item.pcb_number],
+    ['Capacity', item.capacity],
+    ['Interface', item.interface],
+    ['Form Factor', item.form_factor],
+    ['Firmware / SW Rev', item.firmware],
+    ['Site Code / DCM', item.site_code],
+    ['Date Code', item.date_code],
+    ['Head Map', item.head_map],
+    ['ROM Family', item.family],
+    ['Category', cat.label],
+  ] : isPCB ? [
+    ['Stock #', item.stock_number || item.sku],
+    ['PCB Number', item.pcb_number],
+    ['Compatible Drives', item.compatible_drives],
+    ['Firmware Chip', item.firmware],
+    ['Voltage', item.voltage],
+    ['Company', item.company || item.brand],
+    ['Model / Part', item.model],
+  ] : [
+    ['Stock #', item.stock_number || item.sku],
+    ['Company / Brand', item.company || item.brand],
+    ['Model', item.model],
+    ['Serial Number', item.serial_number],
+    ['Capacity', item.capacity],
+    ['Interface', item.interface],
+    ['Firmware', item.firmware],
+  ];
+
+  return (
+    <div>
+      {/* Header */}
+      <div style={{ display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:24,flexWrap:'wrap',gap:12 }}>
+        <div>
+          <div style={{ display:'flex',alignItems:'center',gap:10,marginBottom:8 }}>
+            <button className="btn btn-ghost btn-sm" onClick={() => navigate('/inventory')}>← Back</button>
+            <span style={{ fontSize:'1.4rem' }}>{cat.icon}</span>
+            <span className="font-mono text-accent" style={{ fontSize:'1rem',fontWeight:700 }}>{item.stock_number || item.sku || 'N/A'}</span>
+            <span style={{ fontSize:'0.72rem',padding:'3px 10px',borderRadius:999,background:`${cat.color}1a`,color:cat.color,fontWeight:700 }}>{cat.label}</span>
+            <StatusBadge status={item.status || 'available'} />
+          </div>
+          <h2 style={{ marginBottom:4 }}>{item.company || item.brand || '—'} {item.model || ''}</h2>
+          <div className="text-sm text-muted">
+            {item.capacity && `${item.capacity} · `}
+            {item.interface && `${item.interface} · `}
+            {item.serial_number && <><span className="font-mono">S/N: {item.serial_number}</span> · </>}
+            {item.pcb_number && <span className="font-mono">PCB: {item.pcb_number}</span>}
+          </div>
+        </div>
+        <div style={{ display:'flex',gap:8,flexWrap:'wrap' }}>
+          {!editing && canAccess('junior_engineer') && (
+            <button className="btn btn-secondary" onClick={() => { setEditForm({...item}); setEditing(true); setActiveTab('overview'); }}>✏️ Edit</button>
+          )}
+          {editing && (
+            <>
+              <button className="btn btn-secondary" onClick={() => setEditing(false)}>Cancel</button>
+              <button className="btn btn-primary" disabled={savingEdit} onClick={handleSaveEdit}>{savingEdit ? '…' : '💾 Save'}</button>
+            </>
+          )}
+          <button className="btn btn-secondary" onClick={() => imgRef.current?.click()}>📷 Add Photos</button>
+          <button className="btn btn-secondary" onClick={() => fileRef.current?.click()}>📁 Add Files</button>
+          <input ref={imgRef} type="file" multiple accept="image/*,video/*" style={{ display:'none' }} onChange={e => uploadMedia(e.target.files)} />
+          <input ref={fileRef} type="file" multiple style={{ display:'none' }} onChange={e => uploadMedia(e.target.files, true)} />
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="tabs" style={{ marginBottom:20 }}>
+        {TABS.map(t => (
+          <button key={t.key} className={`tab-btn ${activeTab===t.key?'active':''}`} onClick={() => setActiveTab(t.key)}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Overview Tab */}
+      {activeTab === 'overview' && (
+        <div>
+          {editing ? (
+            <div className="card" style={{ padding:20 }}>
+              <div className="card-title" style={{ marginBottom:16 }}>✏️ Edit Stock Item</div>
+              <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:12 }}>
+                {[
+                  ['Stock Number', 'stock_number'],
+                  ['Company', 'company','select',HDD_COMPANIES],
+                  ['Brand', 'brand'],
+                  ['Model', 'model'],
+                  ['Serial Number', 'serial_number'],
+                  ['PCB Number', 'pcb_number'],
+                  ['Capacity', 'capacity'],
+                  ['Interface', 'interface'],
+                  ['Form Factor', 'form_factor'],
+                  ['Firmware', 'firmware'],
+                  ['Site Code / DCM', 'site_code'],
+                  ['Date Code', 'date_code'],
+                  ['Head Map', 'head_map'],
+                  ['ROM Family', 'family'],
+                  ['Location', 'location'],
+                  ['Unit Cost (₹)', 'unit_cost', 'number'],
+                  ['Quantity', 'quantity', 'number'],
+                  ['Status', 'status', 'select', ['available','reserved','used','damaged','donated']],
+                  ['Condition', 'condition', 'select', ['new','used','refurb','for_parts','untested']],
+                ].map(([label, field, type, options]) => (
+                  <div key={field} className="form-group">
+                    <label className="form-label">{label}</label>
+                    {type === 'select' ? (
+                      <select className="form-select" value={editForm[field]||''} onChange={e => setEditForm(f=>({...f,[field]:e.target.value}))}>
+                        <option value="">Select…</option>
+                        {options.map(o => <option key={o} value={o}>{o}</option>)}
+                      </select>
+                    ) : (
+                      <input type={type||'text'} className="form-input" value={editForm[field]||''} onChange={e => setEditForm(f=>({...f,[field]:e.target.value}))} />
+                    )}
+                  </div>
+                ))}
+                <div className="form-group" style={{ gridColumn:'1/-1' }}>
+                  <label className="form-label">Notes</label>
+                  <textarea className="form-textarea" style={{ minHeight:70 }} value={editForm.notes||''} onChange={e=>setEditForm(f=>({...f,notes:e.target.value}))} />
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="grid-2">
+              {/* Stock Details */}
+              <div className="card">
+                <div className="card-title" style={{ marginBottom:14 }}>🖥️ {cat.label} — Technical Details</div>
+                <div className="tech-data-table">
+                  {detailRows.map(([label, value]) => value ? (
+                    <div key={label} className="tech-data-cell">
+                      <div className="tech-data-label">{label}</div>
+                      <div className="tech-data-value font-mono">{value}</div>
+                    </div>
+                  ) : null)}
+                </div>
+              </div>
+
+              {/* Status & Stock Info */}
+              <div>
+                <div className="card" style={{ marginBottom:16 }}>
+                  <div className="card-title" style={{ marginBottom:14 }}>📦 Stock Status</div>
+                  <div className="tech-data-table">
+                    {[
+                      ['Status', <StatusBadge status={item.status || 'available'} />],
+                      ['Condition', item.condition?.replace(/_/g,' ').toUpperCase()],
+                      ['Quantity', <span className="font-mono" style={{ fontWeight:800,color:'var(--accent-primary)' }}>{item.quantity || 1}</span>],
+                      ['Min Alert', item.min_quantity || 1],
+                      ['Unit Cost', item.unit_cost ? `₹${parseFloat(item.unit_cost).toLocaleString('en-IN')}` : '—'],
+                      ['Location', item.location || '—'],
+                      ['Added', item.created_at ? new Date(item.created_at).toLocaleDateString('en-IN') : '—'],
+                      ['Added By', item.added_by || '—'],
+                    ].map(([label, value]) => (
+                      <div key={label} className="tech-data-cell">
+                        <div className="tech-data-label">{label}</div>
+                        <div className="tech-data-value">{value}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {item.case_number && (
+                  <div className="alert alert-info">
+                    <span className="alert-icon">🔗</span>
+                    <div>Linked to case <strong>{item.case_number}</strong>
+                      <button className="btn btn-ghost btn-sm" style={{ marginLeft:8 }} onClick={() => navigate(`/cases/${item.case_number}`)}>View Case →</button>
+                    </div>
+                  </div>
+                )}
+                {item.notes && (
+                  <div className="card" style={{ padding:14 }}>
+                    <div style={{ fontWeight:700,marginBottom:6,fontSize:'0.82rem' }}>📝 Notes</div>
+                    <p style={{ fontSize:'0.82rem',lineHeight:1.7,color:'var(--text-secondary)' }}>{item.notes}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Photos / Media Tab */}
+      {activeTab === 'photos' && (
+        <div>
+          <div
+            onDrop={handleDrop} onDragOver={e => e.preventDefault()}
+            onClick={() => imgRef.current?.click()}
+            style={{ border:'2px dashed var(--border-default)',borderRadius:'var(--radius-xl)',padding:36,textAlign:'center',marginBottom:20,background:'var(--bg-elevated)',cursor:'pointer',transition:'all 0.2s' }}
+            onMouseEnter={e => e.currentTarget.style.borderColor='var(--accent-primary)'}
+            onMouseLeave={e => e.currentTarget.style.borderColor='var(--border-default)'}
+          >
+            {uploading ? (
+              <><div className="spinner" style={{ width:24,height:24,margin:'0 auto 8px' }} /><div style={{ color:'var(--text-muted)',fontSize:'0.82rem' }}>Uploading…</div></>
+            ) : (
+              <><div style={{ fontSize:'2.5rem',marginBottom:8 }}>📷</div><div style={{ fontWeight:600,marginBottom:4 }}>Drag & drop images/videos or click to browse</div><div style={{ fontSize:'0.75rem',color:'var(--text-muted)' }}>Supports images and video files (MP4, MOV, WebM)</div></>
+            )}
+          </div>
+          {images.length === 0 ? (
+            <div className="empty-state"><div className="empty-icon">📷</div><div className="empty-title">No photos yet</div><div className="empty-desc">Upload photos of label, PCB, condition, and damage</div></div>
+          ) : (
+            <div style={{ display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(160px,1fr))',gap:12 }}>
+              {images.map((img, idx) => {
+                const isVideo = img.mimeType?.startsWith('video/') || img.name?.match(/\.(mp4|webm|ogg|mov)$/i);
+                return (
+                  <div key={img.id} style={{ position:'relative',borderRadius:'var(--radius-md)',overflow:'hidden',border:'1px solid var(--border-subtle)',background:'var(--bg-elevated)' }}>
+                    {isVideo ? (
+                      <video src={img.data} style={{ width:'100%',height:140,objectFit:'cover',cursor:'pointer' }} onClick={() => setLightboxIdx(idx)} />
+                    ) : (
+                      <img src={img.data} alt={img.name} style={{ width:'100%',height:140,objectFit:'cover',cursor:'pointer' }} onClick={() => setLightboxIdx(idx)} />
+                    )}
+                    <div style={{ position:'absolute',top:4,left:4,background:'rgba(0,0,0,0.6)',borderRadius:4,padding:'2px 5px',fontSize:'0.6rem',color:'#fff' }}>
+                      {isVideo ? '🎬' : '🖼️'} {formatSize(img.size)}
+                    </div>
+                    <div style={{ padding:'6px 8px',fontSize:'0.68rem',color:'var(--text-muted)',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis' }}>{img.name}</div>
+                    {canAccess('junior_engineer') && (
+                      <button onClick={() => handleDeleteMedia(img.id)} style={{ position:'absolute',top:4,right:4,width:22,height:22,borderRadius:'50%',background:'rgba(239,68,68,0.9)',border:'none',color:'#fff',fontSize:'0.75rem',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center' }}>✕</button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Files Tab */}
+      {activeTab === 'files' && (
+        <div>
+          <div
+            onClick={() => fileRef.current?.click()}
+            style={{ border:'2px dashed var(--border-default)',borderRadius:'var(--radius-xl)',padding:32,textAlign:'center',marginBottom:20,background:'var(--bg-elevated)',cursor:'pointer' }}
+          >
+            <div style={{ fontSize:'2rem',marginBottom:8 }}>📁</div>
+            <div style={{ fontWeight:600,marginBottom:4 }}>Click to upload files</div>
+            <div style={{ fontSize:'0.75rem',color:'var(--text-muted)' }}>PDFs, datasheets, reports, Excel files, etc.</div>
+          </div>
+          {files.length === 0 ? (
+            <div className="empty-state"><div className="empty-icon">📁</div><div className="empty-title">No files attached</div></div>
+          ) : (
+            <div style={{ display:'flex',flexDirection:'column',gap:8 }}>
+              {files.map(f => (
+                <div key={f.id} className="card" style={{ padding:'10px 16px',display:'flex',alignItems:'center',gap:12 }}>
+                  <span style={{ fontSize:'1.4rem' }}>📄</span>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontWeight:600,fontSize:'0.82rem' }}>{f.name}</div>
+                    <div style={{ fontSize:'0.72rem',color:'var(--text-muted)' }}>{formatSize(f.size)}</div>
+                  </div>
+                  <a href={f.data} download={f.name} className="btn btn-secondary btn-sm">⬇️ Download</a>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* History Tab */}
+      {activeTab === 'history' && (
+        <div className="card">
+          <div className="card-title" style={{ marginBottom:14 }}>📜 Stock Movement History</div>
+          {history.length === 0 ? (
+            <div className="empty-state"><div className="empty-icon">📜</div><div className="empty-title">No history records yet</div></div>
+          ) : (
+            <div style={{ display:'flex',flexDirection:'column',gap:8 }}>
+              {history.map((h, i) => (
+                <div key={i} style={{ display:'flex',gap:12,alignItems:'center',padding:'10px 0',borderBottom:'1px solid var(--border-subtle)' }}>
+                  <span style={{ fontSize:'1.2rem' }}>{h.type==='in'?'📥':h.type==='out'?'📤':h.type==='disposed'?'🗑️':'🔒'}</span>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontWeight:600,fontSize:'0.82rem' }}>{h.type?.toUpperCase()} — {h.quantity} unit(s)</div>
+                    <div style={{ fontSize:'0.72rem',color:'var(--text-muted)' }}>{h.notes}</div>
+                  </div>
+                  <div className="text-xs text-muted font-mono">{h.created_at ? new Date(h.created_at).toLocaleString('en-IN') : '—'}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Comparison Tab */}
+      {activeTab === 'compare' && compareWithCase && (
+        <DonorPatientComparison donor={item} patientCaseId={compareWithCase} />
+      )}
+
+      {/* Lightbox */}
+      {lightboxIdx !== null && <MediaLightbox items={images} startIdx={lightboxIdx} onClose={() => setLightboxIdx(null)} />}
+    </div>
+  );
+}

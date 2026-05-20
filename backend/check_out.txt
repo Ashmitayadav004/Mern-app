@@ -1,0 +1,25 @@
+Found user: {"id":"32d6a324-3f27-4160-acd3-012fa4559061","username":"superadmin","email":"superadmin@recoverylab.com","role":"super_admin","is_active":true}
+Password match (SuperAdmin@123): true
+node : FATAL: 
+relation "tenants" 
+does not exist
+At line:1 char:1
++ node check_db.js 
+2>&1 | Out-File 
+-Encoding ascii 
+check_out.txt; type  
+...
++ 
+~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo    
+          : 
+NotSpecified: (F    
+ATAL: relation "tenan 
+   ts" does not 
+exist:St    ring) [], 
+RemoteExcep    tion
+    + 
+FullyQualifiedError   
+ Id : 
+NativeCommandErr    or
+ 

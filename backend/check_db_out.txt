@@ -1,0 +1,10 @@
+Current user_role enum: {admin,senior_engineer,junior_engineer,staff,super_admin}
+Added super_admin to user_role enum
+
+All users:
+ - superadmin@recoverylab.com | super_admin | active: true
+
+Password reset ??? Login: superadmin@recoverylab.com / SuperAdmin@123
+ - ID: 32d6a324-3f27-4160-acd3-012fa4559061 Email: superadmin@recoverylab.com
+
+Done!

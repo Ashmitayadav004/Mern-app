@@ -1,0 +1,6 @@
+L1630: [NC]
+L1631:   return ([NC]
+L1632:     <div>[NC]
+L1633:       {[NC][NC][NC] Hero Header [NC][NC][NC] */}[NC]
+L1634:       <div className="sa-hero">[NC]
+L1635:         <div className="sa-hero-inner">[NC]

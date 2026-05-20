@@ -1,0 +1,1 @@
+"            <span style={{ fontSize: '0.82rem', fontWeight: 600, color: form.maintenance_mode ? '#f59e0b' : 'var(--text-muted)' }}>{form.maintenance_mode ? \"???? \"???? ENABLED\"\" : \"Disabled\"}</span>\r"

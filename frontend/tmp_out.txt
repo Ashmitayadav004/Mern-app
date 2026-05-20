@@ -1,0 +1,3 @@
+Line 1330:             <input type="checkbox" checked={form.maintenance_mode} onChange={e => setForm(f => ({ ...f, maintenance_mode: e.target.checked }))} style={{ accentColor: '#f59e0b', width: 16, height: 16 }
+Line 1331:             <span style={{ fontSize: '0.82rem', fontWeight: 600, color: form.maintenance_mode ? '#f59e0b' : 'var(--text-muted)' }}>{form.maintenance_mode ????? ENABLED' : 'Disabled'}</span>
+Line 1332:           </label>

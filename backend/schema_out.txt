@@ -1,0 +1,4 @@
+FAIL: duplicate key value violates unique constraint "storage_brands_name_key"
+Schema: 5 ok, 59 skipped (already exists), 1 failed
+Tables: users, refresh_tokens, clients, client_communications, storage_brands, storage_models, failure_library, cases, case_workflow_logs, case_engineer_sessions, inventory_items, donor_matching, inventory_transactions, quotations, payments, case_files, audit_logs, accounting_quotes, accounting_invoices, accounting_invoice_payments, accounting_expenses, case_images, case_solutions, case_solution_media, inventory_images
+Tenants table error: relation "tenants" does not exist

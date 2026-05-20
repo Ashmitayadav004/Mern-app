@@ -1,0 +1,2 @@
+60 pattern fixes applied, 4 patterns may remain
+Total ?? still in file: 27

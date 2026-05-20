@@ -1,0 +1,4 @@
+151: <div style={{ fontSize: '0.75rem', fontWeight: 700, marginBottom: 8, color: selPlan.color }}>?? {selPlan.label} Plan Includes:</div>
+837: <td><span style={{fontSize:'0.72rem',padding:'2px 8px',borderRadius:999,background:c.type==='global'?'rgba(59,130,246,0.1)':'rgba(139,92,246,0.1)',col
+1031: {[['show_pricing_section', '[NC][NC] Pricing / Plans Section'], ['show_features_section', '[NC] Features Grid Section'], ['show_testimonials', '?? Tes
+1079: {[['auto_send', '[NC][NC] Auto-send invoice email on payment success'], ['auto_activate_tenant', '[NC] Auto-activate tenant subscription on payment'],

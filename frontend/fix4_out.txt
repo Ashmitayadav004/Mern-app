@@ -1,0 +1,17 @@
+Still has ??: 443 <span style={{ fontSize: '1.1rem' }}>??</span>
+Still has ??: 516 onClick={() => { setSelPermPlan(plan.key); setActiveView('permissions'); }}>?? Permissions</button>
+Still has ??: 532 <span style={{fontSize:'1.1rem'}}>??</span>
+Still has ??: 635 display:'flex', alignItems:'center', justifyContent:'center', fontSize:'1.4rem' }}>??</div>
+Still has ??: 687 <button className="btn btn-primary" onClick={save}>?? Save & Verify</button>
+Still has ??: 691 }}>?? Simulate Webhook</button>
+Still has ??: 781 <option value="global">?? Global (anyone can use)</option>
+Still has ??: 782 <option value="user">?? User-Specific</option>
+Still has ??: 1079 {[['auto_send', '[NC][NC] Auto-send invoice email on payment success'], ['auto_activate_tenant', '[NC] Auto-activate ten
+Still has ??: 1104 {invoices.length > 0 && <button className="btn btn-secondary btn-sm" onClick={() => alert('In production: exports all in
+Still has ??: 1124 <button className="btn btn-sm btn-secondary" onClick={() => alert(`[Demo] Invoice ${inv.invoice_number} PDF download\n\n
+Still has ??: 1125 <button className="btn btn-sm btn-secondary" onClick={() => alert(`[Demo] Resending invoice to ${inv.tenant_email}`)}>??
+Still has ??: 1263 <button className="btn btn-secondary btn-sm" onClick={() => alert('[Demo] Exporting activity logs as CSV...')}>?? Export
+Still has ??: 1361 <button className="btn btn-secondary" onClick={() => alert('[Demo] Test email sent to ' + form.smtp_from)}>?? Send Test 
+Still has ??: 1780 }}>?? Clear Logs</button>
+Still has ??: 1863 onClick={() => alert(`Retry contact: ${p.tenant_email}`)}>?? Retry</button>
+2 fixes applied, 16 visible ?? remain

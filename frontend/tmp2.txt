@@ -1,0 +1,34 @@
+node : [eval]:8
+At line:1 char:1
++ node -e "
++ ~~~~~~~~~
+    + CategoryInfo        
+      : NotSpecified: ([  
+  eval]:8:String) [], R   
+ emoteException
+    + FullyQualifiedError 
+   Id : NativeCommandErr  
+  or
+ 
+  '{form.maintenance_mode 
+? " \uD83D\uDD34 ENABLED\'
+  ^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+Unterminated string 
+constant
+
+SyntaxError: Invalid or 
+unexpected token
+    at 
+makeContextifyScript 
+(node:internal/vm:194:14)
+    at compileScript (node
+:internal/process/executio
+n:388:10)
+    at evalTypeScript (nod
+e:internal/process/executi
+on:260:22)
+    at node:internal/main/
+eval_string:71:3
+
+Node.js v24.14.1

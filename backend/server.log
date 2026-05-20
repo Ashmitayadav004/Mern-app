@@ -1,0 +1,13 @@
+
+ðŸš€ RecoverLab CRM API (DEMO MODE) running at http://localhost:5000
+ðŸ“Š No PostgreSQL required â€” using in-memory demo data
+
+ðŸ”‘ Demo credentials:
+   ðŸ‘‘ superadmin / SuperAdmin@123  (Platform Owner / Super Admin)
+   ðŸ‘¤ admin / Admin@1234            (Administrator / Tenant Admin)
+   ðŸ”§ john_eng / Engineer@1234      (Senior Engineer)
+
+ðŸ”— API URL:           http://localhost:5000
+ðŸ“‹ Client Portal:     http://localhost:5173/client-portal
+ðŸ‘‘ Super Admin:       http://localhost:5173/super-admin
+

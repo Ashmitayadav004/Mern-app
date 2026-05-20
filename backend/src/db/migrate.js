@@ -1,0 +1,185 @@
+require('dotenv').config();
+
+const { pool } = require('../config/database');
+const bcrypt = require('bcryptjs');
+const fs = require('fs');
+const path = require('path');
+
+async function migrate() {
+
+  const client = await pool.connect();
+
+  try {
+
+    console.log('📦 Running database migration...');
+
+    // =========================================================
+    // STEP 1: BASE SCHEMA
+    // =========================================================
+
+    const schema = fs.readFileSync(
+      path.join(__dirname, 'schema.sql'),
+      'utf8'
+    );
+
+    const schemaCheck = await client.query("SELECT to_regclass('public.users') AS users_table");
+    if (!schemaCheck.rows[0].users_table) {
+      await client.query(schema);
+      console.log('✅ Base schema applied');
+    } else {
+      console.log('✅ Base schema already exists, skipping base schema apply');
+    }
+
+
+    // =========================================================
+    // STEP 2: SUPER ADMIN MIGRATION
+    // =========================================================
+
+    const saSchema = fs.readFileSync(
+      path.join(__dirname, 'migrations', '001_super_admin_schema.sql'),
+      'utf8'
+    );
+
+    // IMPORTANT:
+    // Execute WHOLE SQL FILE at once.
+    // DO NOT split SQL manually.
+    await client.query(saSchema);
+
+    console.log('✅ Super Admin schema migration applied');
+
+    const userPermSchema = fs.readFileSync(
+      path.join(__dirname, 'migrations', '002_add_user_permissions_column.sql'),
+      'utf8'
+    );
+    await client.query(userPermSchema);
+
+    console.log('✅ User permissions schema migration applied');
+
+    // =========================================================
+    // STEP 2b: TENANT FIELDS MIGRATION
+    // =========================================================
+
+    const tenantFieldsSchema = fs.readFileSync(
+      path.join(__dirname, 'migrations', '003_add_tenant_fields_to_users.sql'),
+      'utf8'
+    );
+    await client.query(tenantFieldsSchema);
+
+    console.log('✅ Tenant fields migration applied (subscription_plan, company_name, etc.)');
+
+    const hasRoleEnum = await client.query("SELECT 1 FROM pg_type WHERE typname = 'user_role'");
+    if (hasRoleEnum.rows.length) {
+      try {
+        await client.query("ALTER TABLE users ALTER COLUMN role TYPE VARCHAR(100) USING role::text");
+        await client.query("DROP TYPE IF EXISTS user_role CASCADE");
+        console.log('✅ Converted legacy users.role enum to VARCHAR(100)');
+      } catch (enumErr) {
+        console.log('ℹ️  user_role enum cleanup skipped (already converted or in use):', enumErr.message);
+      }
+    }
+
+    // =========================================================
+    // STEP 3: SEED USERS
+    // =========================================================
+
+    // 👑 Platform Super Admin
+    const saHash = await bcrypt.hash('SuperAdmin@2024', 12);
+
+    await client.query(`
+      INSERT INTO users (
+        username,
+        email,
+        password_hash,
+        full_name,
+        role
+      )
+      VALUES (
+        'super_admin',
+        'superadmin@recoverlab.in',
+        $1,
+        'Platform Super Admin',
+        'super_admin'
+      )
+      ON CONFLICT (username) DO NOTHING
+    `, [saHash]);
+
+
+    // 👤 Default Tenant Admin
+    const adminHash = await bcrypt.hash('Admin@1234', 12);
+
+    await client.query(`
+      INSERT INTO users (
+        username,
+        email,
+        password_hash,
+        full_name,
+        role
+      )
+      VALUES (
+        'admin',
+        'admin@datarecovery.lab',
+        $1,
+        'System Administrator',
+        'admin'
+      )
+      ON CONFLICT (username) DO NOTHING
+    `, [adminHash]);
+
+
+    // 👨‍🔧 Sample Engineer
+    const engHash = await bcrypt.hash('Engineer@1234', 12);
+
+    await client.query(`
+      INSERT INTO users (
+        username,
+        email,
+        password_hash,
+        full_name,
+        role,
+        specializations
+      )
+      VALUES (
+        'john_eng',
+        'john@datarecovery.lab',
+        $1,
+        'John Smith',
+        'senior_engineer',
+        ARRAY[
+          'head_swap',
+          'firmware',
+          'mechanical'
+        ]
+      )
+      ON CONFLICT (username) DO NOTHING
+    `, [engHash]);
+
+
+    // =========================================================
+    // DONE
+    // =========================================================
+
+    console.log('✅ Users seeded:');
+    console.log('   👑 super_admin / SuperAdmin@2024');
+    console.log('   👤 admin       / Admin@1234');
+    console.log('   👨‍🔧 john_eng    / Engineer@1234');
+
+    console.log('\n🎉 Migration completed successfully!');
+
+  } catch (err) {
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
+if (require.main === module) {
+  migrate()
+    .then(() => pool.end())
+    .catch((err) => {
+      console.error('\n❌ Migration failed:');
+      console.error(err.message);
+      pool.end().finally(() => process.exit(1));
+    });
+}
+
+module.exports = { migrate };

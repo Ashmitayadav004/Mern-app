@@ -1,0 +1,20 @@
+
+> data-recovery-crm-frontend@1.0.0 dev
+> vite
+
+
+  [32m[1mVITE[22m v5.4.21[39m  [2mready in [0m[1m429[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m5174[22m/[39m
+[2m  [32m➜[39m  [1mNetwork[22m[2m: use [22m[1m--host[22m[2m to expose[22m
+[2m[32m  ➜[39m[22m[2m  press [22m[1mh + enter[22m[2m to show help[22m
+[2m8:44:10 pm[22m [33m[1m[vite][22m[39m [33mwarning: [33mDuplicate key "background" in object literal[33m
+87 |          color: 'var(--text-primary)', letterSpacing: '0.08em', flexShrink: 0,
+88 |          minWidth: 110, userSelect: 'none',
+89 |          background: 'repeating-linear-gradient(45deg, var(--bg-elevated) 0, var(--bg-elevated) 4px, var(--bg-card) 4px, var(--bg-card) 8px)'
+   |          ^
+90 |        }}>
+91 |          {challenge.a} {challenge.op} {challenge.b} = ?
+[39m
+  Plugin: [35mvite:esbuild[39m
+  File: [36mC:/Users/Dhruvesh_Panchal/Downloads/Antigravity/data-recovery-crm/nodejs-app/frontend/src/components/MathCaptcha.jsx[39m
