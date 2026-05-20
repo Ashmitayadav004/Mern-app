@@ -68,13 +68,14 @@ function Sidebar({ open, onClose }) {
   const systemItems = isSuperAdmin
     // Super Admin system items — platform-level only
     ? [
-          { icon: '🛡️', label: 'Security & Backup', to: '/security' },
+        { icon: '🛡️', label: 'Security & Backup', to: '/security' },
         { icon: '⚙️', label: 'Settings', to: '/settings' },
       ]
     // Regular user system items
     : [
+        { icon: '👤', label: 'Users & Roles', to: '/users' },
         ...(isOwner ? [{ icon: '💎', label: 'Subscription', to: '/subscription' }] : []),
-          { icon: '🛡️', label: 'Security & Backup', to: '/security' },
+        { icon: '🛡️', label: 'Security & Backup', to: '/security' },
         { icon: '💬', label: 'Team Chat', to: '/chat' },
         ...(hasPermission('recycle_bin', 'view') || isAdmin ? [{ icon: '🗑️', label: 'Recycle Bin', to: '/recycle-bin' }] : []),
         ...(hasPermission('webhooks', 'view') || isAdmin ? [{ icon: '🔗', label: 'Webhooks', to: '/webhooks' }] : []),
@@ -105,8 +106,7 @@ function Sidebar({ open, onClose }) {
         { icon: '📬', label: 'Email Deliverability', to: '/super-admin', saTab: 'email_delivery' },
       ]},
       { group: 'Access', items: [
-          { icon: '👥', label: 'Users & Roles',      to: '/users' },
-          { icon: '🛡️', label: 'Security & Backup', to: '/security' },
+        { icon: '🛡️', label: 'Security & Backup', to: '/security' },
         { icon: '⚙️', label: 'Settings',           to: '/settings' },
       ]},
     ] : []),

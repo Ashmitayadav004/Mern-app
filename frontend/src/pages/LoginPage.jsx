@@ -40,19 +40,6 @@ export default function LoginPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showNewPw, setShowNewPw] = useState(false);
 
-  const parseJsonResponse = async (res) => {
-    const contentType = res.headers.get('content-type') || '';
-    if (!contentType.includes('application/json')) {
-      const text = await res.text();
-      return text ? { error: text } : {};
-    }
-    try {
-      return await res.json();
-    } catch (err) {
-      return {};
-    }
-  };
-
   // ── Step 1: Login ──────────────────────────────────────────────
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -65,8 +52,8 @@ export default function LoginPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       });
-      const data = await parseJsonResponse(res);
-      if (!res.ok) throw new Error(data.error || `Login failed (${res.status})`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Login failed');
 
       if (data.requires_2fa && data.temp_token) {
         setTempToken(data.temp_token);
@@ -99,8 +86,8 @@ export default function LoginPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ temp_token: tempToken, totp_code: totpCode }),
       });
-      const data = await parseJsonResponse(res);
-      if (!res.ok) throw new Error(data.error || `2FA verification failed (${res.status})`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || '2FA verification failed');
       localStorage.setItem('accessToken', data.accessToken);
       localStorage.setItem('refreshToken', data.refreshToken);
       setLoggedIn(data.user);
@@ -124,8 +111,8 @@ export default function LoginPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ identifier: resetIdentifier, method: resetMethod }),
       });
-      const data = await parseJsonResponse(res);
-      if (!res.ok) throw new Error(data.error || `Failed to send OTP (${res.status})`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to send OTP');
       if (data.demo_otp) setDemoOtp(data.demo_otp); // Show in demo mode
       setStep('otp');
     } catch (err) {
@@ -146,8 +133,8 @@ export default function LoginPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ identifier: resetIdentifier, otp: resetOtp }),
       });
-      const data = await parseJsonResponse(res);
-      if (!res.ok) throw new Error(data.error || `OTP verification failed (${res.status})`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'OTP verification failed');
       setResetToken(data.reset_token);
       setStep('newpass');
     } catch (err) {
@@ -170,8 +157,8 @@ export default function LoginPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reset_token: resetToken, new_password: newPassword }),
       });
-      const data = await parseJsonResponse(res);
-      if (!res.ok) throw new Error(data.error || `Password reset failed (${res.status})`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Password reset failed');
       setStep('done');
     } catch (err) {
       setError(err.message);

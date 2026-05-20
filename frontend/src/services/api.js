@@ -4,16 +4,6 @@ function getToken() {
   return localStorage.getItem('accessToken');
 }
 
-async function parseJsonResponse(res) {
-  const text = await res.text();
-  if (!text || !text.trim()) return null;
-  try {
-    return JSON.parse(text);
-  } catch {
-    return null;
-  }
-}
-
 async function request(path, options = {}) {
   const token = getToken();
   const headers = {
@@ -37,19 +27,16 @@ async function request(path, options = {}) {
         body: JSON.stringify({ refreshToken }),
       });
       if (refreshRes.ok) {
-        const refreshData = await parseJsonResponse(refreshRes);
-        const accessToken = refreshData?.accessToken;
-        if (accessToken) {
-          localStorage.setItem('accessToken', accessToken);
-          // Retry
-          headers.Authorization = `Bearer ${accessToken}`;
-          const retryRes = await fetch(`${BASE_URL}${path}`, { ...options, headers });
-          if (!retryRes.ok) {
-            const err = await parseJsonResponse(retryRes) || {};
-            throw Object.assign(new Error(err.error || 'Request failed'), { status: retryRes.status, data: err });
-          }
-          return parseJsonResponse(retryRes);
+        const { accessToken } = await refreshRes.json();
+        localStorage.setItem('accessToken', accessToken);
+        // Retry
+        headers.Authorization = `Bearer ${accessToken}`;
+        const retryRes = await fetch(`${BASE_URL}${path}`, { ...options, headers });
+        if (!retryRes.ok) {
+          const err = await retryRes.json().catch(() => ({}));
+          throw Object.assign(new Error(err.error || 'Request failed'), { status: retryRes.status, data: err });
         }
+        return retryRes.json();
       }
     }
     localStorage.clear();
@@ -58,11 +45,12 @@ async function request(path, options = {}) {
   }
 
   if (!res.ok) {
-    const err = await parseJsonResponse(res) || {};
+    const err = await res.json().catch(() => ({}));
     throw Object.assign(new Error(err.error || 'Request failed'), { status: res.status, data: err });
   }
 
-  return parseJsonResponse(res);
+  if (res.status === 204) return null;
+  return res.json();
 }
 
 export const api = {
@@ -83,10 +71,10 @@ export const api = {
       body: formData,
     });
     if (!res.ok) {
-      const err = await parseJsonResponse(res) || {};
+      const err = await res.json().catch(() => ({}));
       throw Object.assign(new Error(err.error || 'Upload failed'), { status: res.status });
     }
-    return parseJsonResponse(res);
+    return res.json();
   }
 };
 

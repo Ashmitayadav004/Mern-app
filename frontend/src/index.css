@@ -328,7 +328,43 @@ code, kbd, pre { font-family: var(--font-mono); }
   bottom: 0;
   width: 3px;
   background: var(--accent-primary);
-  border-radius: 0 2px 2px 0;
+}
+
+.settings-page-layout {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  overflow: hidden;
+}
+
+.settings-page-sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  position: relative;
+  align-self: flex-start;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.settings-page-sidebar-inner {
+  padding-right: 4px;
+}
+
+.settings-page-sidebar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.settings-page-sidebar::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.25);
+  border-radius: 999px;
+}
+
+.settings-page-content {
+  min-width: 0;
+  overflow-y: auto;
+  max-height: calc(100vh - 120px);
+  padding-right: 4px;
 }
 
 .nav-icon {

@@ -10,10 +10,10 @@ const usersApi = {
   update: (id, body) => fetch(`${BASE_URL}/users/${id}`, { method: 'PATCH', headers: { Authorization: `Bearer ${getToken()}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(r => r.json()),
   deactivate: (id) => fetch(`${BASE_URL}/users/${id}/deactivate`, { method: 'POST', headers: { Authorization: `Bearer ${getToken()}` } }).then(r => r.json()),
   roles: {
-    list: () => fetch(`${BASE_URL}/super-admin/settings/roles`, { headers: { Authorization: `Bearer ${getToken()}` } }).then(r => r.json()),
-    create: (body) => fetch(`${BASE_URL}/super-admin/settings/roles`, { method: 'POST', headers: { Authorization: `Bearer ${getToken()}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(r => r.json()),
-    update: (id, body) => fetch(`${BASE_URL}/super-admin/settings/roles/${id}`, { method: 'PATCH', headers: { Authorization: `Bearer ${getToken()}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(r => r.json()),
-    delete: (id) => fetch(`${BASE_URL}/super-admin/settings/roles/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${getToken()}` } }).then(r => r.json()),
+    list: () => fetch(`${BASE_URL}/settings/roles`, { headers: { Authorization: `Bearer ${getToken()}` } }).then(r => r.json()),
+    create: (body) => fetch(`${BASE_URL}/settings/roles`, { method: 'POST', headers: { Authorization: `Bearer ${getToken()}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(r => r.json()),
+    update: (id, body) => fetch(`${BASE_URL}/settings/roles/${id}`, { method: 'PATCH', headers: { Authorization: `Bearer ${getToken()}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(r => r.json()),
+    delete: (id) => fetch(`${BASE_URL}/settings/roles/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${getToken()}` } }).then(r => r.json()),
   },
 };
 
@@ -383,7 +383,7 @@ function MyPermissionsView({ user }) {
 
 // ── Main Page ────────────────────────────────────────────────────────────
 export default function UserManagementPage() {
-  const { user, isAdmin, isSuperAdmin, hasPermission } = useAuth();
+  const { user, isAdmin, hasPermission } = useAuth();
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -415,12 +415,9 @@ export default function UserManagementPage() {
   };
 
   const teamUsers = users.filter(u => u.role !== 'super_admin' && u.role !== 'admin');
-  const allUsersLabel = isSuperAdmin ? 'All Users' : 'Team Users';
-  const displayCount = isSuperAdmin ? users.length : teamUsers.length;
-  const canAddUser = isAdmin && activeTab === 'users' && hasPermission('users', 'create');
 
   const TABS = isAdmin
-    ? [{ key: 'users', label: `👥 ${allUsersLabel}` }, { key: 'roles', label: '🎭 Roles & Permissions' }, { key: 'my_perms', label: '🔒 My Permissions' }]
+    ? [{ key: 'users', label: '👥 Team Users' }, { key: 'roles', label: '🎭 Roles & Permissions' }, { key: 'my_perms', label: '🔒 My Permissions' }]
     : [{ key: 'my_perms', label: '🔒 My Permissions' }];
 
   return (
@@ -429,15 +426,11 @@ export default function UserManagementPage() {
         <div>
           <h2 style={{ marginBottom: 4 }}>👥 User Management</h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>
-            {isAdmin
-              ? isSuperAdmin
-                ? `Manage all platform users and their role permissions (${displayCount})`
-                : `Manage your team (${displayCount}/${maxUsers} users)`
-              : 'View your account permissions and access level'}
+            {isAdmin ? `Manage your team (${teamUsers.length}/${maxUsers} users)` : 'View your account permissions and access level'}
           </p>
         </div>
-        {canAddUser && (
-          <button className="btn btn-primary" onClick={() => { setEditUser(null); setShowUserModal(true); }}>+ Add User</button>
+        {isAdmin && activeTab === 'users' && hasPermission('users', 'create') && (
+          <button className="btn btn-primary" onClick={() => { setEditUser(null); setShowUserModal(true); }}>+ Add Team Member</button>
         )}
         {isAdmin && activeTab === 'roles' && (
           <button className="btn btn-primary" onClick={() => { setEditRole(null); setShowRoleModal(true); }}>+ Create Role</button>
@@ -457,12 +450,12 @@ export default function UserManagementPage() {
         <div>
           {/* Usage bar */}
           <div style={{ marginBottom: 16, padding: '10px 14px', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{isSuperAdmin ? 'All Users' : 'Team Users'}</span>
+            <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>Team Users</span>
             <div style={{ flex: 1, height: 6, background: 'var(--bg-elevated)', borderRadius: 3 }}>
-              <div style={{ height: '100%', borderRadius: 3, background: isSuperAdmin ? 'var(--accent-primary)' : (teamUsers.length >= maxUsers ? 'var(--status-danger)' : 'var(--accent-primary)'), width: `${Math.min(100, ((isSuperAdmin ? users.length : teamUsers.length) / maxUsers) * 100)}%`, transition: 'width 0.3s' }} />
+              <div style={{ height: '100%', borderRadius: 3, background: teamUsers.length >= maxUsers ? 'var(--status-danger)' : 'var(--accent-primary)', width: `${Math.min(100, (teamUsers.length / maxUsers) * 100)}%`, transition: 'width 0.3s' }} />
             </div>
-            <span style={{ fontSize: '0.78rem', fontWeight: 700, color: isSuperAdmin ? 'var(--text-primary)' : (teamUsers.length >= maxUsers ? 'var(--status-danger)' : 'var(--text-primary)'), fontFamily: 'var(--font-mono)', whiteSpace: 'nowrap' }}>
-              {isSuperAdmin ? `${users.length} users` : `${teamUsers.length} / ${maxUsers}`}
+            <span style={{ fontSize: '0.78rem', fontWeight: 700, color: teamUsers.length >= maxUsers ? 'var(--status-danger)' : 'var(--text-primary)', fontFamily: 'var(--font-mono)', whiteSpace: 'nowrap' }}>
+              {teamUsers.length} / {maxUsers}
             </span>
           </div>
 
@@ -472,36 +465,34 @@ export default function UserManagementPage() {
             <div style={{ display: 'grid', gap: 10 }}>
               {users.map(u => {
                 const role = roles.find(r => r.key === u.role);
-                const roleLabel = role?.name || (u.role === 'super_admin' ? 'Super Admin' : u.role === 'admin' ? 'Admin' : u.role.replace(/_/g, ' '));
-                const roleColor = role?.color || (u.role === 'super_admin' ? '#f59e0b' : u.role === 'admin' ? '#f59e0b' : '#6366f1');
                 return (
-                  <div key={u.id} style={{ display: 'grid', gridTemplateColumns: '56px 1fr auto', gap: 14, padding: '14px 18px', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', opacity: u.is_active === false ? 0.65 : 1 }}>
-                    <div style={{ width: 48, height: 48, borderRadius: '50%', background: `${roleColor}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 700, border: `2px solid ${roleColor}30`, color: roleColor }}>
+                  <div key={u.id} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 16px', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', opacity: u.is_active === false ? 0.5 : 1 }}>
+                    <div style={{ width: 40, height: 40, borderRadius: '50%', background: `${role?.color || '#6366f1'}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 700, border: `2px solid ${role?.color || '#6366f1'}30`, color: role?.color || '#6366f1' }}>
                       {u.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                     </div>
-                    <div style={{ minWidth: 0 }}>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-                        <span style={{ fontWeight: 700, fontSize: '0.92rem', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.full_name || u.username}</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+                        <span style={{ fontWeight: 700, fontSize: '0.85rem' }}>{u.full_name}</span>
                         <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--text-muted)' }}>@{u.username}</span>
-                        {u.is_active === false && <span style={{ fontSize: '0.62rem', padding: '1px 7px', borderRadius: 999, background: 'rgba(239,68,68,0.12)', color: '#ef4444' }}>INACTIVE</span>}
+                        {u.is_active === false && <span style={{ fontSize: '0.62rem', padding: '1px 6px', borderRadius: 999, background: 'rgba(239,68,68,0.1)', color: '#ef4444' }}>INACTIVE</span>}
+                        {u.role === 'admin' && <span style={{ fontSize: '0.62rem', padding: '1px 6px', borderRadius: 999, background: 'rgba(245,158,11,0.1)', color: '#f59e0b', fontWeight: 700 }}>ADMIN</span>}
                       </div>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, color: 'var(--text-muted)', fontSize: '0.78rem' }}>
-                        <span>{u.email || 'No email set'}</span>
-                        <span>•</span>
-                        <span>{roleLabel}</span>
-                        {u.permissions && <><span>•</span><span>Custom Permissions</span></>}
-                        <span>•</span>
-                        <span>Last login: {u.last_login ? new Date(u.last_login).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Never'}</span>
+                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                        {role && (
+                          <span style={{ fontSize: '0.68rem', padding: '1px 8px', borderRadius: 999, background: `${role.color}18`, color: role.color, fontWeight: 700, border: `1px solid ${role.color}25` }}>
+                            {role.name}
+                          </span>
+                        )}
+                        {u.permissions && <span style={{ fontSize: '0.62rem', color: '#6366f1', fontWeight: 700 }}>🔒 Custom Perms</span>}
+                        {u.email && <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{u.email}</span>}
                       </div>
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end', justifyContent: 'space-between' }}>
-                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                        <button className="btn btn-sm btn-secondary" onClick={() => setViewPermissions(u)} title="View permissions">🔒 Permissions</button>
-                        {hasPermission('users', 'edit') && (
-                          <button className="btn btn-sm btn-secondary" onClick={() => { setEditUser(u); setShowUserModal(true); }}>✏️ Edit</button>
-                        )}
-                      </div>
-                      {hasPermission('users', 'deactivate') && u.role !== 'super_admin' && (
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button className="btn btn-sm btn-secondary" onClick={() => setViewPermissions(u)} title="View permissions">🔒 Permissions</button>
+                      {hasPermission('users', 'edit') && (
+                        <button className="btn btn-sm btn-secondary" onClick={() => { setEditUser(u); setShowUserModal(true); }}>✏️ Edit</button>
+                      )}
+                      {hasPermission('users', 'deactivate') && u.role !== 'admin' && (
                         <button className="btn btn-sm" style={{ background: 'rgba(239,68,68,0.08)', color: '#ef4444', borderColor: 'rgba(239,68,68,0.2)', fontSize: '0.72rem' }} onClick={() => handleDeactivate(u)}>
                           {u.is_active === false ? '▶ Activate' : '⏸ Deactivate'}
                         </button>

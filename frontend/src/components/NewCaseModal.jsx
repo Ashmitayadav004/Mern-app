@@ -1042,6 +1042,100 @@ function StepDeviceView({ form, setForm }) {
   );
 }
 
+function StepDevice({ form, setForm, capacities }) {
+  const set = (key, val) => setForm((f) => ({ ...f, [key]: val }));
+  const inputStyle = { fontSize: "0.82rem", padding: "8px 10px" };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <div className="form-group" style={{ margin: 0 }}>
+          <label className="form-label required">HDD / Device Type</label>
+          <select
+            className="form-select"
+            value={form.hdd_type || ""}
+            onChange={(e) => set("hdd_type", e.target.value)}
+            style={inputStyle}
+          >
+            <option value="">Select HDD Type...</option>
+            {HDD_TYPES.map((h) => (
+              <option key={h.key} value={h.key}>
+                {h.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="form-group" style={{ margin: 0 }}>
+          <label className="form-label">Harddisk No. (Manual)</label>
+          <input
+            className="form-input"
+            placeholder="HDD tag or job number"
+            value={form.harddisk_no || ""}
+            onChange={(e) => set("harddisk_no", e.target.value)}
+            style={inputStyle}
+          />
+        </div>
+        <div className="form-group" style={{ margin: 0 }}>
+          <label className="form-label">Capacity</label>
+          <select
+            className="form-select"
+            value={form.capacity || ""}
+            onChange={(e) => set("capacity", e.target.value)}
+            style={inputStyle}
+          >
+            <option value="">Select Capacity...</option>
+            {capacities.filter((c) => c !== "1.5TB").map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+            {form.selected_custom_capacity && !capacities.includes(form.selected_custom_capacity) && (
+              <option key={form.selected_custom_capacity} value={form.selected_custom_capacity}>
+                {form.selected_custom_capacity}
+              </option>
+            )}
+            <option value="__others__">Others (add custom)</option>
+          </select>
+          {form.capacity === "__others__" && (
+            <StepDeviceCustomInput form={form} setForm={set} inputStyle={inputStyle} />
+          )}
+        </div>
+        <div className="form-group" style={{ margin: 0 }}>
+          <label className="form-label">Interface</label>
+          <select
+            className="form-select"
+            value={form.interface || ""}
+            onChange={(e) => set("interface", e.target.value)}
+            style={inputStyle}
+          >
+            <option value="">Select...</option>
+            {["SATA", "NVMe", "SAS", "IDE", "USB", "PCIe", "M.2", "eSATA"].map(
+              (i) => (
+                <option key={i}>{i}</option>
+              ),
+            )}
+          </select>
+        </div>
+      </div>
+      {!form.hdd_type && (
+        <div
+          style={{
+            padding: "10px 14px",
+            background: "rgba(99,102,241,0.08)",
+            border: "1px solid rgba(99,102,241,0.2)",
+            borderRadius: 8,
+            fontSize: "0.78rem",
+            color: "var(--text-muted)",
+          }}
+        >
+          💡 Select an HDD Type above to load dynamic fields (WD, Seagate, or
+          Others)
+        </div>
+      )}
+    </div>
+  );
+}
+
 function StepDeviceCustomInput({ form, setForm, inputStyle }) {
   const ref = useRef(null);
   useEffect(() => {
@@ -1626,94 +1720,8 @@ export default function NewCaseModal({ onClose, onCreated }) {
   );
 
   // ── Step 1: Device ────────────────────────────────────────────────────────
-  const StepDevice = () => (
-    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-        <div className="form-group" style={{ margin: 0 }}>
-          <label className="form-label required">HDD / Device Type</label>
-          <select
-            className="form-select"
-            value={form.hdd_type || ""}
-            onChange={(e) => set("hdd_type", e.target.value)}
-            style={inputStyle}
-          >
-            <option value="">Select HDD Type...</option>
-            {HDD_TYPES.map((h) => (
-              <option key={h.key} value={h.key}>
-                {h.label}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="form-group" style={{ margin: 0 }}>
-          <label className="form-label">Harddisk No. (Manual)</label>
-          <input
-            className="form-input"
-            placeholder="HDD tag or job number"
-            value={form.harddisk_no || ""}
-            onChange={(e) => set("harddisk_no", e.target.value)}
-            style={inputStyle}
-          />
-        </div>
-        <div className="form-group" style={{ margin: 0 }}>
-          <label className="form-label">Capacity</label>
-          <select
-            className="form-select"
-            value={form.capacity || ""}
-            onChange={(e) => set("capacity", e.target.value)}
-            style={inputStyle}
-          >
-            <option value="">Select Capacity...</option>
-            {CAPACITIES.filter((c) => c !== "1.5TB").map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-              {form.selected_custom_capacity && !CAPACITIES.includes(form.selected_custom_capacity) && (
-                <option key={form.selected_custom_capacity} value={form.selected_custom_capacity}>
-                  {form.selected_custom_capacity}
-                </option>
-              )}
-            <option value="__others__">Others (add custom)</option>
-          </select>
-            {form.capacity === "__others__" && (
-              <StepDeviceCustomInput form={form} setForm={set} inputStyle={inputStyle} />
-            )}
-        </div>
-        <div className="form-group" style={{ margin: 0 }}>
-          <label className="form-label">Interface</label>
-          <select
-            className="form-select"
-            value={form.interface || ""}
-            onChange={(e) => set("interface", e.target.value)}
-            style={inputStyle}
-          >
-            <option value="">Select...</option>
-            {["SATA", "NVMe", "SAS", "IDE", "USB", "PCIe", "M.2", "eSATA"].map(
-              (i) => (
-                <option key={i}>{i}</option>
-              ),
-            )}
-          </select>
-        </div>
-      </div>
-      {!form.hdd_type && (
-        <div
-          style={{
-            padding: "10px 14px",
-            background: "rgba(99,102,241,0.08)",
-            border: "1px solid rgba(99,102,241,0.2)",
-            borderRadius: 8,
-            fontSize: "0.78rem",
-            color: "var(--text-muted)",
-          }}
-        >
-          💡 Select an HDD Type above to load dynamic fields (WD, Seagate, or
-          Others)
-        </div>
-      )}
-    </div>
-  );
+  // StepDevice is defined outside the main component to preserve input focus
+  // and avoid remounting while the form updates.
 
   // ── Step 2: HDD Fields ────────────────────────────────────────────────────
   const StepHddFields = () => (
@@ -2006,7 +2014,7 @@ export default function NewCaseModal({ onClose, onCreated }) {
 
   const STEP_COMPONENTS = [
     <StepClient />,
-    <StepDevice />,
+    <StepDevice form={form} setForm={setForm} capacities={CAPACITIES} />,
     <StepHddFieldsView form={form} setForm={setForm} />,
     <StepProblemView
       form={form}
