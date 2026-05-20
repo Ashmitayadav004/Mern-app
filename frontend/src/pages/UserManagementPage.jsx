@@ -10,10 +10,10 @@ const usersApi = {
   update: (id, body) => fetch(`${BASE_URL}/users/${id}`, { method: 'PATCH', headers: { Authorization: `Bearer ${getToken()}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(r => r.json()),
   deactivate: (id) => fetch(`${BASE_URL}/users/${id}/deactivate`, { method: 'POST', headers: { Authorization: `Bearer ${getToken()}` } }).then(r => r.json()),
   roles: {
-    list: () => fetch(`${BASE_URL}/settings/roles`, { headers: { Authorization: `Bearer ${getToken()}` } }).then(r => r.json()),
-    create: (body) => fetch(`${BASE_URL}/settings/roles`, { method: 'POST', headers: { Authorization: `Bearer ${getToken()}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(r => r.json()),
-    update: (id, body) => fetch(`${BASE_URL}/settings/roles/${id}`, { method: 'PATCH', headers: { Authorization: `Bearer ${getToken()}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(r => r.json()),
-    delete: (id) => fetch(`${BASE_URL}/settings/roles/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${getToken()}` } }).then(r => r.json()),
+    list: () => fetch(`${BASE_URL}/super-admin/settings/roles`, { headers: { Authorization: `Bearer ${getToken()}` } }).then(r => r.json()),
+    create: (body) => fetch(`${BASE_URL}/super-admin/settings/roles`, { method: 'POST', headers: { Authorization: `Bearer ${getToken()}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(r => r.json()),
+    update: (id, body) => fetch(`${BASE_URL}/super-admin/settings/roles/${id}`, { method: 'PATCH', headers: { Authorization: `Bearer ${getToken()}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(r => r.json()),
+    delete: (id) => fetch(`${BASE_URL}/super-admin/settings/roles/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${getToken()}` } }).then(r => r.json()),
   },
 };
 

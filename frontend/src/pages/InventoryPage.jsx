@@ -50,6 +50,30 @@ function StatusBadge({ status }) {
   );
 }
 
+function InventoryFormField({ label, field, type = 'text', placeholder = '', required = false, full = false, form, setForm, children }) {
+  const handleChange = (e) => {
+    const value = e.target.value;
+    const nextValue = type === 'number' ? (value === '' ? '' : parseInt(value, 10)) : value;
+    setForm(f => ({ ...f, [field]: nextValue }));
+  };
+
+  return (
+    <div className="form-group" style={full ? { gridColumn: '1/-1' } : {}}>
+      <label className={`form-label${required ? ' required' : ''}`}>{label}</label>
+      {children || (
+        <input
+          type={type}
+          className="form-input"
+          required={required}
+          placeholder={placeholder}
+          value={form[field] ?? ''}
+          onChange={handleChange}
+        />
+      )}
+    </div>
+  );
+}
+
 // ─── Add / Edit Stock Item Modal ──────────────────────────────────────────────
 function NewItemModal({ onClose, onCreated, editItem }) {
   const isEdit = !!editItem;
@@ -89,14 +113,6 @@ function NewItemModal({ onClose, onCreated, editItem }) {
     finally { setLoading(false); }
   };
 
-  const F = ({ label, field, type = 'text', placeholder = '', required = false, full = false, children }) => (
-    <div className="form-group" style={full ? { gridColumn: '1/-1' } : {}}>
-      <label className={`form-label${required ? ' required' : ''}`}>{label}</label>
-      {children || <input type={type} className="form-input" required={required} placeholder={placeholder}
-        value={form[field] || ''} onChange={e => setForm(f => ({ ...f, [field]: e.target.value }))} />}
-    </div>
-  );
-
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal modal-lg" onClick={e => e.stopPropagation()} style={{ maxWidth: 700, maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
@@ -109,111 +125,111 @@ function NewItemModal({ onClose, onCreated, editItem }) {
           <form onSubmit={handleSubmit}>
             {/* Category & Identity */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-              <F label="Category" field="category" required>
+              <InventoryFormField label="Category" field="category" required form={form} setForm={setForm}>
                 <select className="form-select" value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value, company: INV_CATEGORIES.find(c=>c.key===e.target.value)?.brand || '' }))}>
                   {INV_CATEGORIES.map(c => <option key={c.key} value={c.key}>{c.icon} {c.label}</option>)}
                 </select>
-              </F>
-              <F label="Stock Number (Manual)" field="stock_number" placeholder="e.g. STK-001, WD-2025-042" required />
+              </InventoryFormField>
+              <InventoryFormField label="Stock Number (Manual)" field="stock_number" placeholder="e.g. STK-001, WD-2025-042" required form={form} setForm={setForm} />
             </div>
 
             {/* Company / Brand row */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-              <F label="Company / Manufacturer" field="company">
+              <InventoryFormField label="Company / Manufacturer" field="company" form={form} setForm={setForm}>
                 <select className="form-select" value={form.company || ''} onChange={e => setForm(f => ({ ...f, company: e.target.value, brand: e.target.value !== 'Other' ? e.target.value : f.brand }))}>
                   <option value="">Select Company…</option>
                   {HDD_COMPANIES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
-              </F>
+              </InventoryFormField>
               {form.company === 'Other' ? (
-                <F label="Custom Brand Name" field="brand" placeholder="Enter brand name" />
+                <InventoryFormField label="Custom Brand Name" field="brand" placeholder="Enter brand name" form={form} setForm={setForm} />
               ) : (
-                <F label="Model / Part No." field="model" placeholder="e.g. WD10EZEX, ST1000DM010" />
+                <InventoryFormField label="Model / Part No." field="model" placeholder="e.g. WD10EZEX, ST1000DM010" form={form} setForm={setForm} />
               )}
             </div>
 
             {/* HDD Specific */}
             {isHDD && (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                <F label="Serial Number" field="serial_number" placeholder="S/N from label" />
-                <F label="PCB Number" field="pcb_number" placeholder="e.g. 2060-771824-000" />
-                <F label="Capacity" field="capacity" placeholder="e.g. 1TB, 500GB" />
-                <F label="Interface" field="interface">
+                <InventoryFormField label="Serial Number" field="serial_number" placeholder="S/N from label" form={form} setForm={setForm} />
+                <InventoryFormField label="PCB Number" field="pcb_number" placeholder="e.g. 2060-771824-000" form={form} setForm={setForm} />
+                <InventoryFormField label="Capacity" field="capacity" placeholder="e.g. 1TB, 500GB" form={form} setForm={setForm} />
+                <InventoryFormField label="Interface" field="interface" form={form} setForm={setForm}>
                   <select className="form-select" value={form.interface || ''} onChange={e => setForm(f => ({ ...f, interface: e.target.value }))}>
                     <option value="">Select…</option>
                     {['SATA','IDE','SAS','USB','PCIe','NVMe'].map(i => <option key={i}>{i}</option>)}
                   </select>
-                </F>
-                <F label="Firmware / SW Rev" field="firmware" placeholder="e.g. CC4H, ABCDE1" />
-                <F label="Site Code / DCM" field="site_code" placeholder="e.g. WCAZBB" />
-                <F label="Date Code" field="date_code" placeholder="e.g. 2502" />
-                <F label="Head Map" field="head_map" placeholder="e.g. 00 01 02 03" />
-                <F label="ROM Family" field="family" placeholder="e.g. RYNO5" />
-                <F label="Form Factor" field="form_factor">
+                </InventoryFormField>
+                <InventoryFormField label="Firmware / SW Rev" field="firmware" placeholder="e.g. CC4H, ABCDE1" form={form} setForm={setForm} />
+                <InventoryFormField label="Site Code / DCM" field="site_code" placeholder="e.g. WCAZBB" form={form} setForm={setForm} />
+                <InventoryFormField label="Date Code" field="date_code" placeholder="e.g. 2502" form={form} setForm={setForm} />
+                <InventoryFormField label="Head Map" field="head_map" placeholder="e.g. 00 01 02 03" form={form} setForm={setForm} />
+                <InventoryFormField label="ROM Family" field="family" placeholder="e.g. RYNO5" form={form} setForm={setForm} />
+                <InventoryFormField label="Form Factor" field="form_factor" form={form} setForm={setForm}>
                   <select className="form-select" value={form.form_factor || ''} onChange={e => setForm(f => ({ ...f, form_factor: e.target.value }))}>
                     <option value="">Select…</option>
                     {['3.5" HDD','2.5" HDD','1.8" HDD'].map(i => <option key={i}>{i}</option>)}
                   </select>
-                </F>
+                </InventoryFormField>
               </div>
             )}
 
             {/* PCB Specific */}
             {isPCB && (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                <F label="PCB Number" field="pcb_number" placeholder="e.g. 2060-771824-000" required />
-                <F label="Compatible Drives" field="compatible_drives" placeholder="e.g. WD10EZEX, WD20EZRZ" />
-                <F label="Firmware Chip" field="firmware" placeholder="Firmware chip ID" />
-                <F label="Voltage" field="voltage" placeholder="e.g. 5V/12V" />
+                <InventoryFormField label="PCB Number" field="pcb_number" placeholder="e.g. 2060-771824-000" required form={form} setForm={setForm} />
+                <InventoryFormField label="Compatible Drives" field="compatible_drives" placeholder="e.g. WD10EZEX, WD20EZRZ" form={form} setForm={setForm} />
+                <InventoryFormField label="Firmware Chip" field="firmware" placeholder="Firmware chip ID" form={form} setForm={setForm} />
+                <InventoryFormField label="Voltage" field="voltage" placeholder="e.g. 5V/12V" form={form} setForm={setForm} />
               </div>
             )}
 
             {/* SSD Specific */}
             {isSSD && (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                <F label="Serial Number" field="serial_number" placeholder="S/N from label" />
-                <F label="Capacity" field="capacity" placeholder="e.g. 256GB, 1TB" />
-                <F label="Interface" field="interface">
+                <InventoryFormField label="Serial Number" field="serial_number" placeholder="S/N from label" form={form} setForm={setForm} />
+                <InventoryFormField label="Capacity" field="capacity" placeholder="e.g. 256GB, 1TB" form={form} setForm={setForm} />
+                <InventoryFormField label="Interface" field="interface" form={form} setForm={setForm}>
                   <select className="form-select" value={form.interface || ''} onChange={e => setForm(f => ({ ...f, interface: e.target.value }))}>
                     <option value="">Select…</option>
                     {['SATA','NVMe M.2','PCIe','mSATA','USB'].map(i => <option key={i}>{i}</option>)}
                   </select>
-                </F>
-                <F label="Controller Chip" field="firmware" placeholder="e.g. Phison S11, Marvell" />
+                </InventoryFormField>
+                <InventoryFormField label="Controller Chip" field="firmware" placeholder="e.g. Phison S11, Marvell" form={form} setForm={setForm} />
               </div>
             )}
 
             {/* Phone Specific */}
             {isPhone && (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                <F label="IMEI" field="serial_number" placeholder="IMEI number" />
-                <F label="Storage Capacity" field="capacity" placeholder="e.g. 64GB, 128GB" />
-                <F label="OS Version" field="firmware" placeholder="e.g. Android 13, iOS 17" />
-                <F label="Chipset" field="family" placeholder="e.g. Snapdragon 8 Gen 1" />
+                <InventoryFormField label="IMEI" field="serial_number" placeholder="IMEI number" form={form} setForm={setForm} />
+                <InventoryFormField label="Storage Capacity" field="capacity" placeholder="e.g. 64GB, 128GB" form={form} setForm={setForm} />
+                <InventoryFormField label="OS Version" field="firmware" placeholder="e.g. Android 13, iOS 17" form={form} setForm={setForm} />
+                <InventoryFormField label="Chipset" field="family" placeholder="e.g. Snapdragon 8 Gen 1" form={form} setForm={setForm} />
               </div>
             )}
 
             {/* Common fields */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-              <F label="Condition" field="condition">
+              <InventoryFormField label="Condition" field="condition" form={form} setForm={setForm}>
                 <select className="form-select" value={form.condition || 'used'} onChange={e => setForm(f => ({ ...f, condition: e.target.value }))}>
                   {[['new','New (Unused)'],['used','Used / Working'],['refurb','Refurbished'],['for_parts','For Parts / Faulty'],['untested','Untested']].map(([v,l]) => <option key={v} value={v}>{l}</option>)}
                 </select>
-              </F>
-              <F label="Status" field="status">
+              </InventoryFormField>
+              <InventoryFormField label="Status" field="status" form={form} setForm={setForm}>
                 <select className="form-select" value={form.status || 'available'} onChange={e => setForm(f => ({ ...f, status: e.target.value }))}>
                   {[['available','✅ Available'],['reserved','🔒 Reserved'],['used','📤 Used/Consumed'],['damaged','⚠️ Damaged'],['donated','💿 Donated to Case']].map(([v,l]) => <option key={v} value={v}>{l}</option>)}
                 </select>
-              </F>
-              <F label="Quantity" field="quantity" type="number" />
-              <F label="Min Stock Alert" field="min_quantity" type="number" />
-              <F label="Unit Cost (₹)" field="unit_cost" type="number" placeholder="0.00" />
-              <F label="Shelf Location" field="location" placeholder="e.g. Cabinet A, Row 3" />
+              </InventoryFormField>
+              <InventoryFormField label="Quantity" field="quantity" type="number" form={form} setForm={setForm} />
+              <InventoryFormField label="Min Stock Alert" field="min_quantity" type="number" form={form} setForm={setForm} />
+              <InventoryFormField label="Unit Cost (₹)" field="unit_cost" type="number" placeholder="0.00" form={form} setForm={setForm} />
+              <InventoryFormField label="Shelf Location" field="location" placeholder="e.g. Cabinet A, Row 3" form={form} setForm={setForm} />
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12 }}>
-              <F label="Notes / Description" field="notes" full>
+              <InventoryFormField label="Notes / Description" field="notes" full form={form} setForm={setForm}>
                 <textarea className="form-textarea" style={{ minHeight: 60 }} value={form.notes || ''} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
-              </F>
+              </InventoryFormField>
             </div>
           </form>
         </div>

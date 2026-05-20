@@ -2254,30 +2254,41 @@ let SETTINGS_ROLES = [
   },
 ];
 
-app.get('/api/settings/roles', authenticate, (req, res) => res.json(SETTINGS_ROLES));
+// Deprecated: roles are now managed via /api/super-admin/settings/roles (Super Admin only)
+app.get('/api/settings/roles', authenticate, (req, res) => {
+  return res.status(410).json({
+    error: 'Endpoint deprecated',
+    message: 'Roles are now managed via /api/super-admin/settings/roles',
+    hint: 'Only Super Admin can manage roles'
+  });
+});
 app.put('/api/settings/roles', authenticate, (req, res) => {
-  SETTINGS_ROLES = req.body;
-  res.json(SETTINGS_ROLES);
+  return res.status(410).json({
+    error: 'Endpoint deprecated',
+    message: 'Use /api/super-admin/settings/roles instead',
+    hint: 'Only Super Admin can manage roles'
+  });
 });
 app.post('/api/settings/roles', authenticate, (req, res) => {
-  const role = {
-    id: `role_${Date.now()}`,
-    key: req.body.key || req.body.name?.toLowerCase().replace(/\s+/g, '_') || `role_${Date.now()}`,
-    permissions: {},
-    ...req.body,
-  };
-  SETTINGS_ROLES.push(role);
-  res.status(201).json(role);
+  return res.status(410).json({
+    error: 'Endpoint deprecated',
+    message: 'Use /api/super-admin/settings/roles instead',
+    hint: 'Only Super Admin can manage roles'
+  });
 });
 app.patch('/api/settings/roles/:id', authenticate, (req, res) => {
-  const idx = SETTINGS_ROLES.findIndex(r => r.id === req.params.id);
-  if (idx === -1) return res.status(404).json({ error: 'Role not found' });
-  SETTINGS_ROLES[idx] = { ...SETTINGS_ROLES[idx], ...req.body };
-  res.json(SETTINGS_ROLES[idx]);
+  return res.status(410).json({
+    error: 'Endpoint deprecated',
+    message: 'Use /api/super-admin/settings/roles/:id instead',
+    hint: 'Only Super Admin can manage roles'
+  });
 });
 app.delete('/api/settings/roles/:id', authenticate, (req, res) => {
-  SETTINGS_ROLES = SETTINGS_ROLES.filter(r => r.id !== req.params.id);
-  res.json({ ok: true });
+  return res.status(410).json({
+    error: 'Endpoint deprecated',
+    message: 'Use /api/super-admin/settings/roles/:id instead',
+    hint: 'Only Super Admin can manage roles'
+  });
 });
 
 
