@@ -23,11 +23,24 @@ router.post('/login',
     try {
       const { username, password } = req.body;
 
-      const result = await query(
-        `SELECT id, username, email, full_name, role, password_hash, is_active, specializations, avatar_url
-         FROM users WHERE username = $1 OR email = $1`,
-        [username.toLowerCase()]
-      );
+      let result;
+      try {
+        result = await query(
+          `SELECT id, username, email, full_name, role, tenant_id, password_hash, is_active, specializations, avatar_url
+           FROM users WHERE username = $1 OR email = $1`,
+          [username.toLowerCase()]
+        );
+      } catch (err) {
+        if (err.message.includes('tenant_id')) {
+          result = await query(
+            `SELECT id, username, email, full_name, role, tenant_owner_id, password_hash, is_active, specializations, avatar_url
+             FROM users WHERE username = $1 OR email = $1`,
+            [username.toLowerCase()]
+          );
+        } else {
+          throw err;
+        }
+      }
 
       if (!result.rows.length) {
         return res.status(401).json({ error: 'Invalid credentials' });
@@ -69,6 +82,7 @@ router.post('/login',
           email: user.email,
           fullName: user.full_name,
           role: user.role,
+          tenantId: user.tenant_id || user.tenant_owner_id || user.id || 1,
           specializations: user.specializations,
           avatarUrl: user.avatar_url,
         }
@@ -127,13 +141,31 @@ router.post('/logout', authenticate, async (req, res) => {
 
 // ─── GET /api/auth/me ─────────────────────────────────────────────
 router.get('/me', authenticate, async (req, res) => {
-  const result = await query(
-    `SELECT id, username, email, full_name, role, is_active, specializations,
-            avatar_url, phone, notes, permissions, last_login, created_at
-     FROM users WHERE id = $1`,
-    [req.user.id]
-  );
-  res.json(result.rows[0]);
+  let result;
+  try {
+    result = await query(
+      `SELECT id, username, email, full_name, role, tenant_id, is_active, specializations,
+              avatar_url, phone, notes, permissions, last_login, created_at
+       FROM users WHERE id = $1`,
+      [req.user.id]
+    );
+  } catch (err) {
+    if (err.message.includes('tenant_id')) {
+      result = await query(
+        `SELECT id, username, email, full_name, role, tenant_owner_id, is_active, specializations,
+                avatar_url, phone, notes, permissions, last_login, created_at
+         FROM users WHERE id = $1`,
+        [req.user.id]
+      );
+    } else {
+      throw err;
+    }
+  }
+  const user = result.rows[0];
+  if (user) {
+    user.tenant_id = user.tenant_id || user.tenant_owner_id || user.id || 1;
+  }
+  res.json(user);
 });
 
 // ─── PUT /api/auth/change-password ───────────────────────────────

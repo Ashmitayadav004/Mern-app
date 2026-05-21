@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 90
+    },
+    "auditLog": "C:\\NodejsApp\\CRM\\Mern-app\\backend\\logs\\.4afd03f86fef9faf0fc424bb2766e04cb1d149bd-audit.json",
+    "files": [
+        {
+            "date": 1779347752018,
+            "name": "C:\\NodejsApp\\CRM\\Mern-app\\backend\\logs\\error-2026-05-21.log",
+            "hash": "559ab814cb849568035f6dd38aeaa397fddf01332c4df7a1ad3aa6e90fdd0bf1"
+        }
+    ],
+    "hashType": "sha256"
+}
