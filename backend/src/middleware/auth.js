@@ -25,16 +25,29 @@ async function authenticate(req, res, next) {
     }
 
     // Validate user still exists and is active
-    const result = await query(
-      'SELECT id, username, email, full_name, role, is_active, specializations FROM users WHERE id = $1',
-      [decoded.userId]
-    );
+    let result;
+    try {
+      result = await query(
+        'SELECT id, username, email, full_name, role, tenant_id, is_active, specializations FROM users WHERE id = $1',
+        [decoded.userId]
+      );
+    } catch (err) {
+      if (err.message.includes('tenant_id')) {
+        result = await query(
+          'SELECT id, username, email, full_name, role, tenant_owner_id, is_active, specializations FROM users WHERE id = $1',
+          [decoded.userId]
+        );
+      } else {
+        throw err;
+      }
+    }
 
     if (!result.rows.length || !result.rows[0].is_active) {
       return res.status(401).json({ error: 'User account is inactive or deleted' });
     }
 
     req.user = result.rows[0];
+    req.user.tenant_id = req.user.tenant_id || req.user.tenant_owner_id || req.user.id || 1;
     next();
   } catch (err) {
     logger.error('Auth middleware error', { error: err.message });
