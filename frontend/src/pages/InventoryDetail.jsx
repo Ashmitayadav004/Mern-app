@@ -2,6 +2,9 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { inventoryApi } from '../services/api';
 import { useAuth } from '../store/AuthContext';
+import { isHddCategoryKey } from '../constants/inventoryConfig';
+import { useInventoryConfig } from '../hooks/useInventoryConfig';
+import InventoryHddFields from '../components/InventoryHddFields';
 
 const BASE_URL = '/api';
 const getToken = () => localStorage.getItem('accessToken');
@@ -199,6 +202,7 @@ export default function InventoryDetail() {
   const fileRef = useRef();
 
   const compareWithCase = searchParams.get('compare');
+  const { activeCategories, activeBrandNames } = useInventoryConfig();
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -248,10 +252,9 @@ export default function InventoryDetail() {
   const handleSaveEdit = async () => {
     setSavingEdit(true);
     try {
-      await fetch(`${BASE_URL}/inventory/${id}`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${getToken()}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(editForm),
+      await inventoryApi.update(id, {
+        ...editForm,
+        customFieldValues: editForm.custom_field_values || {},
       });
       setEditing(false);
       load();
@@ -263,10 +266,20 @@ export default function InventoryDetail() {
   if (loading) return <div style={{ display:'flex',justifyContent:'center',paddingTop:80 }}><div className="spinner" style={{ width:32,height:32,borderWidth:3 }} /></div>;
   if (!item) return <div className="empty-state"><div className="empty-title">Stock item not found</div></div>;
 
-  const cat = INV_CATEGORIES.find(c => c.key === item.category) || INV_CATEGORIES[0];
-  const isHDD = ['wd_35','wd_25','seagate_35','seagate_25','others_35','others_25'].includes(item.category);
-  const isPCB = item.category === 'pcb';
-  const isSSD = item.category === 'ssd';
+  const uiCat = item.ui_category || item.category;
+  const catList = activeCategories.length ? activeCategories : INV_CATEGORIES;
+  const cat = catList.find(c => c.key === uiCat) || { key: uiCat, label: uiCat?.replace(/_/g, ' '), icon: '📦', color: '#64748b' };
+  const isHDD = isHddCategoryKey(uiCat, activeCategories);
+  const dyn = (() => {
+    const d = item.dynamic_fields;
+    if (!d) return {};
+    if (typeof d === 'object') return d;
+    try { return JSON.parse(d); } catch { return {}; }
+  })();
+  const val = (k) => item[k] || dyn[k] || null;
+  const isPCB = uiCat === 'pcb';
+  const isSSD = uiCat === 'ssd';
+  const isOtherCat = uiCat === 'other' || uiCat === 'others' || uiCat === 'stock_item' || (!isHDD && !isPCB && !isSSD);
 
   const TABS = [
     { key: 'overview', label: '📋 Overview' },
@@ -277,23 +290,32 @@ export default function InventoryDetail() {
   ];
 
   // Tech fields by device type
+  const extraDynRows = isHDD
+    ? Object.entries(dyn)
+        .filter(([k, v]) => v && !['serial_number','pcb_number','capacity','interface','form_factor','firmware','site_code','date_code','head_map','family','model'].includes(k))
+        .map(([k, v]) => [k.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()), v])
+    : [];
+  const customRows = (item.custom_fields_display || []).map(cf => [`✦ ${cf.label}`, cf.value]);
+
   const detailRows = isHDD ? [
-    ['Stock #', item.stock_number || item.sku],
+    ['Stock ID', item.stock_number || item.sku],
     ['Company', item.company || item.brand],
-    ['Model', item.model],
-    ['Serial Number', item.serial_number],
-    ['PCB Number', item.pcb_number],
-    ['Capacity', item.capacity],
-    ['Interface', item.interface],
-    ['Form Factor', item.form_factor],
-    ['Firmware / SW Rev', item.firmware],
-    ['Site Code / DCM', item.site_code],
-    ['Date Code', item.date_code],
-    ['Head Map', item.head_map],
-    ['ROM Family', item.family],
+    ['Model', val('model')],
+    ['Serial Number', val('serial_number')],
+    ['PCB Number', val('pcb_number')],
+    ['Capacity', val('capacity')],
+    ['Interface', val('interface')],
+    ['Form Factor', val('form_factor')],
+    ['Firmware / SW Rev', val('firmware') || item.firmware_version],
+    ['Site Code / DCM', val('site_code')],
+    ['Date Code', val('date_code')],
+    ['Head Map', val('head_map')],
+    ['ROM Family', val('family')],
     ['Category', cat.label],
+    ...extraDynRows,
+    ...customRows,
   ] : isPCB ? [
-    ['Stock #', item.stock_number || item.sku],
+    ['Stock ID', item.stock_number || item.sku],
     ['PCB Number', item.pcb_number],
     ['Compatible Drives', item.compatible_drives],
     ['Firmware Chip', item.firmware],
@@ -301,7 +323,7 @@ export default function InventoryDetail() {
     ['Company', item.company || item.brand],
     ['Model / Part', item.model],
   ] : [
-    ['Stock #', item.stock_number || item.sku],
+    ['Stock ID', item.stock_number || item.sku],
     ['Company / Brand', item.company || item.brand],
     ['Model', item.model],
     ['Serial Number', item.serial_number],
@@ -322,7 +344,7 @@ export default function InventoryDetail() {
             <span style={{ fontSize:'0.72rem',padding:'3px 10px',borderRadius:999,background:`${cat.color}1a`,color:cat.color,fontWeight:700 }}>{cat.label}</span>
             <StatusBadge status={item.status || 'available'} />
           </div>
-          <h2 style={{ marginBottom:4 }}>{item.company || item.brand || '—'} {item.model || ''}</h2>
+          <h2 style={{ marginBottom:4 }}>{isOtherCat ? (item.name || item.model || '—') : (`${item.company || item.brand || '—'} ${item.model || ''}`)}</h2>
           <div className="text-sm text-muted">
             {item.capacity && `${item.capacity} · `}
             {item.interface && `${item.interface} · `}
@@ -364,20 +386,10 @@ export default function InventoryDetail() {
               <div className="card-title" style={{ marginBottom:16 }}>✏️ Edit Stock Item</div>
               <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:12 }}>
                 {[
-                  ['Stock Number', 'stock_number'],
-                  ['Company', 'company','select',HDD_COMPANIES],
+                  ['Stock ID', 'stock_number'],
+                  ['Company', 'company','select', activeBrandNames.length ? activeBrandNames : HDD_COMPANIES],
                   ['Brand', 'brand'],
                   ['Model', 'model'],
-                  ['Serial Number', 'serial_number'],
-                  ['PCB Number', 'pcb_number'],
-                  ['Capacity', 'capacity'],
-                  ['Interface', 'interface'],
-                  ['Form Factor', 'form_factor'],
-                  ['Firmware', 'firmware'],
-                  ['Site Code / DCM', 'site_code'],
-                  ['Date Code', 'date_code'],
-                  ['Head Map', 'head_map'],
-                  ['ROM Family', 'family'],
                   ['Location', 'location'],
                   ['Unit Cost (₹)', 'unit_cost', 'number'],
                   ['Quantity', 'quantity', 'number'],
@@ -396,10 +408,42 @@ export default function InventoryDetail() {
                     )}
                   </div>
                 ))}
-                <div className="form-group" style={{ gridColumn:'1/-1' }}>
-                  <label className="form-label">Notes</label>
-                  <textarea className="form-textarea" style={{ minHeight:70 }} value={editForm.notes||''} onChange={e=>setEditForm(f=>({...f,notes:e.target.value}))} />
-                </div>
+                {!isOtherCat && (
+                  <div style={{ gridColumn: '1/-1' }}>
+                    <InventoryHddFields
+                      category={uiCat}
+                      form={editForm}
+                      setForm={setEditForm}
+                      customFieldValues={editForm.custom_field_values || {}}
+                      setCustomFieldValues={(fn) => setEditForm(f => ({
+                        ...f,
+                        custom_field_values: typeof fn === 'function' ? fn(f.custom_field_values || {}) : fn,
+                      }))}
+                    />
+                  </div>
+                )}
+                {isOtherCat && (
+                  <div style={{ gridColumn: '1/-1', display: 'grid', gridTemplateColumns: '1fr', gap: 12, marginBottom: 12 }}>
+                    <div className="form-group" style={{ margin: 0 }}>
+                      <label className="form-label">Device Name</label>
+                      <input className="form-input" value={editForm.name || ''} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} />
+                    </div>
+                    <div className="form-group" style={{ margin: 0 }}>
+                      <label className="form-label">Problem</label>
+                      <textarea className="form-textarea" style={{ minHeight: 60 }} value={editForm.notes || ''} onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))} />
+                    </div>
+                    <div className="form-group" style={{ margin: 0 }}>
+                      <label className="form-label">Note</label>
+                      <textarea className="form-textarea" style={{ minHeight: 60 }} value={editForm.description || ''} onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))} />
+                    </div>
+                  </div>
+                )}
+                {!isOtherCat && (
+                  <div className="form-group" style={{ gridColumn:'1/-1' }}>
+                    <label className="form-label">Notes</label>
+                    <textarea className="form-textarea" style={{ minHeight:70 }} value={editForm.notes||''} onChange={e=>setEditForm(f=>({...f,notes:e.target.value}))} />
+                  </div>
+                )}
               </div>
             </div>
           ) : (
@@ -448,9 +492,15 @@ export default function InventoryDetail() {
                   </div>
                 )}
                 {item.notes && (
-                  <div className="card" style={{ padding:14 }}>
-                    <div style={{ fontWeight:700,marginBottom:6,fontSize:'0.82rem' }}>📝 Notes</div>
+                  <div className="card" style={{ padding:14, marginBottom: item.description ? 12 : 0 }}>
+                    <div style={{ fontWeight:700,marginBottom:6,fontSize:'0.82rem' }}>📝 {isOtherCat ? 'Problem' : 'Notes'}</div>
                     <p style={{ fontSize:'0.82rem',lineHeight:1.7,color:'var(--text-secondary)' }}>{item.notes}</p>
+                  </div>
+                )}
+                {item.description && (
+                  <div className="card" style={{ padding:14 }}>
+                    <div style={{ fontWeight:700,marginBottom:6,fontSize:'0.82rem' }}>📝 Note</div>
+                    <p style={{ fontSize:'0.82rem',lineHeight:1.7,color:'var(--text-secondary)' }}>{item.description}</p>
                   </div>
                 )}
               </div>
