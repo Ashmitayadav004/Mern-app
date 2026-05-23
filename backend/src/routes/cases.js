@@ -9,6 +9,70 @@ const { upload } = require('../middleware/upload');
 const router = express.Router();
 router.use(authenticate);
 
+function normalizeCapacityGb(value) {
+  if (value === undefined || value === null || value === '') return null;
+  if (typeof value === 'number' && Number.isFinite(value)) return Math.round(value);
+  if (typeof value === 'string') {
+    const raw = value.trim().toUpperCase();
+    if (!raw) return null;
+    const tuned = raw.replace(/GB$/i, '').replace(/TB$/i, '').replace(/CAPACITY\s*/i, '').trim();
+    const parsed = Number(tuned);
+    if (!Number.isNaN(parsed)) {
+      if (raw.includes('TB')) return Math.round(parsed * 1000);
+      return Math.round(parsed);
+    }
+  }
+  return null;
+}
+
+function normalizeCasePayload(body = {}) {
+  const normalized = { ...body };
+
+  if (!normalized.device_model && normalized.model) {
+    normalized.device_model = normalized.model;
+  }
+
+  if ((!normalized.device_brand || !String(normalized.device_brand).trim()) && normalized.brand) {
+    normalized.device_brand = normalized.brand;
+  }
+
+  if ((!normalized.device_brand || !String(normalized.device_brand).trim()) && normalized.hdd_type) {
+    const normalizedHddType = String(normalized.hdd_type).replace(/\./g, '_').replace(/-/g, '_').toLowerCase();
+    const hddBrandMap = {
+      wd_25: 'Western Digital',
+      wd_35: 'Western Digital',
+      seagate_25: 'Seagate',
+      seagate_35: 'Seagate',
+    };
+    if (hddBrandMap[normalizedHddType]) {
+      normalized.device_brand = hddBrandMap[normalizedHddType];
+    }
+  }
+
+  if (!normalized.failure_type && Array.isArray(normalized.failure_types) && normalized.failure_types.length > 0) {
+    normalized.failure_type = normalized.failure_types[0];
+  }
+
+  if (normalized.capacity_gb === undefined || normalized.capacity_gb === null || normalized.capacity_gb === '') {
+    const parsedCapacity = normalizeCapacityGb(normalized.capacity);
+    if (parsedCapacity !== null) {
+      normalized.capacity_gb = parsedCapacity;
+    }
+  } else if (typeof normalized.capacity_gb === 'string') {
+    const parsedCapacity = normalizeCapacityGb(normalized.capacity_gb);
+    if (parsedCapacity !== null) {
+      normalized.capacity_gb = parsedCapacity;
+    }
+  }
+
+  return normalized;
+}
+
+function normalizeCasePayloadMiddleware(req, res, next) {
+  req.body = normalizeCasePayload(req.body);
+  next();
+}
+
 // ─── GET /api/cases ───────────────────────────────────────────────
 router.get('/', async (req, res) => {
   try {
@@ -85,8 +149,9 @@ router.get('/', async (req, res) => {
 // ─── POST /api/cases ──────────────────────────────────────────────
 router.post('/',
   requireMinRole('staff'),
+  normalizeCasePayloadMiddleware,
   [
-    body('client_id').isUUID(),
+    body('client_id').optional().isUUID(),
     body('device_brand').trim().notEmpty(),
     body('device_model').trim().notEmpty(),
     body('symptoms').isArray().optional(),
@@ -153,7 +218,10 @@ router.post('/',
       );
 
       // Update client case count
-      await query('UPDATE clients SET total_cases = total_cases + 1 WHERE id = $1', [client_id]);
+      // Update client case count if client_id provided
+if (client_id) {
+  await query('UPDATE clients SET total_cases = total_cases + 1 WHERE id = $1', [client_id]);
+}
 
       // Save custom field values if provided
       if (req.body.customFields && typeof req.body.customFields === 'object') {

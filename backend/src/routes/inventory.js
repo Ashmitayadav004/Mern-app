@@ -644,39 +644,132 @@ router.delete('/:id/images/:imgId', requireMinRole('junior_engineer'), async (re
   }
 });
 
+const transferItemSnapshot = (item) => ({
+  stock_number: item.stock_number || item.sku || null,
+  ui_category: item.ui_category || item.category || null,
+  company: item.company || null,
+  brand: item.brand || null,
+  model: item.model || null,
+  serial_number: item.serial_number || null,
+  field_snapshot: JSON.stringify(item.dynamic_fields || {}),
+  custom_field_snapshot: JSON.stringify(item.custom_field_values || {}),
+});
+
+function getTransferredNotes(notes) {
+  return notes ? String(notes).trim() : 'Transferred from inventory stock';
+}
+
 // POST /api/inventory/:id/transfer — Transfer item to transferred_items
 router.post('/:id/transfer', requireMinRole('junior_engineer'), auditLog('transfer_inventory', 'inventory'), async (req, res) => {
   try {
     const itemId = req.params.id;
     const { notes } = req.body;
-    
-    const itemResult = await query('SELECT * FROM inventory_items WHERE id=$1', [itemId]);
-    if (!itemResult.rows.length) return res.status(404).json({ error: 'Item not found' });
-    
-    const item = itemResult.rows[0];
-    
-    await query(
-      `INSERT INTO transferred_items (
-        inventory_item_id, stock_number, ui_category,
-        company, brand, model, serial_number,
-        field_snapshot, custom_field_snapshot, transferred_by, notes
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
-      [
-        itemId, item.stock_number || item.sku, item.ui_category || item.category,
-        item.company, item.brand, item.model, item.serial_number,
-        JSON.stringify(item.dynamic_fields || {}),
-        JSON.stringify(item.custom_field_values || {}),
-        req.user.id,
-        notes || 'Transferred from inventory stock'
-      ]
-    );
 
-    await query(
-      `UPDATE inventory_items SET status='transferred', updated_at=NOW() WHERE id=$1 AND deleted_at IS NULL`,
+    const itemResult = await query('SELECT * FROM inventory_items WHERE id=$1 AND deleted_at IS NULL', [itemId]);
+    if (!itemResult.rows.length) return res.status(404).json({ error: 'Item not found' });
+
+    const item = itemResult.rows[0];
+    const existingTransfer = await query(
+      'SELECT id FROM transferred_items WHERE inventory_item_id = $1 ORDER BY created_at DESC LIMIT 1',
       [itemId]
     );
-    
-    res.json({ message: 'Item transferred successfully', item_id: itemId });
+
+    const snapshot = transferItemSnapshot(item);
+
+    if (existingTransfer.rows.length) {
+      await query(
+        `UPDATE transferred_items SET
+          stock_number=$1,
+          ui_category=$2,
+          company=$3,
+          brand=$4,
+          model=$5,
+          serial_number=$6,
+          field_snapshot=$7,
+          custom_field_snapshot=$8,
+          transferred_by=$9,
+          notes=$10
+         WHERE id=$11`,
+        [
+          snapshot.stock_number,
+          snapshot.ui_category,
+          snapshot.company,
+          snapshot.brand,
+          snapshot.model,
+          snapshot.serial_number,
+          snapshot.field_snapshot,
+          snapshot.custom_field_snapshot,
+          req.user.id,
+          getTransferredNotes(notes),
+          existingTransfer.rows[0].id,
+        ]
+      );
+    } else {
+      await query(
+        `INSERT INTO transferred_items (
+          inventory_item_id, stock_number, ui_category,
+          company, brand, model, serial_number,
+          field_snapshot, custom_field_snapshot, transferred_by, notes
+        ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+        [
+          itemId,
+          snapshot.stock_number,
+          snapshot.ui_category,
+          snapshot.company,
+          snapshot.brand,
+          snapshot.model,
+          snapshot.serial_number,
+          snapshot.field_snapshot,
+          snapshot.custom_field_snapshot,
+          req.user.id,
+          getTransferredNotes(notes),
+        ]
+      );
+    }
+
+    await query(
+      `UPDATE inventory_items SET status='transferred', is_available=false, updated_at=NOW()
+       WHERE id=$1 AND deleted_at IS NULL`,
+      [itemId]
+    );
+
+    const { labeled } = await loadCustomFieldValues(itemId);
+    const refreshed = await query('SELECT * FROM inventory_items WHERE id=$1', [itemId]);
+    res.json({
+      message: 'Item transferred successfully',
+      item: formatItemRow({ ...refreshed.rows[0], custom_fields_display: labeled }),
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/inventory/:id/revoke-transfer — Restore transferred item back to stock
+router.post('/:id/revoke-transfer', requireMinRole('junior_engineer'), auditLog('revoke_transfer_inventory', 'inventory'), async (req, res) => {
+  try {
+    const itemId = req.params.id;
+    const itemResult = await query('SELECT * FROM inventory_items WHERE id=$1 AND deleted_at IS NULL', [itemId]);
+    if (!itemResult.rows.length) return res.status(404).json({ error: 'Item not found' });
+
+    const transferResult = await query(
+      'SELECT id FROM transferred_items WHERE inventory_item_id = $1 ORDER BY created_at DESC LIMIT 1',
+      [itemId]
+    );
+    if (!transferResult.rows.length) return res.status(404).json({ error: 'Transferred record not found' });
+
+    await query('DELETE FROM transferred_items WHERE id=$1', [transferResult.rows[0].id]);
+    await query(
+      `UPDATE inventory_items SET status='available', is_available=true, updated_at=NOW()
+       WHERE id=$1 AND deleted_at IS NULL`,
+      [itemId]
+    );
+
+    const item = await query('SELECT * FROM inventory_items WHERE id=$1', [itemId]);
+    const { labeled } = await loadCustomFieldValues(itemId);
+    res.json({
+      message: 'Transfer revoked successfully',
+      item: formatItemRow({ ...item.rows[0], custom_fields_display: labeled }),
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

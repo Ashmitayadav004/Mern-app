@@ -28,7 +28,7 @@ function StatusBadge({ status }) {
     damaged:   { color: '#ef4444', bg: 'rgba(239,68,68,0.12)' },
     in_stock:  { color: '#10b981', bg: 'rgba(16,185,129,0.12)' },
     donated:   { color: '#8b5cf6', bg: 'rgba(139,92,246,0.12)' },
-    transferred: { color: '#8b5cf6', bg: 'rgba(139,92,246,0.12)' },
+    transferred: { color: '#f59e0b', bg: 'rgba(245,158,11,0.14)' },
     deleted:   { color: '#94a3b8', bg: 'rgba(100,116,139,0.12)' },
   };
   const s = map[status] || map.available;
@@ -663,7 +663,6 @@ export default function InventoryPage() {
     try {
       await inventoryApi.transfer(item.id, 'Transferred from inventory stock');
       await loadStock();
-      navigate('/transferred-items');
     } catch (err) {
       alert(`Transfer failed: ${err.message}`);
     }
@@ -884,7 +883,7 @@ export default function InventoryPage() {
                           {viewMode === 'stock' && canAccess('junior_engineer') && (
                             <>
                               <button type="button" className="btn btn-secondary btn-sm" disabled={isTransferred}
-                                onClick={() => handleTransfer(item)} style={{ padding: '4px 8px', fontSize: '0.72rem' }} title="Transfer">Transfer</button>
+                                onClick={() => handleTransfer(item)} style={{ padding: '4px 8px', fontSize: '0.72rem' }} title={isTransferred ? 'Transferred' : 'Transfer'}>{isTransferred ? 'Transferred' : 'Transfer'}</button>
                               <button type="button" className="btn btn-secondary btn-sm" onClick={() => setEditItem(item)} style={{ padding: '4px 8px' }}>Edit</button>
                               <button type="button" className="btn btn-ghost btn-sm" onClick={() => setAdjustItem(item)} style={{ padding: '4px 8px' }}>±</button>
                             </>

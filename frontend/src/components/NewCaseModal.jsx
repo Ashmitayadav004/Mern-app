@@ -23,6 +23,20 @@ function getFieldConfig() {
     return {};
   }
 }
+function parseCapacityGb(value) {
+  if (value === undefined || value === null || value === "") return null;
+  if (typeof value === "number" && Number.isFinite(value)) return Math.round(value);
+  if (typeof value !== "string") return null;
+
+  const raw = value.trim().toUpperCase();
+  if (!raw) return null;
+
+  const cleaned = raw.replace(/GB$/i, "").replace(/TB$/i, "").trim();
+  const parsed = Number(cleaned);
+  if (Number.isNaN(parsed)) return null;
+
+  return raw.includes("TB") ? Math.round(parsed * 1000) : Math.round(parsed);
+}
 function fieldStatus(cfg, typeKey, fieldKey) {
   return cfg?.hdd_fields?.[typeKey]?.[fieldKey] || "optional";
 }
@@ -1439,15 +1453,20 @@ export default function NewCaseModal({ onClose, onCreated }) {
         phone: selectedClient?.phone || form.phone,
         email: selectedClient?.email || form.email,
         company: selectedClient?.company || form.company,
+        device_model: form.model || form.device_model || "",
         device_brand: form.hdd_type
           ? HDD_TYPES.find((h) => h.key === form.hdd_type)?.brand ||
             form.hdd_type
           : form.device_brand,
+        capacity_gb: parseCapacityGb(form.capacity_gb ?? form.capacity),
+        failure_type: form.failure_type || (form.failure_types?.[0] ?? "unknown"),
       };
-      // If a custom capacity was selected, set it on the payload
       if (payload.capacity === "__others__" && form.selected_custom_capacity) {
         payload.capacity = form.selected_custom_capacity;
       }
+      delete payload.model;
+      delete payload.capacity;
+      delete payload.failure_types;
       // Don't send raw image data to backend (too heavy), store reference
       const images = form.images || [];
       const attachments = form.attachments || [];

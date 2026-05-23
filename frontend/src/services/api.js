@@ -142,6 +142,7 @@ export const inventoryApi = {
   restore: (id) => api.post(`/inventory/recycle-bin/${id}/restore`),
   permanentDelete: (id) => api.delete(`/inventory/recycle-bin/${id}/permanent-delete`),
   bulkPermanentDelete: (ids) => api.post('/inventory/bulk-permanent-delete', { ids }),
+  revokeTransfer: (id) => api.post(`/inventory/${id}/revoke-transfer`),
 };
 
 export const transferredItemsApi = {
@@ -149,6 +150,7 @@ export const transferredItemsApi = {
   get: (id) => api.get(`/transferred-items/${id}`),
   create: (data) => api.post('/transferred-items', data),
   delete: (id) => api.delete(`/transferred-items/${id}`),
+  revoke: (id) => api.post(`/transferred-items/${id}/revoke`),
 };
 
 // Payments
