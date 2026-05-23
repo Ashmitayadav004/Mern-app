@@ -72,7 +72,7 @@ function NewItemModal({ onClose, onCreated, editItem, invCategories, hddCompanie
   const [form, setForm] = useState(() => editItem ? { ...editItem } : {
     category: 'harddisk', quantity: 1, min_quantity: 1, condition: 'used',
     status: 'available', company: '', stock_number: '', brand: '', model: '',
-    serial_number: '', pcb_number: '', capacity: '', interface: '', form_factor: '',
+    name: '', description: '', serial_number: '', pcb_number: '', capacity: '', interface: '', form_factor: '',
     firmware: '', site_code: '', family: '', date_code: '', head_map: '',
     location: '', unit_cost: '', notes: '',
   });
@@ -86,10 +86,22 @@ function NewItemModal({ onClose, onCreated, editItem, invCategories, hddCompanie
   const companies = hddCompanies?.length ? hddCompanies : ['Western Digital', 'Seagate', 'Other'];
   const catInfo = formCategories.find(c => c.key === form.category) || formCategories[0];
   const isHDD = isHddCategoryKey(form.category, formCategories);
+  const isPcb = form.category === 'pcb';
+  const isSsd = form.category === 'ssd';
+  const isOther = form.category === 'other';
+  const showStockNumber = !isPcb;
+  const showDynamicFields = !isSsd && !isOther;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const stockId = String(form.stock_number || form.stock_id || '').trim();
+    let stockId = String(form.stock_number || form.stock_id || '').trim();
+    if (!stockId) {
+      if (form.category === 'pcb') {
+        stockId = `PCB-${Date.now()}`;
+      } else if (form.category === 'other') {
+        stockId = `OTH-${Date.now()}`;
+      }
+    }
     if (!stockId) {
       setError('Stock ID is required — enter a unique ID manually.');
       return;
@@ -135,17 +147,48 @@ function NewItemModal({ onClose, onCreated, editItem, invCategories, hddCompanie
                   {categories.map(c => <option key={c.key} value={c.key}>{c.icon} {c.label}</option>)}
                 </select>
               </InventoryFormField>
-              <InventoryFormField label={form.category === 'harddisk' ? 'Harddisk No' : 'Stock ID'} field="stock_number" placeholder="Enter unique stock ID (required)" required form={form} setForm={setForm} />
+              {showStockNumber && (
+                <InventoryFormField label={form.category === 'harddisk' ? 'Harddisk No' : 'Stock ID'} field="stock_number" placeholder="Enter unique stock ID (required)" required form={form} setForm={setForm} />
+              )}
             </div>
 
-            {/* Dynamic fields from Settings → Field Config (per category) */}
-            <InventoryHddFields
-              category={form.category}
-              form={form}
-              setForm={setForm}
-              customFieldValues={customFieldValues}
-              setCustomFieldValues={setCustomFieldValues}
-            />
+            {isSsd && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+                <InventoryFormField label="SSD Name" field="name" placeholder="Enter SSD name" form={form} setForm={setForm} />
+                <InventoryFormField label="Serial No" field="serial_number" placeholder="Enter serial number" form={form} setForm={setForm} />
+                <InventoryFormField label="Model" field="model" placeholder="Enter model" form={form} setForm={setForm} />
+                <InventoryFormField label="Capacity" field="capacity" form={form} setForm={setForm}>
+                  <select className="form-select" value={form.capacity || ''} onChange={e => setForm(f => ({ ...f, capacity: e.target.value }))}>
+                    <option value="">Select capacity…</option>
+                    {['120GB','240GB','256GB','480GB','512GB','1TB','2TB','4TB'].map(opt => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+                </InventoryFormField>
+              </div>
+            )}
+
+            {isOther && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12, marginBottom: 12 }}>
+                <InventoryFormField label="Device" field="name" placeholder="Enter device name" form={form} setForm={setForm} />
+                <InventoryFormField label="Problem" field="notes" placeholder="Describe the problem" full form={form} setForm={setForm}>
+                  <textarea className="form-textarea" style={{ minHeight: 60 }} value={form.notes || ''} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
+                </InventoryFormField>
+                <InventoryFormField label="Note" field="description" placeholder="Any additional note" full form={form} setForm={setForm}>
+                  <textarea className="form-textarea" style={{ minHeight: 60 }} value={form.description || ''} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
+                </InventoryFormField>
+              </div>
+            )}
+
+            {showDynamicFields && (
+              <InventoryHddFields
+                category={form.category}
+                form={form}
+                setForm={setForm}
+                customFieldValues={customFieldValues}
+                setCustomFieldValues={setCustomFieldValues}
+              />
+            )}
 
             {isHDD && (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
@@ -187,17 +230,19 @@ function NewItemModal({ onClose, onCreated, editItem, invCategories, hddCompanie
                 </div>
               </>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12 }}>
-                <InventoryFormField label="Problem / Notes" field="notes" full form={form} setForm={setForm}>
-                  <textarea className="form-textarea" style={{ minHeight: 60 }} value={form.notes || ''} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
-                </InventoryFormField>
-              </div>
+              !isSsd && !isOther && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12 }}>
+                  <InventoryFormField label="Problem / Notes" field="notes" full form={form} setForm={setForm}>
+                    <textarea className="form-textarea" style={{ minHeight: 60 }} value={form.notes || ''} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
+                  </InventoryFormField>
+                </div>
+              )
             )}
           </form>
         </div>
         <div className="modal-footer">
           <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
-          <button className="btn btn-primary" disabled={loading || !form.stock_number} onClick={handleSubmit}>
+          <button className="btn btn-primary" disabled={loading || (showStockNumber && !form.stock_number)} onClick={handleSubmit}>
             {loading ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Saving...</> : isEdit ? '💾 Save Changes' : '+ Add to Stock'}
           </button>
         </div>
