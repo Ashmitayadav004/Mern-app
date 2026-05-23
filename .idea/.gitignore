@@ -9,4 +9,28 @@
 /dataSources/
 /dataSources.local.xml
 
+#logs
 /logs
+
+# env
+.env
+backend/.env
+
+# logs
+logs/
+*.log
+backend/logs/
+
+# node modules
+node_modules/
+frontend/node_modules/
+
+# vite
+.vite/
+dist/
+
+.env
+node_modules/
+logs/
+*.log
+.vite/
