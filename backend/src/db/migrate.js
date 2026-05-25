@@ -91,6 +91,20 @@ async function migrate() {
     await client.query(invSoftDeleteSchema);
     console.log('✅ Inventory soft delete migration applied');
 
+    const transferToClientSchema = fs.readFileSync(
+      path.join(__dirname, 'migrations', '007_add_transfer_to_client.sql'),
+      'utf8'
+    );
+    await client.query(transferToClientSchema);
+    console.log('✅ Transfer to client migration applied');
+
+    const addEsataInterfaceSchema = fs.readFileSync(
+      path.join(__dirname, 'migrations', '009_add_esata_device_interface.sql'),
+      'utf8'
+    );
+    await client.query(addEsataInterfaceSchema);
+    console.log('✅ eSATA device_interface migration applied');
+
     const hasRoleEnum = await client.query("SELECT 1 FROM pg_type WHERE typname = 'user_role'");
     if (hasRoleEnum.rows.length) {
       try {
