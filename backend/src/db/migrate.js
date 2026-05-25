@@ -105,6 +105,20 @@ async function migrate() {
     await client.query(addEsataInterfaceSchema);
     console.log('✅ eSATA device_interface migration applied');
 
+    // =========================================================
+    // STEP 2d: CHAT TABLES MIGRATION
+    // =========================================================
+    try {
+      const chatTablesSchema = fs.readFileSync(
+        path.join(__dirname, 'migrations', '010_create_chat_tables.sql'),
+        'utf8'
+      );
+      await client.query(chatTablesSchema);
+      console.log('✅ Chat tables migration applied');
+    } catch (chatErr) {
+      console.warn('⚠️  Chat tables migration warning (non-fatal):', chatErr.message);
+    }
+
     const hasRoleEnum = await client.query("SELECT 1 FROM pg_type WHERE typname = 'user_role'");
     if (hasRoleEnum.rows.length) {
       try {
