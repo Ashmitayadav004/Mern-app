@@ -21,9 +21,15 @@
             "hash": "892abaaff68fb4ef98c46fc70abb541351af4f27a0d5fe6a29a1c82929d8ea51"
         },
         {
+<<<<<<< Updated upstream
             "date": 1779692985698,
             "name": "C:\\NodejsApp\\CRM\\Mern-app\\backend\\logs\\error-2026-05-25.log",
             "hash": "9236b048b8ea10295ae8cc26db4387a62c5d7274fe3c7ec6729c9e6046b6b81b"
+=======
+            "date": 1779695726503,
+            "name": "C:\\NodejsApp\\CRM\\Mern-app\\backend\\logs\\error-2026-05-25.log",
+            "hash": "07758ab4cf86b4a85e2a40e57cae0e1040853dafaa18167d516af35a3c6987f5"
+>>>>>>> Stashed changes
         }
     ],
     "hashType": "sha256"
