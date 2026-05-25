@@ -121,6 +121,37 @@ router.post('/', requireMinRole('junior_engineer'), auditLog('create_transferred
   }
 });
 
+// POST /api/transferred-items/:id/revoke
+router.post('/:id/revoke', requireMinRole('junior_engineer'), auditLog('revoke_transferred_item', 'transferred_items'), async (req, res) => {
+  try {
+    const transferResult = await query('SELECT * FROM transferred_items WHERE id=$1', [req.params.id]);
+    if (!transferResult.rows.length) return res.status(404).json({ error: 'Not found' });
+
+    const transfer = transferResult.rows[0];
+    if (transfer.inventory_item_id) {
+      await query(
+        `UPDATE inventory_items SET status='available', is_available=true, updated_at=NOW()
+         WHERE id=$1 AND deleted_at IS NULL`,
+        [transfer.inventory_item_id]
+      );
+    }
+
+    await query('DELETE FROM transferred_items WHERE id=$1', [req.params.id]);
+
+    if (transfer.inventory_item_id) {
+      const itemResult = await query('SELECT * FROM inventory_items WHERE id=$1 AND deleted_at IS NULL', [transfer.inventory_item_id]);
+      if (itemResult.rows.length) {
+        res.json({ message: 'Revoked', item: itemResult.rows[0], inventory_item_id: transfer.inventory_item_id });
+        return;
+      }
+    }
+
+    res.json({ message: 'Revoked' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // DELETE /api/transferred-items/:id
 router.delete('/:id', requireMinRole('admin'), auditLog('delete_transferred_item', 'transferred_items'), async (req, res) => {
   try {
