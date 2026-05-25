@@ -109,18 +109,35 @@ export default function ClientsPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [sortField, setSortField] = useState('created_at');
+  const [sortOrder, setSortOrder] = useState('desc');
   const [showNew, setShowNew] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const d = await clientsApi.list({ page, limit: 25, search });
+      const d = await clientsApi.list({ page, limit: 25, search, sort: sortField, order: sortOrder });
       setClients(d.clients || []);
       setPagination(d.pagination || {});
     } catch {} finally { setLoading(false); }
-  }, [search, page]);
+  }, [search, page, sortField, sortOrder]);
 
   useEffect(() => { load(); }, [load]);
+
+  const toggleSort = (field) => {
+    setPage(1);
+    if (sortField === field) {
+      setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+      return;
+    }
+    setSortField(field);
+    setSortOrder('asc');
+  };
+
+  const renderSortIcon = (field) => {
+    if (sortField !== field) return '↕';
+    return sortOrder === 'asc' ? '↑' : '↓';
+  };
 
   return (
     <div>
@@ -149,8 +166,39 @@ export default function ClientsPage() {
           ) : (
             <table>
               <thead><tr>
-                <th>Code</th><th>Name</th><th>Phone</th><th>Email</th><th>Company</th>
-                <th>Active Cases</th><th>Total Paid</th><th>Tags</th><th>Joined</th>
+                <th>
+                  <button type="button" onClick={() => toggleSort('client_code')} style={{background:'transparent',border:'0',color:'inherit',padding:0,fontWeight:700,display:'flex',alignItems:'center',gap:6,cursor:'pointer'}}>
+                    Code <span style={{fontSize:'0.75rem',opacity:0.8}}>{renderSortIcon('client_code')}</span>
+                  </button>
+                </th>
+                <th>
+                  <button type="button" onClick={() => toggleSort('first_name')} style={{background:'transparent',border:'0',color:'inherit',padding:0,fontWeight:700,display:'flex',alignItems:'center',gap:6,cursor:'pointer'}}>
+                    Name <span style={{fontSize:'0.75rem',opacity:0.8}}>{renderSortIcon('first_name')}</span>
+                  </button>
+                </th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>
+                  <button type="button" onClick={() => toggleSort('company')} style={{background:'transparent',border:'0',color:'inherit',padding:0,fontWeight:700,display:'flex',alignItems:'center',gap:6,cursor:'pointer'}}>
+                    Company <span style={{fontSize:'0.75rem',opacity:0.8}}>{renderSortIcon('company')}</span>
+                  </button>
+                </th>
+                <th>
+                  <button type="button" onClick={() => toggleSort('active_cases')} style={{background:'transparent',border:'0',color:'inherit',padding:0,fontWeight:700,display:'flex',alignItems:'center',gap:6,cursor:'pointer'}}>
+                    Active Cases <span style={{fontSize:'0.75rem',opacity:0.8}}>{renderSortIcon('active_cases')}</span>
+                  </button>
+                </th>
+                <th>
+                  <button type="button" onClick={() => toggleSort('pending_amount')} style={{background:'transparent',border:'0',color:'inherit',padding:0,fontWeight:700,display:'flex',alignItems:'center',gap:6,cursor:'pointer'}}>
+                    Total Pending Amount <span style={{fontSize:'0.75rem',opacity:0.8}}>{renderSortIcon('pending_amount')}</span>
+                  </button>
+                </th>
+                <th>Tags</th>
+                <th>
+                  <button type="button" onClick={() => toggleSort('created_at')} style={{background:'transparent',border:'0',color:'inherit',padding:0,fontWeight:700,display:'flex',alignItems:'center',gap:6,cursor:'pointer'}}>
+                    Joined <span style={{fontSize:'0.75rem',opacity:0.8}}>{renderSortIcon('created_at')}</span>
+                  </button>
+                </th>
               </tr></thead>
               <tbody>
                 {clients.map(cl => (
@@ -163,11 +211,11 @@ export default function ClientsPage() {
                     <td className="text-xs text-muted">{cl.email||'—'}</td>
                     <td className="text-xs">{cl.company||'—'}</td>
                     <td>
-                      <span style={{fontFamily:'var(--font-mono)',fontWeight:700,color: cl.active_cases>0?'var(--accent-primary)':'var(--text-muted)'}}>
-                        {cl.active_cases||0}
+                      <span style={{fontFamily:'var(--font-mono)',fontWeight:700,color: Number(cl.active_cases||0) > 0 ? 'var(--accent-primary)' : 'var(--text-muted)'}}>
+                        {Number(cl.active_cases||0)} / {Number(cl.total_cases||0)}
                       </span>
                     </td>
-                    <td className="font-mono text-xs">₹{parseFloat(cl.total_paid||0).toLocaleString('en-IN')}</td>
+                    <td className="font-mono text-xs">₹{parseFloat(cl.pending_amount || 0).toLocaleString('en-IN')}</td>
                     <td>
                       <div style={{display:'flex',gap:4}}>
                         {cl.is_vip && <span style={{fontSize:'0.65rem',padding:'2px 6px',background:'rgba(245,158,11,0.15)',borderRadius:999,color:'#fbbf24',fontFamily:'var(--font-mono)'}}>⭐ VIP</span>}

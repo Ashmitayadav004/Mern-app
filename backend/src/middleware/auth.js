@@ -77,11 +77,33 @@ function requireRole(...roles) {
 }
 
 function requireMinRole(minRole) {
-  return (req, res, next) => {
+  return async (req, res, next) => {
     if (!req.user) return res.status(401).json({ error: 'Not authenticated' });
-    const userLevel = ROLE_HIERARCHY[req.user.role] || 0;
+    
+    let userLevel = ROLE_HIERARCHY[req.user.role];
+    
+    if (userLevel === undefined) {
+      try {
+        const result = await query(`SELECT value FROM platform_settings WHERE key = 'settings_roles'`);
+        if (result.rows.length > 0) {
+          const customRoles = result.rows[0].value || [];
+          const matched = customRoles.find(r => r.key === req.user.role);
+          if (matched) {
+            userLevel = matched.level || 1;
+          }
+        }
+      } catch (err) {
+        logger.error('Failed to query settings_roles in requireMinRole', { error: err.message });
+      }
+    }
+    
+    if (userLevel === undefined) {
+      userLevel = 1; // Default fallback to 1 (staff level) for custom roles
+    }
+    
     const requiredLevel = ROLE_HIERARCHY[minRole] || 0;
     if (userLevel >= requiredLevel) return next();
+    
     return res.status(403).json({
       error: 'Insufficient permissions',
       requiredMinRole: minRole,

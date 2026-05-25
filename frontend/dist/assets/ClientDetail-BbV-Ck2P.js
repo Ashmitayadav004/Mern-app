@@ -1,4 +1,4 @@
-import{f as T,a as z,u as I,r as o,e as A,j as e}from"./index-DcZ9YfuU.js";const b="/api",v=()=>localStorage.getItem("accessToken");function R({client:i,company:a,onClose:m}){const s=()=>{const n=`<!DOCTYPE html><html><head><title>Courier Slip</title>
+import{f as T,a as z,u as I,r as o,e as A,j as e}from"./index-CoUhsIAf.js";const b="/api",v=()=>localStorage.getItem("accessToken");function R({client:i,company:a,onClose:m}){const s=()=>{const n=`<!DOCTYPE html><html><head><title>Courier Slip</title>
     <style>
       @page { size: 100mm 150mm; margin: 0; }
       body { margin: 0; font-family: Arial, sans-serif; }

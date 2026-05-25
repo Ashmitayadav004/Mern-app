@@ -65,7 +65,7 @@ function CaseRow({ c, onClick }) {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { canAccess } = useAuth();
+  const { canAccess, hasPermission } = useAuth();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [size, setSize] = useState(() => localStorage.getItem('dash_size') || 'compact');
@@ -91,7 +91,7 @@ export default function Dashboard() {
           {new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}
         </div>
         <div style={{ display:'flex',alignItems:'center',gap:12 }}>
-          {canAccess('staff') && (
+          {canAccess('staff') && hasPermission('cases', 'create') && (
             <button className="btn btn-primary" onClick={() => setShowNewCase(true)} style={{ padding:'6px 14px',fontSize:'0.78rem',display:'flex',alignItems:'center',gap:6 }}>
               ✨ Create New Case
             </button>
@@ -110,57 +110,78 @@ export default function Dashboard() {
       </div>
 
       {/* Stats — all clickable → navigate */}
-      <div style={{ display:'grid',gridTemplateColumns:mode.statCols,gap:12,marginBottom:24 }}>
-        <StatCard icon="📂" label="Active Cases"       value={c.active}   color="#00d4ff" bg="rgba(0,212,255,0.1)"  size={size} onClick={() => navigate('/cases?status=active')} />
-        <StatCard icon="🔴" label="Critical Priority"  value={c.critical} color="#dc2626" bg="rgba(220,38,38,0.12)" size={size} onClick={() => navigate('/cases?priority=1')} />
-        <StatCard icon="✅" label="Completed (Lifetime)" value={c.completed} color="#10b981" bg="rgba(16,185,129,0.1)" size={size} onClick={() => navigate('/cases?stage=completed')} />
-        <StatCard icon="📅" label="Cases This Month"   value={c.this_month} color="#7c3aed" bg="rgba(124,58,237,0.1)" size={size} onClick={() => navigate('/cases')} />
-        <StatCard icon="💰" label="Revenue (Month)"    value={`₹${parseFloat(r.revenue_month||0).toLocaleString('en-IN')}`} color="#f59e0b" bg="rgba(245,158,11,0.1)" size={size} onClick={() => navigate('/reports')} />
-        <StatCard icon="⏳" label="Pending Payment"    value={`₹${parseFloat(r.pending_revenue||0).toLocaleString('en-IN')}`} color="#ef4444" bg="rgba(239,68,68,0.1)" size={size} onClick={() => navigate('/accounting')} />
+      <div style={{ display:'grid', gridTemplateColumns: mode.statCols, gap:12, marginBottom:24, padding: `${mode.cardPad}px` }}>
+        {hasPermission('cases', 'view') && (
+          <>
+            <StatCard icon="📂" label="Active Cases"       value={c.active}   color="#00d4ff" bg="rgba(0,212,255,0.1)"  size={size} onClick={() => navigate('/cases?status=active')} />
+            <StatCard icon="🔴" label="Critical Priority"  value={c.critical} color="#dc2626" bg="rgba(220,38,38,0.12)" size={size} onClick={() => navigate('/cases?priority=1')} />
+            <StatCard icon="✅" label="Completed (Lifetime)" value={c.completed} color="#10b981" bg="rgba(16,185,129,0.1)" size={size} onClick={() => navigate('/cases?stage=completed')} />
+            <StatCard icon="📅" label="Cases This Month"   value={c.this_month} color="#7c3aed" bg="rgba(124,58,237,0.1)" size={size} onClick={() => navigate('/cases')} />
+          </>
+        )}
+        {hasPermission('accounting', 'view') && (
+          <>
+            <StatCard icon="💰" label="Revenue (Month)"    value={`₹${parseFloat(r.revenue_month||0).toLocaleString('en-IN')}`} color="#f59e0b" bg="rgba(245,158,11,0.1)" size={size} onClick={() => navigate('/reports')} />
+            <StatCard icon="⏳" label="Pending Payment"    value={`₹${parseFloat(r.pending_revenue||0).toLocaleString('en-IN')}`} color="#ef4444" bg="rgba(239,68,68,0.1)" size={size} onClick={() => navigate('/accounting')} />
+          </>
+        )}
       </div>
 
-      <div style={{ marginBottom: 24 }}>
-        {/* Stage Distribution — clickable stages */}
-        <div className="card">
-          <div className="card-header">
-            <div className="card-title">📊 Stage Distribution</div>
-            <button className="btn btn-ghost btn-sm" onClick={() => navigate('/cases')}>View All →</button>
-          </div>
-          <div style={{ display:'flex',flexDirection:'column',gap:8 }}>
-            {(data?.stageDistribution||[]).map(s => (
-              <div key={s.stage} style={{ display:'flex',alignItems:'center',gap:10,cursor:'pointer' }}
-                onClick={() => navigate(`/cases?stage=${s.stage}`)}>
-                <span className={`badge badge-${s.stage}`} style={{ minWidth:140 }}>{s.stage?.replace(/_/g,' ')}</span>
-                <div style={{ flex:1,height:6,background:'var(--border-subtle)',borderRadius:999,overflow:'hidden' }}>
-                  <div style={{ height:'100%',width:`${Math.min(100,(s.count/Math.max(...(data?.stageDistribution||[]).map(x=>x.count)))*100)}%`,background:STAGE_COLORS[s.stage]||'var(--accent-primary)',borderRadius:999,transition:'width 0.8s ease' }} />
+      {/* Empty state if user has absolutely no dashboard permissions */}
+      {!hasPermission('cases', 'view') && !hasPermission('accounting', 'view') && (
+        <div className="card" style={{ padding: 40, textAlign: 'center' }}>
+          <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>🔒</div>
+          <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: 6 }}>Welcome to RecoverLab CRM</div>
+          <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>You do not have permissions to view cases or financial metrics on the dashboard. Use the sidebar to navigate.</div>
+        </div>
+      )}
+
+      {hasPermission('cases', 'view') && (
+        <div style={{ marginBottom: 24 }}>
+          {/* Stage Distribution — clickable stages */}
+          <div className="card">
+            <div className="card-header">
+              <div className="card-title">📊 Stage Distribution</div>
+              <button className="btn btn-ghost btn-sm" onClick={() => navigate('/cases')}>View All →</button>
+            </div>
+            <div style={{ display:'flex',flexDirection:'column',gap:8 }}>
+              {(data?.stageDistribution||[]).map(s => (
+                <div key={s.stage} style={{ display:'flex',alignItems:'center',gap:10,cursor:'pointer' }}
+                  onClick={() => navigate(`/cases?stage=${s.stage}`)}>
+                  <span className={`badge badge-${s.stage}`} style={{ minWidth:140 }}>{s.stage?.replace(/_/g,' ')}</span>
+                  <div style={{ flex:1,height:6,background:'var(--border-subtle)',borderRadius:999,overflow:'hidden' }}>
+                    <div style={{ height:'100%',width:`${Math.min(100,(s.count/Math.max(...(data?.stageDistribution||[]).map(x=>x.count)))*100)}%`,background:STAGE_COLORS[s.stage]||'var(--accent-primary)',borderRadius:999,transition:'width 0.8s ease' }} />
+                  </div>
+                  <span className="text-xs font-mono text-muted">{s.count}</span>
                 </div>
-                <span className="text-xs font-mono text-muted">{s.count}</span>
-              </div>
-            ))}
-            {!data?.stageDistribution?.length && <div className="empty-state" style={{ padding:30 }}><div className="empty-desc">No cases yet</div></div>}
+              ))}
+              {!data?.stageDistribution?.length && <div className="empty-state" style={{ padding:30 }}><div className="empty-desc">No cases yet</div></div>}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Recent Cases */}
-      <div className="table-container">
-        <div className="table-header">
-          <div className="card-title">🕐 Recent Cases</div>
-          <button className="btn btn-primary btn-sm" onClick={() => navigate('/cases')}>All Cases →</button>
+      {hasPermission('cases', 'view') && (
+        <div className="table-container">
+          <div className="table-header">
+            <div className="card-title">🕐 Recent Cases</div>
+            <button className="btn btn-primary btn-sm" onClick={() => navigate('/cases')}>All Cases →</button>
+          </div>
+          <div style={{ overflowX:'auto' }}>
+            <table>
+              <thead><tr><th>Case #</th><th>Client</th><th>Device</th><th>Stage</th><th>Priority</th><th>Failure</th><th>Risk</th><th>Engineer</th><th>Date</th></tr></thead>
+              <tbody>
+                {(data?.recentCases||[]).map(c => <CaseRow key={c.id} c={c} onClick={id => navigate(`/cases/${id}`)} />)}
+                {!data?.recentCases?.length && <tr><td colSpan={9} style={{ textAlign:'center',padding:40,color:'var(--text-muted)' }}>No cases yet</td></tr>}
+              </tbody>
+            </table>
+          </div>
         </div>
-        <div style={{ overflowX:'auto' }}>
-          <table>
-            <thead><tr><th>Case #</th><th>Client</th><th>Device</th><th>Stage</th><th>Priority</th><th>Failure</th><th>Risk</th><th>Engineer</th><th>Date</th></tr></thead>
-            <tbody>
-              {(data?.recentCases||[]).map(c => <CaseRow key={c.id} c={c} onClick={id => navigate(`/cases/${id}`)} />)}
-              {!data?.recentCases?.length && <tr><td colSpan={9} style={{ textAlign:'center',padding:40,color:'var(--text-muted)' }}>No cases yet</td></tr>}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      )}
 
       {/* Failure Analytics — clickable → reports */}
-      {data?.failureAnalytics?.length > 0 && (
+      {hasPermission('cases', 'view') && data?.failureAnalytics?.length > 0 && (
         <div className="card" style={{ marginTop:24 }}>
           <div className="card-header">
             <div className="card-title">🔬 Top Failure Patterns (Last 90 Days)</div>

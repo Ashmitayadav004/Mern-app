@@ -10,7 +10,7 @@ router.use(authenticate);
 // ─── GET /api/clients ─────────────────────────────────────────────
 router.get('/', async (req, res) => {
   try {
-    const { page = 1, limit = 20, search, is_corporate, is_vip } = req.query;
+    const { page = 1, limit = 20, search, is_corporate, is_vip, sort = 'created_at', order = 'desc' } = req.query;
     const offset = (parseInt(page) - 1) * parseInt(limit);
     const conditions = [];
     const params = [];
@@ -26,15 +26,47 @@ router.get('/', async (req, res) => {
     const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
     const countResult = await query(`SELECT COUNT(*) FROM clients cl ${where}`, params);
 
+    const allowedSort = ['client_code', 'first_name', 'last_name', 'company', 'created_at', 'active_cases', 'total_cases', 'pending_amount', 'total_paid'];
+    const sortKey = allowedSort.includes(sort) ? sort : 'created_at';
+    const dir = order === 'asc' ? 'ASC' : 'DESC';
+
+    let orderBy = 'cl.created_at DESC';
+    if (sortKey === 'client_code') orderBy = `cl.client_code ${dir}`;
+    else if (sortKey === 'first_name') orderBy = `cl.first_name ${dir}, cl.last_name ${dir}`;
+    else if (sortKey === 'last_name') orderBy = `cl.last_name ${dir}, cl.first_name ${dir}`;
+    else if (sortKey === 'company') orderBy = `cl.company ${dir} NULLS LAST`;
+    else if (sortKey === 'active_cases') orderBy = `active_cases ${dir}`;
+    else if (sortKey === 'total_cases') orderBy = `total_cases ${dir}`;
+    else if (sortKey === 'pending_amount') orderBy = `pending_amount ${dir}`;
+    else if (sortKey === 'total_paid') orderBy = `cl.total_paid ${dir}`;
+    else orderBy = `cl.created_at ${dir}`;
+
     const result = await query(
       `SELECT cl.*, 
-              COUNT(c.id) as active_cases,
-              MAX(c.created_at) as last_case_date
+              COUNT(c.id) FILTER (WHERE c.stage NOT IN ('completed','delivered','failed')) AS active_cases,
+              COUNT(c.id) AS total_cases,
+              MAX(c.created_at) AS last_case_date,
+              COALESCE(SUM(
+                CASE
+                  WHEN q.total_amount IS NULL THEN 0
+                  ELSE GREATEST(q.total_amount - COALESCE(q.paid_on_quote, 0), 0)
+                END
+              ), 0) AS pending_amount
        FROM clients cl
-       LEFT JOIN cases c ON cl.id = c.client_id AND c.stage NOT IN ('completed','delivered','failed')
+       LEFT JOIN cases c ON cl.id = c.client_id
+       LEFT JOIN LATERAL (
+         SELECT q.total_amount,
+                COALESCE((SELECT SUM(amount) FILTER (WHERE status = 'paid')
+                          FROM payments p
+                          WHERE p.case_id = c.id AND p.quotation_id = q.id), 0) AS paid_on_quote
+         FROM quotations q
+         WHERE q.case_id = c.id
+         ORDER BY q.created_at DESC
+         LIMIT 1
+       ) q ON TRUE
        ${where}
        GROUP BY cl.id
-       ORDER BY cl.created_at DESC
+       ORDER BY ${orderBy}
        LIMIT $${pi} OFFSET $${pi + 1}`,
       [...params, parseInt(limit), offset]
     );

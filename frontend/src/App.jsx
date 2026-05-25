@@ -77,10 +77,10 @@ function Sidebar({ open, onClose }) {
         { icon: '🛡️', label: 'Security & Backup', to: '/security' },
         { icon: '⚙️', label: 'Settings', to: '/settings' },
       ]
-    // Regular user system items
+    // Regular user system items — all items now properly permission-gated
     : [
         ...(isOwner ? [{ icon: '💎', label: 'Subscription', to: '/subscription' }] : []),
-        { icon: '🛡️', label: 'Security & Backup', to: '/security' },
+        ...(isAdmin ? [{ icon: '🛡️', label: 'Security & Backup', to: '/security' }] : []),
         { icon: '💬', label: 'Team Chat', to: '/chat' },
         ...(hasPermission('recycle_bin', 'view') || isAdmin ? [{ icon: '🗑️', label: 'Recycle Bin', to: '/recycle-bin' }] : []),
         ...(hasPermission('webhooks', 'view') || isAdmin ? [{ icon: '🔗', label: 'Webhooks', to: '/webhooks' }] : []),
@@ -303,25 +303,25 @@ function AppLayout() {
           <React.Suspense fallback={<LoadingScreen />}>
             <Routes>
               <Route path="/"                  element={<Dashboard />} />
-              <Route path="/cases"             element={<CasesPage />} />
-              <Route path="/cases/:id"         element={<CaseDetail />} />
-              <Route path="/clients"           element={<ClientsPage />} />
-              <Route path="/clients/:id"       element={<ClientDetail />} />
-              <Route path="/inventory"         element={<InventoryPage />} />
-              <Route path="/inventory/:id"     element={<InventoryDetail />} />
-              <Route path="/transferred-items" element={<TransferredItemsPage />} />
-              <Route path="/accounting"        element={<AccountingPage />} />
-              <Route path="/solutions"         element={<SolutionsPage />} />
-              <Route path="/reports"           element={<ReportsPage />} />
-              <Route path="/analytics"         element={<AnalyticsPage />} />
-              <Route path="/subscription"      element={<SubscriptionPage />} />
-              <Route path="/recycle-bin"       element={<RecycleBinPage />} />
-              <Route path="/security"           element={<SecurityBackupPage />} />
+              <Route path="/cases"             element={<PermissionRoute module="cases"><CasesPage /></PermissionRoute>} />
+              <Route path="/cases/:id"         element={<PermissionRoute module="cases"><CaseDetail /></PermissionRoute>} />
+              <Route path="/clients"           element={<PermissionRoute module="clients"><ClientsPage /></PermissionRoute>} />
+              <Route path="/clients/:id"       element={<PermissionRoute module="clients"><ClientDetail /></PermissionRoute>} />
+              <Route path="/inventory"         element={<PermissionRoute module="inventory"><InventoryPage /></PermissionRoute>} />
+              <Route path="/inventory/:id"     element={<PermissionRoute module="inventory"><InventoryDetail /></PermissionRoute>} />
+              <Route path="/transferred-items" element={<PermissionRoute module="inventory"><TransferredItemsPage /></PermissionRoute>} />
+              <Route path="/accounting"        element={<PermissionRoute module="accounting"><AccountingPage /></PermissionRoute>} />
+              <Route path="/solutions"         element={<PermissionRoute module="knowledge_base"><SolutionsPage /></PermissionRoute>} />
+              <Route path="/reports"           element={<PermissionRoute module="reports"><ReportsPage /></PermissionRoute>} />
+              <Route path="/analytics"         element={<PermissionRoute module="analytics"><AnalyticsPage /></PermissionRoute>} />
+              <Route path="/subscription"      element={<AdminRoute><SubscriptionPage /></AdminRoute>} />
+              <Route path="/recycle-bin"       element={<PermissionRoute module="recycle_bin"><RecycleBinPage /></PermissionRoute>} />
+              <Route path="/security"           element={<AdminRoute><SecurityBackupPage /></AdminRoute>} />
               <Route path="/chat"               element={<TeamChatPage />} />
-              <Route path="/webhooks"          element={<WebhooksPage />} />
+              <Route path="/webhooks"          element={<PermissionRoute module="webhooks"><WebhooksPage /></PermissionRoute>} />
               <Route path="/settings"          element={<SettingsPage />} />
-              <Route path="/super-admin"       element={<SuperAdminPage />} />
-              <Route path="/marketing"         element={<MarketingPage />} />
+              <Route path="/super-admin"       element={<SuperAdminRoute><SuperAdminPage /></SuperAdminRoute>} />
+              <Route path="/marketing"         element={<AdminRoute><MarketingPage /></AdminRoute>} />
               <Route path="/users"             element={<SuperAdminRoute><UserManagementPage /></SuperAdminRoute>} />
               <Route path="*"                  element={<Navigate to="/" replace />} />
             </Routes>
@@ -332,6 +332,22 @@ function AppLayout() {
       {isSuperAdminUser && <SuperAdminFloatingChat />}
     </div>
   );
+}
+
+function PermissionRoute({ module, action = 'view', children }) {
+  const { hasPermission, loading } = useAuth();
+  if (loading) return <LoadingScreen />;
+  if (!hasPermission(module, action)) {
+    return <Navigate to="/" replace />;
+  }
+  return children;
+}
+
+function AdminRoute({ children }) {
+  const { isAdmin, loading } = useAuth();
+  if (loading) return <LoadingScreen />;
+  if (!isAdmin) return <Navigate to="/" replace />;
+  return children;
 }
 
 function SuperAdminRoute({ children }) {

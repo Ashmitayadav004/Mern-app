@@ -211,9 +211,11 @@ export function AuthProvider({ children }) {
       try { return JSON.parse(localStorage.getItem(`user_perms_${user.id}`) || 'null'); } catch { return null; }
     })();
 
-    if (!userPerms) {
-      // Fall back to role-based check for legacy roles
-      return canAccess('junior_engineer');
+    // If no permissions object exists at all, deny access for non-admin users.
+    // The backend now resolves role-based permissions into user.permissions,
+    // so if it's still null/empty, the user has no granted access.
+    if (!userPerms || typeof userPerms !== 'object' || Object.keys(userPerms).length === 0) {
+      return false;
     }
     return !!(userPerms[module] && userPerms[module][action]);
   };
@@ -225,7 +227,7 @@ export function AuthProvider({ children }) {
   const isOwner = user?.role === 'admin';
   // isAdmin — isOwner OR isSuperAdmin (broad admin gate)
   const isAdmin = isOwner || isSuperAdmin;
-  const tenantId = user?.tenant_id || user?.id;
+  const tenantId = user?.tenantId || user?.tenant_id || user?.id;
 
   return (
     <AuthContext.Provider value={{

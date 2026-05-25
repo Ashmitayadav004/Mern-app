@@ -715,6 +715,15 @@ function PlanManagementPanel() {
 export default function SettingsPage() {
   const { user, canAccess, isSuperAdmin, isOwner } = useAuth();
   const [activeTab, setActiveTab] = useState('profile');
+  const [expandedGroups, setExpandedGroups] = useState(() => ({ 'profile_settings': true }));
+  const [activeDropdown, setActiveDropdown] = useState(null);
+
+  useEffect(() => {
+    const handleOutsideClick = () => setActiveDropdown(null);
+    window.addEventListener('click', handleOutsideClick);
+    return () => window.removeEventListener('click', handleOutsideClick);
+  }, []);
+
   const [users, setUsers] = useState([]);
   const [auditLogs, setAuditLogs] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -837,38 +846,87 @@ export default function SettingsPage() {
 
   // Super Admin only sees their own profile, password change, and app info.
   // All tenant-level settings (company, GST, CMS, stages, razorpay, etc.) are irrelevant to the platform owner.
-  const tabs = isSuperAdmin ? [
-    { key: 'profile',  label: '👤 My Profile' },
-    { key: 'security', label: '🔐 Change Password' },
-    { key: 'about',    label: 'ℹ️ About' },
+  const toggleGroup = (groupId) => {
+    setExpandedGroups(prev => ({ ...prev, [groupId]: !prev[groupId] }));
+  };
+
+  const handleTabClick = (tabKey, groupId) => {
+    setActiveTab(tabKey);
+    setActiveDropdown(null);
+  };
+
+  const handleGroupClick = (e, group) => {
+    if (group.standalone) {
+      setActiveTab(group.children[0].key);
+      setActiveDropdown(null);
+    } else {
+      e.stopPropagation();
+      setActiveDropdown(prev => prev === group.id ? null : group.id);
+    }
+  };
+
+  const handleChildClick = (childKey) => {
+    setActiveTab(childKey);
+    setActiveDropdown(null);
+  };
+
+  const settingsGroups = isSuperAdmin ? [
+    { id: 'profile_settings', label: '👤 My Profile Settings', icon: '👤',
+      children: [
+        { key: 'profile',  label: 'My Profile' },
+        { key: 'security', label: 'Security' },
+      ]
+    },
+    { id: 'about_group', label: 'ℹ️ About', icon: 'ℹ️', standalone: true,
+      children: [{ key: 'about', label: 'About' }]
+    },
   ] : [
-    { key: 'profile',    label: '👤 My Profile' },
-    { key: 'security',   label: '🔐 Security' },
-    ...(canAccess('admin') ? [{ key: 'company',   label: '🏢 Company Profile' }] : []),
-    ...(canAccess('admin') ? [{ key: 'numbers',   label: '🔢 Numbers Setup' }] : []),
-    ...(canAccess('admin') ? [{ key: 'gst',       label: '🧳 GST & Tax' }] : []),
-    ...(canAccess('admin') ? [{ key: 'stages',    label: '⚡ Stage Categories' }] : []),
-    ...(canAccess('admin') ? [{ key: 'symptoms',  label: '🩺 Symptom Categories' }] : []),
-    ...(canAccess('admin') ? [{ key: 'failures',  label: '🔧 Failure Types' }] : []),
-    ...(canAccess('admin') ? [{ key: 'brands',    label: '🏷️ Device Brands' }] : []),
-    ...(canAccess('admin') ? [{ key: 'hdd_types',    label: '💾 HDD Types' }] : []),
-    ...(canAccess('admin') ? [{ key: 'capacities',   label: '📏 HDD Capacities' }] : []),
-    ...(canAccess('admin') ? [{ key: 'field_config', label: '🔧 Field Config' }] : []),
-    ...(canAccess('admin') ? [{ key: 'payments_cfg', label: '💳 Payment Methods' }] : []),
-    ...(canAccess('admin') ? [{ key: 'roles',     label: '🛡️ User Roles' }] : []),
-    ...(canAccess('admin') ? [{ key: 'database',  label: '🗄️ Database Tools' }] : []),
-    ...(canAccess('admin') ? [{ key: 'invoice',   label: '🧾 Invoice Setup' }] : []),
-    ...(canAccess('admin') ? [{ key: 'whatsapp',  label: '📱 WhatsApp' }] : []),
-    ...(canAccess('admin') ? [{ key: 'smtp',      label: '📧 Email / SMTP' }] : []),
-    ...(canAccess('admin') ? [{ key: 'razorpay',  label: '💸 Razorpay' }] : []),
-    ...(isOwner ? [{ key: 'subscription', label: '💎 My Subscription' }] : []),
-    ...(canAccess('admin') ? [{ key: 'n8n',       label: '🔄 n8n Integration' }] : []),
-    ...(canAccess('admin') ? [{ key: 'encryption',label: '🔒 Encryption' }] : []),
-    ...(canAccess('admin') ? [{ key: 'activity',  label: '📊 Activity Log' }] : []),
-    ...(canAccess('admin') ? [{ key: 'theme_picker', label: '🎨 Theme & Layout' }] : []),
-    ...(canAccess('admin') ? [{ key: 'homepage_cms', label: '🌐 Homepage CMS' }] : []),
-    ...(canAccess('admin') ? [{ key: 'seo_settings', label: '🔍 SEO Settings' }] : []),
-    { key: 'about',      label: 'ℹ️ About' },
+    { id: 'profile_settings', label: '👤 My Profile Settings', icon: '👤',
+      children: [
+        { key: 'profile',  label: 'My Profile' },
+        { key: 'security', label: 'Security' },
+        ...(canAccess('admin') ? [{ key: 'company', label: 'Company Profile' }] : []),
+        ...(canAccess('admin') ? [{ key: 'numbers', label: 'Number Setups' }] : []),
+        ...(canAccess('admin') ? [{ key: 'gst',     label: 'GST & Tax' }] : []),
+      ]
+    },
+    ...(canAccess('admin') ? [{
+      id: 'case_settings', label: '📋 Case Settings', icon: '📋',
+      children: [
+        { key: 'symptoms',     label: 'Symptoms' },
+        { key: 'failures',     label: 'Failure' },
+        { key: 'brands',       label: 'Device Brands' },
+        { key: 'hdd_types',    label: 'HDD Types' },
+        { key: 'capacities',   label: 'HDD Capacity' },
+        { key: 'field_config', label: 'Field Config' },
+      ]
+    }] : []),
+    ...(canAccess('admin') ? [{
+      id: 'config_settings', label: '⚙️ Config Settings', icon: '⚙️',
+      children: [
+        { key: 'whatsapp',   label: 'WhatsApp' },
+        { key: 'smtp',       label: 'Email' },
+        { key: 'razorpay',   label: 'Razor Pay' },
+        { key: 'invoice',    label: 'Invoice Setup' },
+        { key: 'n8n',        label: 'n8n Integration' },
+        { key: 'encryption', label: 'Encryption' },
+      ]
+    }] : []),
+    ...(canAccess('admin') ? [{
+      id: 'homepage_settings', label: '🌐 Homepage Settings', icon: '🌐',
+      children: [
+        { key: 'homepage_cms',  label: 'Homepage CMS' },
+        { key: 'seo_settings',  label: 'SEO Settings' },
+        { key: 'theme_picker',  label: 'Theme & Layout' },
+      ]
+    }] : []),
+    ...(canAccess('admin') ? [{
+      id: 'activity_group', label: '📊 Activity Logs', icon: '📊', standalone: true,
+      children: [{ key: 'activity', label: 'Activity Logs' }]
+    }] : []),
+    { id: 'about_group', label: 'ℹ️ About', icon: 'ℹ️', standalone: true,
+      children: [{ key: 'about', label: 'About' }]
+    },
   ];
 
   return (
@@ -880,25 +938,161 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      <div className="settings-page-layout">
-        {/* Sidebar Nav */}
-        <div className="settings-page-sidebar">
-          <div className="settings-page-sidebar-inner">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              {tabs.map(t => (
-                <button key={t.key}
-                  className={`nav-item ${activeTab === t.key ? 'active' : ''}`}
-                  style={{ borderRadius: 'var(--radius-sm)', justifyContent: 'flex-start' }}
-                  onClick={() => setActiveTab(t.key)}>
-                  {t.label}
+      <div className="settings-page-layout-horizontal">
+        <style dangerouslySetInnerHTML={{__html: `
+          .settings-page-layout-horizontal {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            width: 100%;
+          }
+          .settings-nav-container {
+            width: 100%;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-md);
+            padding: 6px 12px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            z-index: 100;
+            box-shadow: var(--shadow-sm);
+            flex-wrap: wrap;
+          }
+          .settings-nav-group {
+            position: relative;
+            display: inline-block;
+          }
+          .settings-nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: var(--radius-sm);
+            transition: all 0.15s ease;
+            white-space: nowrap;
+          }
+          .settings-nav-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+          }
+          .settings-nav-btn.active {
+            background: var(--accent-glow);
+            color: var(--accent-primary);
+          }
+          .settings-dropdown {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            background: var(--bg-card);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 200px;
+            z-index: 1010;
+            opacity: 0;
+            transform: translateY(8px);
+            pointer-events: none;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+          /* Invisible bridge to allow smooth mouse movement without losing hover state */
+          .settings-dropdown::before {
+            content: '';
+            position: absolute;
+            top: -12px;
+            left: 0;
+            right: 0;
+            height: 12px;
+            background: transparent;
+          }
+          .settings-nav-group:hover .settings-dropdown,
+          .settings-nav-group.open .settings-dropdown {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+          }
+          .settings-dropdown-item {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 8px 12px;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            font-weight: 500;
+            background: transparent;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.12s ease;
+            white-space: nowrap;
+          }
+          .settings-dropdown-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+          }
+          .settings-dropdown-item.active {
+            background: var(--accent-glow-strong);
+            color: var(--accent-primary);
+            font-weight: 600;
+          }
+          .settings-page-content-horizontal {
+            width: 100%;
+            min-width: 0;
+            overflow-y: auto;
+            max-height: calc(100vh - 180px);
+            padding-right: 4px;
+          }
+        `}} />
+
+        {/* Top Navbar */}
+        <div className="settings-nav-container">
+          {settingsGroups.map(group => {
+            const hasActiveChild = !group.standalone && group.children.some(c => c.key === activeTab);
+            const isTabActive = group.standalone ? (group.children[0].key === activeTab) : hasActiveChild;
+            const isOpen = activeDropdown === group.id;
+
+            return (
+              <div key={group.id} className={`settings-nav-group ${isOpen ? 'open' : ''}`}>
+                <button
+                  className={`settings-nav-btn ${isTabActive ? 'active' : ''}`}
+                  onClick={(e) => handleGroupClick(e, group)}
+                >
+                  <span>{group.label}</span>
                 </button>
-              ))}
-            </div>
-          </div>
+
+                {!group.standalone && (
+                  <div className="settings-dropdown" onClick={e => e.stopPropagation()}>
+                    {group.children.map(child => (
+                      <button
+                        key={child.key}
+                        className={`settings-dropdown-item ${activeTab === child.key ? 'active' : ''}`}
+                        onClick={() => handleChildClick(child.key)}
+                      >
+                        {child.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {/* Content */}
-        <div className="settings-page-content" style={{ flex: 1, minWidth: 0 }}>
+        <div className="settings-page-content-horizontal">
           {/* PROFILE */}
           {activeTab === 'profile' && (
             <div className="card">

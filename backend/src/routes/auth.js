@@ -8,6 +8,98 @@ const logger = require('../config/logger');
 
 const router = express.Router();
 
+// Helper to resolve effective user permissions
+async function resolveUserPermissions(userId, role, customPermissions) {
+  // If user has custom permissions directly on their user record, use those
+  if (customPermissions && typeof customPermissions === 'object' && Object.keys(customPermissions).length > 0) {
+    return customPermissions;
+  }
+
+  // Next, look in the admin_permissions table for this specific user
+  try {
+    const adminPermsResult = await query(
+      `SELECT module, can_view, can_create, can_edit, can_delete, can_export FROM admin_permissions WHERE user_id = $1`,
+      [userId]
+    );
+    if (adminPermsResult.rows.length > 0) {
+      const perms = {};
+      adminPermsResult.rows.forEach(row => {
+        perms[row.module] = {
+          view: !!row.can_view,
+          create: !!row.can_create,
+          edit: !!row.can_edit,
+          delete: !!row.can_delete,
+          export: !!row.can_export
+        };
+      });
+      return perms;
+    }
+  } catch (err) {
+    logger.warn('Failed to query admin_permissions table', { error: err.message });
+  }
+
+  // Next, look in platform_settings roles array for the role default permissions
+  try {
+    const rolesResult = await query(`SELECT value FROM platform_settings WHERE key = 'settings_roles'`);
+    if (rolesResult.rows.length > 0) {
+      const roles = rolesResult.rows[0].value || [];
+      const matchedRole = roles.find(r => r.key === role);
+      if (matchedRole && matchedRole.permissions) {
+        return matchedRole.permissions;
+      }
+    }
+  } catch (err) {
+    logger.warn('Failed to query platform_settings settings_roles', { error: err.message });
+  }
+
+  // Standard fallback presets for built-in roles
+  const DEFAULT_ROLE_PERMISSIONS = {
+    senior_engineer: {
+      cases: { view: true, create: true, edit: true, delete: false, advance_stage: true },
+      clients: { view: true, create: false, edit: false, delete: false },
+      inventory: { view: true, create: false, edit: false, delete: false },
+      accounting: { view: false },
+      reports: { view: true, export: false },
+      analytics: { view: true },
+      knowledge_base: { view: true, create: true, delete: false },
+      recycle_bin: { view: false },
+      settings: { view: false },
+      users: { view: false },
+      webhooks: { view: false }
+    },
+    junior_engineer: {
+      cases: { view: true, create: false, edit: false, delete: false, advance_stage: false },
+      clients: { view: true, create: false, edit: false, delete: false },
+      inventory: { view: true, create: false, edit: false, delete: false },
+      reports: { view: false },
+      knowledge_base: { view: true, create: false, delete: false }
+    },
+    staff: {
+      cases: { view: true, create: true, edit: true, delete: false },
+      clients: { view: true, create: true, edit: true, delete: false },
+      inventory: { view: false },
+      accounting: { view: false },
+      reports: { view: false }
+    }
+  };
+
+  if (DEFAULT_ROLE_PERMISSIONS[role]) {
+    return DEFAULT_ROLE_PERMISSIONS[role];
+  }
+
+  if (role === 'admin' || role === 'super_admin') {
+    const modules = ['cases', 'clients', 'inventory', 'accounting', 'reports', 'analytics', 'knowledge_base', 'recycle_bin', 'settings', 'users', 'webhooks'];
+    const perms = {};
+    modules.forEach(m => {
+      perms[m] = { view: true, create: true, edit: true, delete: true, export: true, advance_stage: true };
+    });
+    return perms;
+  }
+
+  return {};
+}
+
+
 // ─── POST /api/auth/login ────────────────────────────────────────
 router.post('/login',
   [
@@ -26,20 +118,14 @@ router.post('/login',
       let result;
       try {
         result = await query(
-          `SELECT id, username, email, full_name, role, tenant_id, password_hash, is_active, specializations, avatar_url
-           FROM users WHERE username = $1 OR email = $1`,
+          `SELECT id, username, email, full_name, role, tenant_id, password_hash, is_active, specializations, avatar_url, permissions, phone, notes FROM users WHERE username = $1 OR email = $1`,
           [username.toLowerCase()]
         );
       } catch (err) {
-        if (err.message.includes('tenant_id')) {
-          result = await query(
-            `SELECT id, username, email, full_name, role, tenant_owner_id, password_hash, is_active, specializations, avatar_url
-             FROM users WHERE username = $1 OR email = $1`,
-            [username.toLowerCase()]
-          );
-        } else {
-          throw err;
-        }
+        result = await query(
+          `SELECT id, username, email, full_name, role, tenant_owner_id AS tenant_id, password_hash, is_active, specializations, avatar_url, permissions, phone, notes FROM users WHERE username = $1 OR email = $1`,
+          [username.toLowerCase()]
+        );
       }
 
       if (!result.rows.length) {
@@ -73,6 +159,9 @@ router.post('/login',
 
       logger.info('User logged in', { userId: user.id, username: user.username });
 
+      // Resolve effective permissions: custom > role-based > default presets > empty
+      const effectivePermissions = await resolveUserPermissions(user.id, user.role, user.permissions);
+
       res.json({
         accessToken,
         refreshToken,
@@ -85,6 +174,7 @@ router.post('/login',
           tenantId: user.tenant_id || user.tenant_owner_id || user.id || 1,
           specializations: user.specializations,
           avatarUrl: user.avatar_url,
+          permissions: effectivePermissions
         }
       });
     } catch (err) {
@@ -150,22 +240,37 @@ router.get('/me', authenticate, async (req, res) => {
       [req.user.id]
     );
   } catch (err) {
-    if (err.message.includes('tenant_id')) {
-      result = await query(
-        `SELECT id, username, email, full_name, role, tenant_owner_id, is_active, specializations,
-                avatar_url, phone, notes, permissions, last_login, created_at
-         FROM users WHERE id = $1`,
-        [req.user.id]
-      );
-    } else {
-      throw err;
-    }
+    result = await query(
+      `SELECT id, username, email, full_name, role, tenant_owner_id AS tenant_id, is_active, specializations,
+              avatar_url, phone, notes, permissions, last_login, created_at
+       FROM users WHERE id = $1`,
+      [req.user.id]
+    );
   }
-  const user = result.rows[0];
-  if (user) {
-    user.tenant_id = user.tenant_id || user.tenant_owner_id || user.id || 1;
-  }
-  res.json(user);
+  const u = result.rows[0];
+  if (!u) return res.status(404).json({ error: 'User not found' });
+
+  // Resolve effective permissions: custom > role-based > default presets > empty
+  const effectivePermissions = await resolveUserPermissions(u.id, u.role, u.permissions);
+
+  // Return normalized camelCase response (matches login response format)
+  res.json({
+    id: u.id,
+    username: u.username,
+    email: u.email,
+    fullName: u.full_name,
+    role: u.role,
+    tenantId: u.tenant_id || u.tenant_owner_id || u.id || 1,
+    isActive: u.is_active,
+    specializations: u.specializations,
+    avatar: u.avatar_url,
+    avatarUrl: u.avatar_url,
+    phone: u.phone,
+    notes: u.notes,
+    permissions: effectivePermissions,
+    lastLogin: u.last_login,
+    createdAt: u.created_at,
+  });
 });
 
 // ─── PUT /api/auth/change-password ───────────────────────────────
