@@ -114,6 +114,7 @@ function Sidebar({ open, onClose }) {
       ]},
       { group: 'Access', items: [
         { icon: '👤', label: 'Users & Roles', to: '/users' },
+        { icon: '💬', label: 'Team Chat', to: '/chat' },
         { icon: '🛡️', label: 'Security & Backup', to: '/security' },
         { icon: '⚙️', label: 'Settings',           to: '/settings' },
       ]},
