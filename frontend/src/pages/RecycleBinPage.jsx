@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../store/AuthContext';
-import { inventoryApi } from '../services/api';
+import { inventoryApi, mediaRecycleApi } from '../services/api';
+import { fileTypeIcon, formatFileSize } from '../utils/solutionMedia';
 import { getCategoryMeta } from '../constants/inventoryConfig';
 
 const BASE_URL = '/api';
@@ -136,9 +137,10 @@ function PermanentDeleteModal({ item, onConfirm, onClose }) {
 export default function RecycleBinPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [binTab, setBinTab] = useState('cases'); // cases | inventory
+  const [binTab, setBinTab] = useState('cases'); // cases | inventory | media
   const [items, setItems] = useState([]);
   const [invItems, setInvItems] = useState([]);
+  const [mediaItems, setMediaItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [restoreTarget, setRestoreTarget] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -156,12 +158,20 @@ export default function RecycleBinPage() {
     } catch { setInvItems([]); }
   }, []);
 
+  const loadMedia = useCallback(async () => {
+    try {
+      const d = await mediaRecycleApi.list({ limit: 200 });
+      setMediaItems(d.items || []);
+    } catch { setMediaItems([]); }
+  }, []);
+
   const load = useCallback(async () => {
     setLoading(true);
     if (binTab === 'cases') await loadCases();
-    else await loadInventory();
+    else if (binTab === 'inventory') await loadInventory();
+    else await loadMedia();
     setLoading(false);
-  }, [binTab, loadCases, loadInventory]);
+  }, [binTab, loadCases, loadInventory, loadMedia]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -197,12 +207,28 @@ export default function RecycleBinPage() {
     } catch (e) { alert(e.message); }
   };
 
+  const handleMediaRestore = async (id) => {
+    try {
+      await mediaRecycleApi.restore(id);
+      await loadMedia();
+      alert('✅ Media restored to original location.');
+    } catch (e) { alert(e.message); }
+  };
+
+  const handleMediaPermanentDelete = async (id) => {
+    if (!confirm('Permanently delete this file? This cannot be undone.')) return;
+    try {
+      await mediaRecycleApi.permanentDelete(id);
+      await loadMedia();
+    } catch (e) { alert(e.message); }
+  };
+
   return (
     <div>
       <div style={{ display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16 }}>
         <div>
           <h2 style={{ marginBottom:4 }}>🗑️ Recycle Bin</h2>
-          <p style={{ color:'var(--text-muted)',fontSize:'0.82rem' }}>Soft-deleted cases and inventory stock — restore or permanently remove.</p>
+          <p style={{ color:'var(--text-muted)',fontSize:'0.82rem' }}>Soft-deleted cases, inventory stock, and media files — restore or permanently remove.</p>
         </div>
         <button type="button" className="btn btn-secondary btn-sm" onClick={() => navigate('/inventory')}>📦 Inventory</button>
       </div>
@@ -210,6 +236,7 @@ export default function RecycleBinPage() {
       <div className="tabs" style={{ marginBottom: 16 }}>
         <button type="button" className={`tab-btn ${binTab === 'cases' ? 'active' : ''}`} onClick={() => setBinTab('cases')}>📂 Cases</button>
         <button type="button" className={`tab-btn ${binTab === 'inventory' ? 'active' : ''}`} onClick={() => setBinTab('inventory')}>📦 Inventory Stock</button>
+        <button type="button" className={`tab-btn ${binTab === 'media' ? 'active' : ''}`} onClick={() => setBinTab('media')}>📎 Media{mediaItems.length ? ` (${mediaItems.length})` : ''}</button>
       </div>
 
       {binTab === 'cases' && (
@@ -232,6 +259,46 @@ export default function RecycleBinPage() {
           <div className="empty-icon">📦</div>
           <div className="empty-title">No deleted stock items</div>
           <div className="empty-desc">Delete items from Inventory → Stock to move them here. Manage fully in Inventory → Recycle Bin tab.</div>
+        </div>
+      ) : binTab === 'media' && mediaItems.length === 0 ? (
+        <div className="empty-state" style={{ padding:80 }}>
+          <div className="empty-icon">📎</div>
+          <div className="empty-title">No deleted media</div>
+          <div className="empty-desc">Deleted files from cases, solutions, and inventory appear here for recovery.</div>
+        </div>
+      ) : binTab === 'media' ? (
+        <div className="table-container">
+          <table>
+            <thead><tr><th>File</th><th>Type</th><th>Source</th><th>Location</th><th>Deleted By</th><th>Deleted</th><th>Actions</th></tr></thead>
+            <tbody>
+              {mediaItems.map(item => (
+                <tr key={item.id}>
+                  <td>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span>{fileTypeIcon(item)}</span>
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: '0.8rem' }}>{item.name}</div>
+                        <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{formatFileSize(item.size)}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="text-xs text-muted">{item.mime_type || '—'}</td>
+                  <td><span style={{ fontSize: '0.68rem', padding: '2px 8px', borderRadius: 999, background: 'rgba(0,212,255,0.1)', color: 'var(--accent-primary)' }}>{item.source_label}</span></td>
+                  <td className="text-xs">{item.parent_label || item.parent_id}</td>
+                  <td className="text-xs text-muted">{item.deleted_by_name || '—'}</td>
+                  <td className="text-xs text-muted">{daysAgo(item.deleted_at)}</td>
+                  <td>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button type="button" className="btn btn-secondary btn-sm" onClick={() => handleMediaRestore(item.id)}>Restore</button>
+                      {isSuperAdmin && (
+                        <button type="button" className="btn btn-danger btn-sm" onClick={() => handleMediaPermanentDelete(item.id)}>Delete Permanently</button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       ) : binTab === 'inventory' ? (
         <div className="table-container">

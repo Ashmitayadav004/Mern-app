@@ -2,6 +2,7 @@ const express = require('express');
 const { query, transaction } = require('../config/database');
 const { authenticate, requireMinRole } = require('../middleware/auth');
 const { auditLog } = require('../middleware/audit');
+const mediaRecycle = require('../services/mediaRecycle');
 const {
   toDbCategory, formatItemRow, isInventoryHddCategory, normalizeUiCategory, validatePcbPayload,
 } = require('../utils/hddCategoryMap');
@@ -676,9 +677,29 @@ router.post('/:id/images', requireMinRole('junior_engineer'), async (req, res) =
 // DELETE /api/inventory/:id/images/:imgId
 router.delete('/:id/images/:imgId', requireMinRole('junior_engineer'), async (req, res) => {
   try {
-    const result = await query('DELETE FROM inventory_images WHERE id=$1 AND item_id=$2 RETURNING id', [req.params.imgId, req.params.id]);
+    const result = await query(
+      'SELECT * FROM inventory_images WHERE id=$1 AND item_id=$2',
+      [req.params.imgId, req.params.id]
+    );
     if (!result.rows.length) return res.status(404).json({ error: 'Image not found' });
-    res.json({ message: 'Image deleted' });
+
+    const row = result.rows[0];
+    const parentLabel = await mediaRecycle.getInventoryLabel(req.params.id);
+    try {
+      await mediaRecycle.archiveMediaRow({
+        row,
+        sourceModule: 'inventory_images',
+        parentType: 'inventory',
+        parentId: req.params.id,
+        parentLabel,
+        user: req.user,
+      });
+    } catch (archiveErr) {
+      console.warn('Media recycle archive warning:', archiveErr.message);
+    }
+
+    await query('DELETE FROM inventory_images WHERE id=$1 AND item_id=$2', [req.params.imgId, req.params.id]);
+    res.json({ message: 'Image moved to recycle bin' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

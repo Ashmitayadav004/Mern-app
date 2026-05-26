@@ -30,6 +30,7 @@ const superAdminRoutes = require('./routes/super-admin');
 const marketingRoutes  = require('./routes/marketing');
 const suggestionsRoutes = require('./routes/suggestions');
 const solutionsRoutes  = require('./routes/solutions');
+const mediaRecycleRoutes = require('./routes/mediaRecycle');
 // New Chat routes
 const chatRoutes = require('./routes/chat');
 
@@ -114,6 +115,7 @@ app.use('/api/super-admin', superAdminRoutes);
 app.use('/api/marketing',   marketingRoutes);
 app.use('/api/suggestions', suggestionsRoutes);
 app.use('/api/solutions',   solutionsRoutes);
+app.use('/api/media-recycle-bin', mediaRecycleRoutes);
 app.use('/api/chat',        chatRoutes);
 
 // Health check

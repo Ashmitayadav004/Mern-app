@@ -161,6 +161,59 @@ function syncCaseNoteToKnowledgeBase(caseId, _noteEntry, user) {
 }
 const CASE_IMAGES = {};    // caseId -> [{ id, name, mimeType, data, uploadedAt }]
 const INVENTORY_IMAGES = {}; // itemId -> [{ id, name, mimeType, data, uploadedAt }]
+const MEDIA_RECYCLE_BIN = [];
+
+function moveMediaToRecycleBin({ file, sourceModule, sourceLabel, parentType, parentId, parentLabel, user }) {
+  const entry = {
+    id: `mrb_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    original_id: file.id,
+    source_module: sourceModule,
+    source_label: sourceLabel,
+    parent_type: parentType,
+    parent_id: parentId,
+    parent_label: parentLabel || parentId,
+    name: file.name,
+    mime_type: file.mimeType,
+    mimeType: file.mimeType,
+    data: file.data,
+    size: file.size,
+    caption: file.caption || null,
+    deleted_by: user?.userId || user?.id,
+    deleted_by_name: user?.username || user?.full_name || 'User',
+    deleted_at: new Date().toISOString(),
+  };
+  MEDIA_RECYCLE_BIN.unshift(entry);
+  return entry;
+}
+
+function restoreMediaFromRecycleBin(id) {
+  const idx = MEDIA_RECYCLE_BIN.findIndex(m => m.id === id);
+  if (idx === -1) return null;
+  const row = MEDIA_RECYCLE_BIN[idx];
+  const file = {
+    id: row.original_id,
+    name: row.name,
+    mimeType: row.mime_type || row.mimeType,
+    data: row.data,
+    size: row.size,
+    caption: row.caption,
+    uploadedAt: row.deleted_at,
+    createdAt: row.deleted_at,
+  };
+  if (row.source_module === 'case_solution_media') {
+    const sol = ensureCaseSolution(row.parent_id);
+    if (!sol.mediaFiles.some(f => f.id === file.id)) sol.mediaFiles.push(file);
+    try { syncCaseToKnowledgeBase(row.parent_id, { username: row.deleted_by_name }); } catch (e) { /* */ }
+  } else if (row.source_module === 'case_images') {
+    if (!CASE_IMAGES[row.parent_id]) CASE_IMAGES[row.parent_id] = [];
+    if (!CASE_IMAGES[row.parent_id].some(f => f.id === file.id)) CASE_IMAGES[row.parent_id].push(file);
+  } else if (row.source_module === 'inventory_images') {
+    if (!INVENTORY_IMAGES[row.parent_id]) INVENTORY_IMAGES[row.parent_id] = [];
+    if (!INVENTORY_IMAGES[row.parent_id].some(f => f.id === file.id)) INVENTORY_IMAGES[row.parent_id].push(file);
+  }
+  MEDIA_RECYCLE_BIN.splice(idx, 1);
+  return row;
+}
 
 // â”€â”€â”€ Security / Auth stores (hoisted â€” used by login + all security routes) â”€â”€
 const SECURITY_LOG   = [];         // security audit trail
@@ -1257,10 +1310,17 @@ app.post('/api/cases/:id/solution/media', authenticate, upload.array('files', 20
 
 // DELETE a solution media file
 app.delete('/api/cases/:id/solution/media/:fileId', authenticate, (req, res) => {
-  const sol = CASE_SOLUTIONS[req.params.id];
-  if (sol) sol.mediaFiles = sol.mediaFiles.filter(f => f.id !== req.params.fileId);
+  const sol = ensureCaseSolution(req.params.id);
+  const idx = sol.mediaFiles.findIndex(f => f.id === req.params.fileId);
+  if (idx === -1) return res.status(404).json({ error: 'Media not found' });
+  const [file] = sol.mediaFiles.splice(idx, 1);
+  const c = DEMO_CASES.find(x => x.id === req.params.id);
+  moveMediaToRecycleBin({
+    file, sourceModule: 'case_solution_media', sourceLabel: 'Case Solution',
+    parentType: 'case', parentId: req.params.id, parentLabel: c?.case_number, user: req.user,
+  });
   try { syncCaseToKnowledgeBase(req.params.id, req.user); } catch (e) { /* non-fatal */ }
-  res.json({ ok: true });
+  res.json({ message: 'Media moved to recycle bin' });
 });
 
 // â”€â”€â”€ CASE IMAGES (photos of device) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -1288,10 +1348,17 @@ app.post('/api/cases/:id/images', authenticate, upload.array('images', 20), (req
 
 // DELETE a case image
 app.delete('/api/cases/:id/images/:imgId', authenticate, (req, res) => {
-  if (CASE_IMAGES[req.params.id]) {
-    CASE_IMAGES[req.params.id] = CASE_IMAGES[req.params.id].filter(i => i.id !== req.params.imgId);
-  }
-  res.json({ ok: true });
+  const imgs = CASE_IMAGES[req.params.id] || [];
+  const idx = imgs.findIndex(i => i.id === req.params.imgId);
+  if (idx === -1) return res.status(404).json({ error: 'Image not found' });
+  const [file] = imgs.splice(idx, 1);
+  CASE_IMAGES[req.params.id] = imgs;
+  const c = DEMO_CASES.find(x => x.id === req.params.id);
+  moveMediaToRecycleBin({
+    file, sourceModule: 'case_images', sourceLabel: 'Case Device Photo',
+    parentType: 'case', parentId: req.params.id, parentLabel: c?.case_number, user: req.user,
+  });
+  res.json({ message: 'Image moved to recycle bin' });
 });
 
 // â”€â”€â”€ INVENTORY IMAGES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -1318,10 +1385,18 @@ app.post('/api/inventory/:id/images', authenticate, upload.array('images', 10), 
 
 // DELETE an inventory image
 app.delete('/api/inventory/:id/images/:imgId', authenticate, (req, res) => {
-  if (INVENTORY_IMAGES[req.params.id]) {
-    INVENTORY_IMAGES[req.params.id] = INVENTORY_IMAGES[req.params.id].filter(i => i.id !== req.params.imgId);
-  }
-  res.json({ ok: true });
+  const imgs = INVENTORY_IMAGES[req.params.id] || [];
+  const idx = imgs.findIndex(i => i.id === req.params.imgId);
+  if (idx === -1) return res.status(404).json({ error: 'Image not found' });
+  const [file] = imgs.splice(idx, 1);
+  INVENTORY_IMAGES[req.params.id] = imgs;
+  const inv = DEMO_INVENTORY.find(x => x.id === req.params.id);
+  const parentLabel = inv?.stock_number || inv?.sku || inv?.model;
+  moveMediaToRecycleBin({
+    file, sourceModule: 'inventory_images', sourceLabel: 'Inventory',
+    parentType: 'inventory', parentId: req.params.id, parentLabel, user: req.user,
+  });
+  res.json({ message: 'Image moved to recycle bin' });
 });
 
 // â”€â”€â”€ ACCOUNTING DATA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -2227,10 +2302,17 @@ app.post('/api/inventory/:id/images', authenticate, (req, res) => {
   res.status(201).json({ success: true, image: img });
 });
 app.delete('/api/inventory/:id/images/:imgId', authenticate, (req, res) => {
-  if (INVENTORY_IMAGES[req.params.id]) {
-    INVENTORY_IMAGES[req.params.id] = INVENTORY_IMAGES[req.params.id].filter(x => x.id !== req.params.imgId);
-  }
-  res.json({ success: true });
+  const imgs = INVENTORY_IMAGES[req.params.id] || [];
+  const idx = imgs.findIndex(x => x.id === req.params.imgId);
+  if (idx === -1) return res.status(404).json({ error: 'Image not found' });
+  const [file] = imgs.splice(idx, 1);
+  INVENTORY_IMAGES[req.params.id] = imgs;
+  const inv = DEMO_INVENTORY.find(x => x.id === req.params.id);
+  moveMediaToRecycleBin({
+    file, sourceModule: 'inventory_images', sourceLabel: 'Inventory',
+    parentType: 'inventory', parentId: req.params.id, parentLabel: inv?.stock_number || inv?.sku, user: req.user,
+  });
+  res.json({ message: 'Image moved to recycle bin' });
 });
 
 // â”€â”€ n8n Webhook Trigger â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -2581,6 +2663,28 @@ app.delete('/api/recycle-bin/:id/permanent-delete', authenticate, (req, res) => 
   if (idx === -1) return res.status(404).json({ error: 'Item not found in recycle bin' });
   DELETED_CASES.splice(idx, 1);
   res.json({ ok: true });
+});
+
+app.get('/api/media-recycle-bin', authenticate, (req, res) => {
+  let items = [...MEDIA_RECYCLE_BIN];
+  if (req.query.source) items = items.filter(m => m.source_module === req.query.source);
+  res.json({ items, total: items.length, page: 1, limit: items.length });
+});
+
+app.post('/api/media-recycle-bin/:id/restore', authenticate, (req, res) => {
+  const row = restoreMediaFromRecycleBin(req.params.id);
+  if (!row) return res.status(404).json({ error: 'Media not found in recycle bin' });
+  res.json({ message: 'Media restored', restored_id: row.original_id, source_module: row.source_module });
+});
+
+app.delete('/api/media-recycle-bin/:id/permanent-delete', authenticate, (req, res) => {
+  if (req.user.role !== 'admin' && req.user.role !== 'super_admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  const idx = MEDIA_RECYCLE_BIN.findIndex(m => m.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: 'Media not found in recycle bin' });
+  MEDIA_RECYCLE_BIN.splice(idx, 1);
+  res.json({ message: 'Media permanently deleted' });
 });
 
 // â”€â”€â”€ TIMELINE NOTES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

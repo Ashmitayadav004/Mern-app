@@ -129,6 +129,12 @@ export const solutionsApi = {
   delete: (id) => api.delete(`/solutions/${id}`),
 };
 
+export const mediaRecycleApi = {
+  list: (params) => api.get('/media-recycle-bin', params),
+  restore: (id) => api.post(`/media-recycle-bin/${id}/restore`),
+  permanentDelete: (id) => api.delete(`/media-recycle-bin/${id}/permanent-delete`),
+};
+
 export const suggestionsApi = {
   searchProblems: (params) => api.get('/suggestions/problems', params),
   searchDiagnosis: (params) => api.get('/suggestions/diagnosis', params),

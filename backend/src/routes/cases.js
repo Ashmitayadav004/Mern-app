@@ -7,6 +7,7 @@ const { auditLog } = require('../middleware/audit');
 const { upload } = require('../middleware/upload');
 const { solutionUpload } = require('../middleware/solutionUpload');
 const solutionsRouter = require('./solutions');
+const mediaRecycle = require('../services/mediaRecycle');
 
 const router = express.Router();
 router.use(authenticate);
@@ -598,10 +599,27 @@ router.post('/:id/solution/media', requireMinRole('junior_engineer'), solutionUp
 router.delete('/:id/solution/media/:fileId', requireMinRole('junior_engineer'), async (req, res) => {
   try {
     const result = await query(
-      'DELETE FROM case_solution_media WHERE id=$1 AND case_id=$2 RETURNING id',
+      'SELECT * FROM case_solution_media WHERE id=$1 AND case_id=$2',
       [req.params.fileId, req.params.id]
     );
     if (!result.rows.length) return res.status(404).json({ error: 'Media not found' });
+
+    const row = result.rows[0];
+    const parentLabel = await mediaRecycle.getCaseLabel(req.params.id);
+    try {
+      await mediaRecycle.archiveMediaRow({
+        row,
+        sourceModule: 'case_solution_media',
+        parentType: 'case',
+        parentId: req.params.id,
+        parentLabel,
+        user: req.user,
+      });
+    } catch (archiveErr) {
+      console.warn('Media recycle archive warning:', archiveErr.message);
+    }
+
+    await query('DELETE FROM case_solution_media WHERE id=$1 AND case_id=$2', [req.params.fileId, req.params.id]);
 
     try {
       await solutionsRouter.syncCaseToKnowledgeBase(req.params.id, req.user);
@@ -609,7 +627,7 @@ router.delete('/:id/solution/media/:fileId', requireMinRole('junior_engineer'), 
       console.warn('KB sync warning:', syncErr.message);
     }
 
-    res.json({ message: 'Media deleted' });
+    res.json({ message: 'Media moved to recycle bin' });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
@@ -656,11 +674,28 @@ router.post('/:id/images', requireMinRole('junior_engineer'), upload.array('imag
 router.delete('/:id/images/:imgId', requireMinRole('junior_engineer'), async (req, res) => {
   try {
     const result = await query(
-      'DELETE FROM case_images WHERE id=$1 AND case_id=$2 RETURNING id',
+      'SELECT * FROM case_images WHERE id=$1 AND case_id=$2',
       [req.params.imgId, req.params.id]
     );
     if (!result.rows.length) return res.status(404).json({ error: 'Image not found' });
-    res.json({ message: 'Image deleted' });
+
+    const row = result.rows[0];
+    const parentLabel = await mediaRecycle.getCaseLabel(req.params.id);
+    try {
+      await mediaRecycle.archiveMediaRow({
+        row,
+        sourceModule: 'case_images',
+        parentType: 'case',
+        parentId: req.params.id,
+        parentLabel,
+        user: req.user,
+      });
+    } catch (archiveErr) {
+      console.warn('Media recycle archive warning:', archiveErr.message);
+    }
+
+    await query('DELETE FROM case_images WHERE id=$1 AND case_id=$2', [req.params.imgId, req.params.id]);
+    res.json({ message: 'Image moved to recycle bin' });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 

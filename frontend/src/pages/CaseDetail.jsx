@@ -5,7 +5,8 @@ import { useAuth } from '../store/AuthContext';
 import { printInwardForm } from '../components/NewCaseModal';
 import { useInventoryConfig } from '../hooks/useInventoryConfig';
 import { openPrintPreviewWindow } from '../utils/printPreview';
-import { formatSolutionTime, fileTypeIcon, canPreviewMedia, downloadFile } from '../utils/solutionMedia';
+import { formatSolutionTime, fileTypeIcon, formatFileSize } from '../utils/solutionMedia';
+import MediaPreviewModal from '../components/MediaPreviewModal';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
@@ -34,58 +35,9 @@ const VALID_NEXT = {
   completed: ALL_STAGES, delivered: ALL_STAGES, failed: ALL_STAGES,
 };
 
-function formatSize(bytes) {
-  if (!bytes) return '—';
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
-}
-
-// ─── Media Lightbox ─────────────────────────────────────────────
-function Lightbox({ item, onClose, onPrev, onNext, hasPrev, hasNext }) {
-  useEffect(() => {
-    const handler = (e) => {
-      if (e.key === 'Escape') onClose();
-      if (e.key === 'ArrowLeft' && hasPrev) onPrev();
-      if (e.key === 'ArrowRight' && hasNext) onNext();
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [onClose, onPrev, onNext, hasPrev, hasNext]);
-
-  if (!item) return null;
-  const isVideo = item.mimeType?.startsWith('video/');
-
-  return (
-    <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.95)',zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center'}}
-      onClick={onClose}>
-      <button onClick={onClose} style={{position:'absolute',top:20,right:24,background:'none',border:'none',color:'#fff',fontSize:'1.8rem',cursor:'pointer',zIndex:1001}}>✕</button>
-      {hasPrev && (
-        <button onClick={e=>{e.stopPropagation();onPrev();}}
-          style={{position:'absolute',left:20,top:'50%',transform:'translateY(-50%)',background:'rgba(255,255,255,0.1)',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'50%',width:44,height:44,color:'#fff',fontSize:'1.2rem',cursor:'pointer',zIndex:1001}}>‹</button>
-      )}
-      {hasNext && (
-        <button onClick={e=>{e.stopPropagation();onNext();}}
-          style={{position:'absolute',right:20,top:'50%',transform:'translateY(-50%)',background:'rgba(255,255,255,0.1)',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'50%',width:44,height:44,color:'#fff',fontSize:'1.2rem',cursor:'pointer',zIndex:1001}}>›</button>
-      )}
-      <div onClick={e=>e.stopPropagation()} style={{maxWidth:'90vw',maxHeight:'90vh',display:'flex',flexDirection:'column',alignItems:'center',gap:12}}>
-        {isVideo ? (
-          <video src={item.data} controls autoPlay style={{maxWidth:'85vw',maxHeight:'80vh',borderRadius:8}} />
-        ) : (
-          <img src={item.data} alt={item.name} style={{maxWidth:'85vw',maxHeight:'80vh',objectFit:'contain',borderRadius:8}} />
-        )}
-        <div style={{color:'rgba(255,255,255,0.7)',fontSize:'0.78rem',textAlign:'center'}}>
-          {item.name} · {formatSize(item.size)}
-          {item.caption && <span style={{marginLeft:12,color:'rgba(255,255,255,0.5)'}}>— {item.caption}</span>}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ─── Image/Video Grid ────────────────────────────────────────────
 function MediaGrid({ items, onDelete, canDelete }) {
-  const [lightboxIdx, setLightboxIdx] = useState(null);
+  const [previewIdx, setPreviewIdx] = useState(null);
 
   if (!items?.length) return null;
 
@@ -96,7 +48,7 @@ function MediaGrid({ items, onDelete, canDelete }) {
           const isVideo = item.mimeType?.startsWith('video/');
           return (
             <div key={item.id} style={{position:'relative',borderRadius:'var(--radius-md)',overflow:'hidden',border:'1px solid var(--border-default)',background:'var(--bg-elevated)',aspectRatio:'1',cursor:'pointer'}}
-              onClick={()=>setLightboxIdx(idx)}>
+              onClick={() => setPreviewIdx(idx)}>
               {isVideo ? (
                 <div style={{width:'100%',height:'100%',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:6,background:'rgba(124,58,237,0.1)'}}>
                   <span style={{fontSize:'2rem'}}>🎬</span>
@@ -110,7 +62,7 @@ function MediaGrid({ items, onDelete, canDelete }) {
                 onMouseLeave={e=>e.currentTarget.style.background='rgba(0,0,0,0)'}
               />
               <div style={{position:'absolute',bottom:4,left:4,right:4,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                <span style={{fontSize:'0.6rem',color:'rgba(255,255,255,0.7)',background:'rgba(0,0,0,0.6)',padding:'2px 5px',borderRadius:4,maxWidth:90,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{formatSize(item.size)}</span>
+                <span style={{fontSize:'0.6rem',color:'rgba(255,255,255,0.7)',background:'rgba(0,0,0,0.6)',padding:'2px 5px',borderRadius:4,maxWidth:90,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{formatFileSize(item.size)}</span>
                 {canDelete && (
                   <button onClick={e=>{e.stopPropagation();onDelete(item.id);}}
                     style={{background:'rgba(239,68,68,0.8)',border:'none',borderRadius:4,color:'#fff',width:20,height:20,fontSize:'0.65rem',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>✕</button>
@@ -120,10 +72,8 @@ function MediaGrid({ items, onDelete, canDelete }) {
           );
         })}
       </div>
-      {lightboxIdx !== null && (
-        <Lightbox item={items[lightboxIdx]} onClose={()=>setLightboxIdx(null)}
-          hasPrev={lightboxIdx > 0} hasNext={lightboxIdx < items.length - 1}
-          onPrev={()=>setLightboxIdx(i=>i-1)} onNext={()=>setLightboxIdx(i=>i+1)} />
+      {previewIdx !== null && (
+        <MediaPreviewModal items={items} startIndex={previewIdx} onClose={() => setPreviewIdx(null)} />
       )}
     </>
   );
@@ -208,37 +158,42 @@ function SolutionNotesTimeline({ notes }) {
 }
 
 function SolutionMediaFileList({ items, onDelete, canDelete }) {
+  const [previewIdx, setPreviewIdx] = useState(null);
   if (!items?.length) return null;
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 10, marginTop: 12 }}>
-      {items.map(item => {
-        const preview = canPreviewMedia(item);
-        return (
-          <div key={item.id} className="card" style={{ padding: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
+    <>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 10, marginTop: 12 }}>
+        {items.map((item, idx) => (
+          <div
+            key={item.id}
+            className="card"
+            style={{ padding: 10, display: 'flex', flexDirection: 'column', gap: 8, cursor: 'pointer' }}
+            onClick={() => setPreviewIdx(idx)}
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontSize: '1.2rem' }}>{fileTypeIcon(item)}</span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: '0.75rem', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={item.name}>{item.name}</div>
                 <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-                  {formatSolutionTime(item.uploadedAt || item.createdAt)} · {formatSize(item.size)}
+                  {formatSolutionTime(item.uploadedAt || item.createdAt)} · {formatFileSize(item.size)}
                 </div>
               </div>
               {canDelete && (
                 <button type="button" className="btn btn-ghost btn-icon" style={{ width: 24, height: 24, fontSize: '0.7rem' }}
-                  onClick={() => onDelete(item.id)}>✕</button>
+                  onClick={e => { e.stopPropagation(); onDelete(item.id); }}>✕</button>
               )}
             </div>
-            {preview && item.mimeType?.startsWith('image/') && (
-              <img src={item.data} alt={item.name} style={{ width: '100%', height: 80, objectFit: 'cover', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
-                onClick={() => downloadFile(item)} />
+            {item.mimeType?.startsWith('image/') && item.data && (
+              <img src={item.data} alt={item.name} style={{ width: '100%', height: 80, objectFit: 'cover', borderRadius: 'var(--radius-sm)' }} />
             )}
-            <button type="button" className="btn btn-sm btn-secondary" style={{ alignSelf: 'flex-start' }} onClick={() => downloadFile(item)}>
-              Open / Download
-            </button>
+            <span style={{ fontSize: '0.68rem', color: 'var(--accent-primary)' }}>Click to preview</span>
           </div>
-        );
-      })}
-    </div>
+        ))}
+      </div>
+      {previewIdx !== null && (
+        <MediaPreviewModal items={items} startIndex={previewIdx} onClose={() => setPreviewIdx(null)} />
+      )}
+    </>
   );
 }
 

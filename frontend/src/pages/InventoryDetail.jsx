@@ -5,6 +5,7 @@ import { useAuth } from '../store/AuthContext';
 import { isHddCategoryKey } from '../constants/inventoryConfig';
 import { useInventoryConfig } from '../hooks/useInventoryConfig';
 import InventoryHddFields from '../components/InventoryHddFields';
+import MediaPreviewModal from '../components/MediaPreviewModal';
 
 const BASE_URL = '/api';
 const getToken = () => localStorage.getItem('accessToken');
@@ -44,35 +45,6 @@ function StatusBadge({ status }) {
   };
   const s = map[status] || map.available;
   return <span style={{ fontSize:'0.68rem',fontWeight:700,padding:'3px 8px',borderRadius:999,color:s.color,background:s.bg,fontFamily:'var(--font-mono)',textTransform:'uppercase' }}>{status?.replace(/_/g,' ')}</span>;
-}
-
-function MediaLightbox({ items, startIdx, onClose }) {
-  const [idx, setIdx] = useState(startIdx || 0);
-  useEffect(() => {
-    const h = e => { if (e.key==='Escape') onClose(); if (e.key==='ArrowRight') setIdx(i=>Math.min(i+1,items.length-1)); if (e.key==='ArrowLeft') setIdx(i=>Math.max(i-1,0)); };
-    window.addEventListener('keydown', h);
-    return () => window.removeEventListener('keydown', h);
-  }, [items, onClose]);
-  const item = items[idx];
-  const isVideo = item?.mimeType?.startsWith('video/') || item?.name?.match(/\.(mp4|webm|ogg|mov)$/i);
-  return (
-    <div style={{ position:'fixed',inset:0,background:'rgba(0,0,0,0.97)',zIndex:2000,display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column' }} onClick={onClose}>
-      <div style={{ position:'absolute',top:0,left:0,right:0,padding:'12px 20px',display:'flex',justifyContent:'space-between',alignItems:'center',background:'linear-gradient(rgba(0,0,0,0.8),transparent)' }}>
-        <span style={{ color:'rgba(255,255,255,0.7)',fontSize:'0.8rem' }}>{item?.name} · {formatSize(item?.size)}</span>
-        <div style={{ display:'flex',gap:12,alignItems:'center' }}>
-          <span style={{ color:'rgba(255,255,255,0.5)',fontSize:'0.75rem' }}>{idx+1}/{items.length}</span>
-          <button onClick={onClose} style={{ background:'rgba(255,255,255,0.1)',border:'none',color:'#fff',fontSize:'1.2rem',cursor:'pointer',padding:'4px 10px',borderRadius:6 }}>✕</button>
-        </div>
-      </div>
-      {idx > 0 && <button onClick={e=>{e.stopPropagation();setIdx(i=>i-1)}} style={{ position:'absolute',left:16,top:'50%',transform:'translateY(-50%)',background:'rgba(255,255,255,0.12)',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'50%',width:48,height:48,color:'#fff',fontSize:'1.4rem',cursor:'pointer' }}>‹</button>}
-      {idx < items.length-1 && <button onClick={e=>{e.stopPropagation();setIdx(i=>i+1)}} style={{ position:'absolute',right:16,top:'50%',transform:'translateY(-50%)',background:'rgba(255,255,255,0.12)',border:'1px solid rgba(255,255,255,0.2)',borderRadius:'50%',width:48,height:48,color:'#fff',fontSize:'1.4rem',cursor:'pointer' }}>›</button>}
-      <div onClick={e=>e.stopPropagation()} style={{ maxWidth:'88vw',maxHeight:'84vh' }}>
-        {isVideo
-          ? <video src={item.data} controls style={{ maxWidth:'100%',maxHeight:'84vh',borderRadius:8 }} />
-          : <img src={item.data} alt={item.name} style={{ maxWidth:'88vw',maxHeight:'84vh',objectFit:'contain',borderRadius:8 }} />}
-      </div>
-    </div>
-  );
 }
 
 // ─── Comparison View (shown inline when caseId is in query params) ─────────────
@@ -595,7 +567,7 @@ export default function InventoryDetail() {
       )}
 
       {/* Lightbox */}
-      {lightboxIdx !== null && <MediaLightbox items={images} startIdx={lightboxIdx} onClose={() => setLightboxIdx(null)} />}
+      {lightboxIdx !== null && <MediaPreviewModal items={images} startIndex={lightboxIdx} onClose={() => setLightboxIdx(null)} />}
     </div>
   );
 }

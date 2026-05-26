@@ -130,6 +130,17 @@ async function migrate() {
       console.warn('⚠️  Solution/KB migration warning (non-fatal):', kbErr.message);
     }
 
+    try {
+      const mediaRecycleSchema = fs.readFileSync(
+        path.join(__dirname, 'migrations', '013_media_recycle_bin.sql'),
+        'utf8'
+      );
+      await client.query(mediaRecycleSchema);
+      console.log('✅ Media recycle bin migration applied');
+    } catch (mediaRbErr) {
+      console.warn('⚠️  Media recycle bin migration warning (non-fatal):', mediaRbErr.message);
+    }
+
     const hasRoleEnum = await client.query("SELECT 1 FROM pg_type WHERE typname = 'user_role'");
     if (hasRoleEnum.rows.length) {
       try {

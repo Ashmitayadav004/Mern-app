@@ -7,8 +7,15 @@ export function formatSolutionTime(iso) {
   }
 }
 
+export function formatFileSize(bytes) {
+  if (!bytes) return '—';
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+}
+
 export function fileTypeIcon(item) {
-  const m = (item?.mimeType || '').toLowerCase();
+  const m = (item?.mimeType || item?.mime_type || '').toLowerCase();
   const n = (item?.name || '').toLowerCase();
   if (m.startsWith('image/')) return '🖼️';
   if (m.startsWith('video/')) return '🎬';
@@ -20,16 +27,44 @@ export function fileTypeIcon(item) {
   return '📎';
 }
 
+export function getMediaPreviewType(item) {
+  const m = (item?.mimeType || item?.mime_type || '').toLowerCase();
+  const n = (item?.name || '').toLowerCase();
+  if (m.startsWith('image/')) return 'image';
+  if (m.startsWith('video/') || /\.(mp4|webm|ogg|mov|mkv)$/.test(n)) return 'video';
+  if (m.startsWith('audio/') || /\.(mp3|wav|ogg|m4a|aac|flac)$/.test(n)) return 'audio';
+  if (m === 'application/pdf' || n.endsWith('.pdf')) return 'pdf';
+  return 'details';
+}
+
 export function canPreviewMedia(item) {
-  const m = item?.mimeType || '';
-  return m.startsWith('image/') || m.startsWith('video/');
+  return getMediaPreviewType(item) !== 'details';
 }
 
 export function downloadFile(item) {
   if (!item?.data) return;
-  const a = document.createElement('a');
-  a.href = item.data;
-  a.download = item.name || 'download';
-  a.rel = 'noopener';
-  a.click();
+  const name = item.name || 'download';
+  const link = document.createElement('a');
+  link.rel = 'noopener';
+  link.download = name;
+
+  if (item.data.startsWith('data:')) {
+    link.href = item.data;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    return;
+  }
+
+  link.href = item.data;
+  link.target = '_blank';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+export function openMediaInNewTab(item) {
+  if (!item?.data) return;
+  const w = window.open(item.data, '_blank', 'noopener,noreferrer');
+  if (!w) downloadFile(item);
 }
