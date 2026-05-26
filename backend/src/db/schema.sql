@@ -321,13 +321,14 @@ CREATE TABLE inventory_items (
   reserved_for_case UUID REFERENCES cases(id),
   notes TEXT,
   added_by UUID REFERENCES users(id),
+  is_transferred_to_client BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE TABLE inventory_transactions (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  item_id UUID NOT NULL REFERENCES inventory_items(id),
+  item_id UUID NOT NULL REFERENCES inventory_items(id) ON DELETE CASCADE,
   case_id UUID REFERENCES cases(id),
   type VARCHAR(20) NOT NULL,  -- in, out, reserved, returned, disposed
   quantity INTEGER NOT NULL,

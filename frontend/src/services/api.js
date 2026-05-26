@@ -145,6 +145,7 @@ export const inventoryApi = {
   uploadImages: (id, formData) => api.upload(`/inventory/${id}/images`, formData),
   deleteImage: (id, imgId) => api.delete(`/inventory/${id}/images/${imgId}`),
   transfer: (id, notes) => api.post(`/inventory/${id}/transfer`, { notes }),
+  transferToClient: (id, isTransferred) => api.patch(`/inventory/${id}/transfer-to-client`, { is_transferred_to_client: !!isTransferred }),
   bulkSoftDelete: (ids) => api.post('/inventory/bulk-delete', { ids }),
   listRecycleBin: (params) => api.get('/inventory/recycle-bin', params),
   restore: (id) => api.post(`/inventory/recycle-bin/${id}/restore`),

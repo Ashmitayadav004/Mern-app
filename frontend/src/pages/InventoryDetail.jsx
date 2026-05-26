@@ -263,6 +263,19 @@ export default function InventoryDetail() {
 
   const handleDrop = e => { e.preventDefault(); uploadMedia(e.dataTransfer.files); };
 
+  const handleTransferToClient = async () => {
+    const newStatus = !item.is_transferred_to_client;
+    const confirmMsg = newStatus 
+      ? 'Are you sure you want to transfer this item to the client?' 
+      : 'Are you sure you want to undo the transfer of this item to the client?';
+    if (!confirm(confirmMsg)) return;
+    try {
+      const response = await inventoryApi.transferToClient(id, newStatus);
+      setItem(prev => ({ ...prev, is_transferred_to_client: newStatus }));
+      alert(`✅ Item status updated: Transferred to Client = ${newStatus ? 'Yes' : 'No'}`);
+    } catch(e){ alert(e.message || 'Failed to update transfer status'); }
+  };
+
   if (loading) return <div style={{ display:'flex',justifyContent:'center',paddingTop:80 }}><div className="spinner" style={{ width:32,height:32,borderWidth:3 }} /></div>;
   if (!item) return <div className="empty-state"><div className="empty-title">Stock item not found</div></div>;
 
@@ -284,7 +297,6 @@ export default function InventoryDetail() {
   const TABS = [
     { key: 'overview', label: '📋 Overview' },
     { key: 'photos', label: `📷 Media (${images.length})` },
-    { key: 'files', label: '📁 Files' },
     { key: 'history', label: '📜 History' },
     ...(compareWithCase ? [{ key: 'compare', label: '🔬 Comparison' }] : []),
   ];
@@ -362,10 +374,11 @@ export default function InventoryDetail() {
               <button className="btn btn-primary" disabled={savingEdit} onClick={handleSaveEdit}>{savingEdit ? '…' : '💾 Save'}</button>
             </>
           )}
-          <button className="btn btn-secondary" onClick={() => imgRef.current?.click()}>📷 Add Photos</button>
-          <button className="btn btn-secondary" onClick={() => fileRef.current?.click()}>📁 Add Files</button>
-          <input ref={imgRef} type="file" multiple accept="image/*,video/*" style={{ display:'none' }} onChange={e => uploadMedia(e.target.files)} />
-          <input ref={fileRef} type="file" multiple style={{ display:'none' }} onChange={e => uploadMedia(e.target.files, true)} />
+          <button className="btn btn-secondary" onClick={() => imgRef.current?.click()}>� Add Media/Files</button>
+          <button className={`btn btn-sm ${item.is_transferred_to_client ? 'btn-success' : 'btn-secondary'}`} onClick={handleTransferToClient}>
+            {item.is_transferred_to_client ? '✓ Transferred to Client' : '🤝 Transfer to Client'}
+          </button>
+          <input ref={imgRef} type="file" multiple style={{ display:'none' }} onChange={e => uploadMedia(e.target.files)} />
         </div>
       </div>
 
@@ -522,7 +535,7 @@ export default function InventoryDetail() {
             {uploading ? (
               <><div className="spinner" style={{ width:24,height:24,margin:'0 auto 8px' }} /><div style={{ color:'var(--text-muted)',fontSize:'0.82rem' }}>Uploading…</div></>
             ) : (
-              <><div style={{ fontSize:'2.5rem',marginBottom:8 }}>📷</div><div style={{ fontWeight:600,marginBottom:4 }}>Drag & drop images/videos or click to browse</div><div style={{ fontSize:'0.75rem',color:'var(--text-muted)' }}>Supports images and video files (MP4, MOV, WebM)</div></>
+              <><div style={{ fontSize:'2.5rem',marginBottom:8 }}>�</div><div style={{ fontWeight:600,marginBottom:4 }}>Drag & drop media or click to browse</div><div style={{ fontSize:'0.75rem',color:'var(--text-muted)' }}>Supports images, videos (MP4, MOV, WebM), and files (PDF, DOC, ZIP, etc.)</div></>
             )}
           </div>
           {images.length === 0 ? (
@@ -548,36 +561,6 @@ export default function InventoryDetail() {
                   </div>
                 );
               })}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Files Tab */}
-      {activeTab === 'files' && (
-        <div>
-          <div
-            onClick={() => fileRef.current?.click()}
-            style={{ border:'2px dashed var(--border-default)',borderRadius:'var(--radius-xl)',padding:32,textAlign:'center',marginBottom:20,background:'var(--bg-elevated)',cursor:'pointer' }}
-          >
-            <div style={{ fontSize:'2rem',marginBottom:8 }}>📁</div>
-            <div style={{ fontWeight:600,marginBottom:4 }}>Click to upload files</div>
-            <div style={{ fontSize:'0.75rem',color:'var(--text-muted)' }}>PDFs, datasheets, reports, Excel files, etc.</div>
-          </div>
-          {files.length === 0 ? (
-            <div className="empty-state"><div className="empty-icon">📁</div><div className="empty-title">No files attached</div></div>
-          ) : (
-            <div style={{ display:'flex',flexDirection:'column',gap:8 }}>
-              {files.map(f => (
-                <div key={f.id} className="card" style={{ padding:'10px 16px',display:'flex',alignItems:'center',gap:12 }}>
-                  <span style={{ fontSize:'1.4rem' }}>📄</span>
-                  <div style={{ flex:1 }}>
-                    <div style={{ fontWeight:600,fontSize:'0.82rem' }}>{f.name}</div>
-                    <div style={{ fontSize:'0.72rem',color:'var(--text-muted)' }}>{formatSize(f.size)}</div>
-                  </div>
-                  <a href={f.data} download={f.name} className="btn btn-secondary btn-sm">⬇️ Download</a>
-                </div>
-              ))}
             </div>
           )}
         </div>

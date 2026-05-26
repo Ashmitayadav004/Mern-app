@@ -830,6 +830,7 @@ export default function InventoryPage() {
                   <th>PCB #</th>
                   <th>Capacity</th>
                   {viewMode === 'stock' && <th>Status</th>}
+                  {viewMode === 'stock' && <th>Transferred to Client</th>}
                   <th>Qty</th>
                   {viewMode === 'recycle' && <th>Deleted</th>}
                   <th></th>
@@ -867,6 +868,7 @@ export default function InventoryPage() {
                       <td className="text-xs font-mono">{item.pcb_number || dyn.pcb_number || '—'}</td>
                       <td className="text-xs text-muted">{item.capacity || dyn.capacity || '—'}</td>
                       {viewMode === 'stock' && <td><StatusBadge status={item.status || 'available'} /></td>}
+                      {viewMode === 'stock' && <td style={{ fontSize: '0.8rem', fontWeight: 600, color: item.is_transferred_to_client ? '#10b981' : '#94a3b8' }}>{item.is_transferred_to_client ? '✓ Yes' : '—'}</td>}
                       <td>
                         <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '0.85rem', color: isLow ? 'var(--status-danger)' : 'inherit' }}>
                           {item.quantity}
