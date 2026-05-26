@@ -1,5 +1,5 @@
 const express = require('express');
-const { query } = require('../config/database');
+const { query, transaction } = require('../config/database');
 const { authenticate, requireMinRole } = require('../middleware/auth');
 const { auditLog } = require('../middleware/audit');
 const {
@@ -396,6 +396,29 @@ router.patch('/:id/quantity', requireMinRole('junior_engineer'), auditLog('adjus
   }
 });
 
+// PATCH /api/inventory/:id/transfer-to-client
+router.patch('/:id/transfer-to-client', requireMinRole('junior_engineer'), auditLog('transfer_inventory_to_client', 'inventory'), async (req, res) => {
+  try {
+    await query(`ALTER TABLE inventory_items ADD COLUMN IF NOT EXISTS is_transferred_to_client BOOLEAN DEFAULT false`);
+
+    let { is_transferred_to_client } = req.body;
+    if (typeof is_transferred_to_client === 'undefined') {
+      const current = await query('SELECT is_transferred_to_client FROM inventory_items WHERE id=$1', [req.params.id]);
+      if (!current.rows.length) return res.status(404).json({ error: 'Item not found' });
+      is_transferred_to_client = !current.rows[0].is_transferred_to_client;
+    }
+
+    const result = await query(
+      `UPDATE inventory_items SET is_transferred_to_client = $1, updated_at = NOW() WHERE id = $2 RETURNING *`,
+      [!!is_transferred_to_client, req.params.id]
+    );
+    if (!result.rows.length) return res.status(404).json({ error: 'Item not found' });
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // POST /api/inventory/import
 router.post('/import', requireMinRole('admin'), async (req, res) => {
   try {
@@ -529,12 +552,20 @@ router.post('/bulk-permanent-delete', requireMinRole('admin'), auditLog('bulk_pe
     }
 
     const placeholders = ids.map((_, i) => `$${i + 1}`).join(',');
-    const result = await query(
-      `DELETE FROM inventory_items WHERE id IN (${placeholders}) AND deleted_at IS NOT NULL RETURNING id`,
-      ids
-    );
+    const deletedCount = await transaction(async client => {
+      await client.query(`DELETE FROM inventory_transactions WHERE item_id IN (${placeholders})`, ids);
+      await client.query(`DELETE FROM inventory_images WHERE item_id IN (${placeholders})`, ids);
+      const result = await client.query(
+        `DELETE FROM inventory_items WHERE id IN (${placeholders}) AND deleted_at IS NOT NULL RETURNING id`,
+        ids
+      );
+      return result.rows.length;
+    });
 
-    res.json({ message: `${result.rows.length} item(s) permanently deleted`, deleted_count: result.rows.length });
+    res.json({ 
+      message: `${deletedCount} item(s) and associated media permanently deleted`, 
+      deleted_count: deletedCount 
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -559,12 +590,21 @@ router.post('/recycle-bin/:id/restore', requireMinRole('junior_engineer'), audit
 // DELETE /api/inventory/recycle-bin/:id/permanent-delete
 router.delete('/recycle-bin/:id/permanent-delete', requireMinRole('admin'), auditLog('permanent_delete_inventory', 'inventory'), async (req, res) => {
   try {
-    const result = await query(
-      'DELETE FROM inventory_items WHERE id=$1 AND deleted_at IS NOT NULL RETURNING id',
-      [req.params.id]
-    );
-    if (!result.rows.length) return res.status(404).json({ error: 'Item not found in recycle bin' });
-    res.json({ message: 'Item permanently deleted' });
+    const result = await transaction(async client => {
+      const itemCheck = await client.query(
+        'SELECT id FROM inventory_items WHERE id=$1 AND deleted_at IS NOT NULL',
+        [req.params.id]
+      );
+      if (!itemCheck.rows.length) return null;
+
+      await client.query('DELETE FROM inventory_transactions WHERE item_id=$1', [req.params.id]);
+      await client.query('DELETE FROM inventory_images WHERE item_id=$1', [req.params.id]);
+      const deleted = await client.query('DELETE FROM inventory_items WHERE id=$1 RETURNING id', [req.params.id]);
+      return deleted.rows[0];
+    });
+
+    if (!result) return res.status(404).json({ error: 'Item not found in recycle bin' });
+    res.json({ message: 'Item and all associated media permanently deleted', deleted_id: result.id });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
