@@ -1,0 +1,20 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 90
+    },
+    "auditLog": "C:\\Users\\hr160\\Desktop\\mern-app\\backend\\logs\\.2698b486bd368dbadfa48835402cd3bfcd7824d2-audit.json",
+    "files": [
+        {
+            "date": 1779710323650,
+            "name": "C:\\Users\\hr160\\Desktop\\mern-app\\backend\\logs\\error-2026-05-25.log",
+            "hash": "00094764f510cab84ee18086942a1134090536d3eea4c1eeab7cc0a52ff98e3d"
+        },
+        {
+            "date": 1779769812224,
+            "name": "C:\\Users\\hr160\\Desktop\\mern-app\\backend\\logs\\error-2026-05-26.log",
+            "hash": "5978af7d859887c989278f2427a997063ee270f5500ddeca8f4e5f19c6b2800c"
+        }
+    ],
+    "hashType": "sha256"
+}

@@ -4,6 +4,171 @@ import { usersApi } from '../services/api';
 import HddFieldConfigManager from '../components/settings/HddFieldConfigManager';
 import InventoryStockConfigManager from '../components/settings/InventoryStockConfigManager';
 
+// ── Per-family Inventory field/dropdown manager ────────────────────────────────
+const INV_DEFAULTS = {
+  hdd: [
+    { key: 'mfg_country',   label: 'Manufacturing Country', type: 'select', options: ['China', 'Thailand', 'Malaysia', 'Japan', 'USA', 'Philippines'] },
+    { key: 'capacity',      label: 'Capacity',              type: 'select', options: ['160GB', '250GB', '320GB', '500GB', '750GB', '1TB', '2TB', '4TB'] },
+    { key: 'interface',     label: 'Interface',             type: 'select', options: ['SATA', 'SAS', 'IDE/PATA', 'NVMe', 'USB'] },
+    { key: 'form_factor',   label: 'Form Factor',           type: 'select', options: ['3.5"', '2.5"', '1.8"'] },
+    { key: 'rpm',           label: 'RPM',                   type: 'select', options: ['5400', '7200', '10000', '15000'] },
+    { key: 'rom_family',    label: 'ROM Family',            type: 'text',   options: [] },
+    { key: 'firmware',      label: 'Firmware',              type: 'text',   options: [] },
+    { key: 'heads',         label: 'Heads',                 type: 'text',   options: [] },
+    { key: 'condition',     label: 'Condition',             type: 'select', options: ['New', 'Good', 'Refurbished', 'For Parts'] },
+  ],
+  ssd: [
+    { key: 'capacity',      label: 'Capacity',              type: 'select', options: ['64GB', '128GB', '256GB', '512GB', '1TB', '2TB', '4TB'] },
+    { key: 'ssd_type',      label: 'SSD Type',              type: 'select', options: ['SATA', 'NVMe M.2', 'mSATA', 'PCIe', 'U.2'] },
+    { key: 'interface',     label: 'Interface',             type: 'select', options: ['SATA III', 'PCIe 3.0', 'PCIe 4.0', 'PCIe 5.0'] },
+    { key: 'nand_type',     label: 'NAND Type',             type: 'select', options: ['TLC', 'MLC', 'QLC', 'SLC', '3D NAND'] },
+    { key: 'controller',    label: 'Controller',            type: 'text',   options: [] },
+    { key: 'condition',     label: 'Condition',             type: 'select', options: ['New', 'Good', 'Refurbished', 'For Parts'] },
+  ],
+  pcb: [
+    { key: 'pcb_name',      label: 'PCB Name',              type: 'text',   options: [] },
+    { key: 'pcb_number',    label: 'PCB Number',            type: 'text',   options: [] },
+    { key: 'pcb_problem',   label: 'PCB Problem',           type: 'select', options: ['Burnt', 'Short Circuit', 'Missing Component', 'Capacitor Failure', 'TVS Diode Blown', 'Other'] },
+    { key: 'pcb_type',      label: 'PCB Type',              type: 'select', options: ['HDD PCB', 'SSD Controller PCB', 'Donor PCB', 'Flash PCB'] },
+    { key: 'compatible_with', label: 'Compatible With',     type: 'text',   options: [] },
+    { key: 'mfg_country',   label: 'Manufacturing Country', type: 'select', options: ['China', 'Thailand', 'Malaysia', 'Japan', 'USA'] },
+    { key: 'condition',     label: 'Condition',             type: 'select', options: ['New', 'Used-Good', 'Faulty-For Parts'] },
+  ],
+  other: [
+    { key: 'item_type',     label: 'Item Type',             type: 'select', options: ['Tape', 'Flash Drive', 'Memory Card', 'RAID Controller', 'Cable', 'Adapter', 'Tool'] },
+    { key: 'capacity',      label: 'Capacity (if applicable)', type: 'text', options: [] },
+    { key: 'interface',     label: 'Interface',             type: 'select', options: ['USB', 'SATA', 'SAS', 'Thunderbolt', 'FireWire', 'Other'] },
+    { key: 'condition',     label: 'Condition',             type: 'select', options: ['New', 'Good', 'Refurbished', 'For Parts'] },
+  ],
+};
+
+function InvCategorySettings({ deviceFamily }) {
+  const storageKey = `inv_fields_${deviceFamily}`;
+  const [fields, setFields] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(storageKey));
+      return saved && saved.length ? saved : INV_DEFAULTS[deviceFamily] || [];
+    } catch { return INV_DEFAULTS[deviceFamily] || []; }
+  });
+  const [expandedField, setExpandedField] = useState(null);
+  const [newOptVal, setNewOptVal]   = useState('');
+  const [newFieldLabel, setNewFieldLabel] = useState('');
+  const [saved, setSaved] = useState(false);
+
+  const persist = (next) => {
+    setFields(next);
+    localStorage.setItem(storageKey, JSON.stringify(next));
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  const addOption = (fieldKey) => {
+    if (!newOptVal.trim()) return;
+    const next = fields.map(f =>
+      f.key === fieldKey ? { ...f, options: [...(f.options || []), newOptVal.trim()] } : f
+    );
+    persist(next);
+    setNewOptVal('');
+  };
+
+  const removeOption = (fieldKey, optIdx) => {
+    const next = fields.map(f =>
+      f.key === fieldKey ? { ...f, options: f.options.filter((_, i) => i !== optIdx) } : f
+    );
+    persist(next);
+  };
+
+  const addCustomField = () => {
+    if (!newFieldLabel.trim()) return;
+    const key = newFieldLabel.trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+    if (fields.find(f => f.key === key)) return;
+    persist([...fields, { key, label: newFieldLabel.trim(), type: 'text', options: [], custom: true }]);
+    setNewFieldLabel('');
+  };
+
+  const removeField = (fieldKey) => {
+    if (!window.confirm('Remove this field?')) return;
+    persist(fields.filter(f => f.key !== fieldKey));
+  };
+
+  const resetDefaults = () => {
+    if (!window.confirm('Reset to default fields? Custom fields will be lost.')) return;
+    persist([...(INV_DEFAULTS[deviceFamily] || [])]);
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      {saved && (
+        <div style={{ padding: '8px 14px', background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: 8, fontSize: '0.8rem', color: '#22c55e', fontWeight: 700 }}>
+          ✓ Saved
+        </div>
+      )}
+
+      {fields.map(f => (
+        <div key={f.key} style={{ background: 'var(--bg-elevated)', borderRadius: 8, border: '1px solid var(--border-subtle)', overflow: 'hidden' }}>
+          {/* Field header row */}
+          <div style={{ display: 'flex', alignItems: 'center', padding: '10px 14px', gap: 10, cursor: 'pointer' }}
+            onClick={() => setExpandedField(expandedField === f.key ? null : f.key)}>
+            <span style={{ fontSize: '0.78rem', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', width: 120, flexShrink: 0 }}>{f.key}</span>
+            <span style={{ fontWeight: 600, fontSize: '0.85rem', flex: 1 }}>{f.label}</span>
+            <span style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: 20, background: f.type === 'select' ? 'rgba(0,212,255,0.1)' : 'rgba(99,102,241,0.1)', color: f.type === 'select' ? 'var(--accent-primary)' : '#a78bfa', fontWeight: 700 }}>
+              {f.type === 'select' ? `▾ ${(f.options || []).length} opts` : 'text'}
+            </span>
+            {f.custom && (
+              <button type="button" onClick={e => { e.stopPropagation(); removeField(f.key); }}
+                style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '1rem', padding: '0 4px' }}>✕</button>
+            )}
+            <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>{expandedField === f.key ? '▲' : '▼'}</span>
+          </div>
+
+          {/* Expanded: option list */}
+          {expandedField === f.key && f.type === 'select' && (
+            <div style={{ borderTop: '1px solid var(--border-subtle)', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ fontWeight: 600, fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 4 }}>Dropdown Options</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {(f.options || []).map((opt, idx) => (
+                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'var(--bg-card)', border: '1px solid var(--border-default)', borderRadius: 20, padding: '3px 10px', fontSize: '0.78rem' }}>
+                    <span>{opt}</span>
+                    <button type="button" onClick={() => removeOption(f.key, idx)}
+                      style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 11, padding: 0, lineHeight: 1 }}>✕</button>
+                  </div>
+                ))}
+                {!(f.options || []).length && <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>No options yet — add below.</span>}
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input className="form-input" style={{ flex: 1 }} placeholder="Add option value…"
+                  value={newOptVal} onChange={e => setNewOptVal(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && addOption(f.key)} />
+                <button type="button" className="btn btn-primary btn-sm" onClick={() => addOption(f.key)}>+ Add</button>
+              </div>
+            </div>
+          )}
+          {expandedField === f.key && f.type === 'text' && (
+            <div style={{ borderTop: '1px solid var(--border-subtle)', padding: '10px 14px' }}>
+              <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Free-text field — no dropdown options needed.</span>
+            </div>
+          )}
+        </div>
+      ))}
+
+      {/* Add custom field */}
+      <div style={{ background: 'var(--bg-elevated)', borderRadius: 8, border: '1px dashed var(--border-default)', padding: 14 }}>
+        <div style={{ fontWeight: 700, fontSize: '0.82rem', marginBottom: 8 }}>➕ Add Custom Field</div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <input className="form-input" style={{ flex: 1 }} placeholder='e.g. "Warranty", "Supplier Code"'
+            value={newFieldLabel} onChange={e => setNewFieldLabel(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && addCustomField()} />
+          <button type="button" className="btn btn-primary" onClick={addCustomField}>+ Add</button>
+        </div>
+      </div>
+
+      <div style={{ textAlign: 'right' }}>
+        <button type="button" className="btn btn-secondary btn-sm" onClick={resetDefaults}>↺ Reset Defaults</button>
+      </div>
+    </div>
+  );
+}
+
 const BASE_URL = '/api';
 const getToken = () => localStorage.getItem('accessToken');
 const companyApi = {
@@ -893,12 +1058,21 @@ export default function SettingsPage() {
     ...(canAccess('admin') ? [{
       id: 'case_settings', label: '📋 Case Settings', icon: '📋',
       children: [
-        { key: 'symptoms',     label: 'Symptoms' },
-        { key: 'failures',     label: 'Failure' },
-        { key: 'brands',       label: 'Device Brands' },
-        { key: 'hdd_types',    label: 'HDD Types' },
-        { key: 'capacities',   label: 'HDD Capacity' },
+        { key: 'symptoms',   label: 'Symptoms' },
+        { key: 'failures',   label: 'Failure' },
+        { key: 'brands',     label: 'Device Brands' },
+        { key: 'hdd_types',  label: 'HDD Types' },
+        { key: 'capacities', label: 'HDD Capacity' },
         { key: 'field_config', label: 'Field Config' },
+      ]
+    }] : []),
+    ...(canAccess('admin') ? [{
+      id: 'inventory_settings', label: '📦 Inventory Settings', icon: '📦',
+      children: [
+        { key: 'inv_hdd',   label: 'HDD' },
+        { key: 'inv_ssd',   label: 'SSD' },
+        { key: 'inv_pcb',   label: 'PCB' },
+        { key: 'inv_other', label: 'Other' },
       ]
     }] : []),
     ...(canAccess('admin') ? [{
@@ -1789,14 +1963,77 @@ export default function SettingsPage() {
             </div>
           )}
 
-          {/* HDD TYPES */}
+          {/* HDD TYPES (Case Settings child) */}
           {activeTab === 'hdd_types' && (
             <div className="card">
-              <div className="card-title" style={{ marginBottom: 4 }}>💾 HDD Types & Stock Form</div>
+              <div className="card-title" style={{ marginBottom: 4 }}>🖴 HDD Types & Brands</div>
               <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 16 }}>
-                Manage brands (Company dropdown), categories (Add Stock), and field definitions used on the inventory form.
+                Manage HDD brands, stock categories, and stock form field definitions used across the inventory.
               </div>
               <InventoryStockConfigManager />
+            </div>
+          )}
+
+          {/* FIELD CONFIG (Case Settings child) */}
+          {activeTab === 'field_config' && (
+            <div className="card">
+              <div className="card-title" style={{ marginBottom: 4 }}>🔧 Field Config</div>
+              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 16 }}>
+                Control which fields appear on the Add Stock form per inventory category and set each field's visibility status.
+              </div>
+              <HddFieldConfigManager />
+            </div>
+          )}
+
+          {/* INVENTORY SETTINGS — HDD */}
+          {activeTab === 'inv_hdd' && (
+            <div className="card">
+              <div className="card-header">
+                <div className="card-title">🖴 HDD Inventory Settings</div>
+              </div>
+              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 16 }}>
+                Configure dynamic form fields, dropdown options, and stock properties for <strong>HDD</strong> items.
+              </div>
+              <InvCategorySettings deviceFamily="hdd" />
+            </div>
+          )}
+
+          {/* INVENTORY SETTINGS — SSD */}
+          {activeTab === 'inv_ssd' && (
+            <div className="card">
+              <div className="card-header">
+                <div className="card-title">⚡ SSD Inventory Settings</div>
+              </div>
+              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 16 }}>
+                Configure dynamic form fields, dropdown options, and stock properties for <strong>SSD</strong> items.
+              </div>
+              <InvCategorySettings deviceFamily="ssd" />
+            </div>
+          )}
+
+          {/* INVENTORY SETTINGS — PCB */}
+          {activeTab === 'inv_pcb' && (
+            <div className="card">
+              <div className="card-header">
+                <div className="card-title">🔌 PCB Inventory Settings</div>
+              </div>
+              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 16 }}>
+                Configure dynamic form fields, dropdown options, and stock properties for <strong>PCB</strong> items.
+              </div>
+              <InvCategorySettings deviceFamily="pcb" />
+            </div>
+          )}
+
+          {/* INVENTORY SETTINGS — Other */}
+          {activeTab === 'inv_other' && (
+            <div className="card">
+              <div className="card-header">
+                <div className="card-title">📦 Other Inventory Settings</div>
+              </div>
+              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 16 }}>
+                Configure dynamic form fields, dropdown options, and stock properties for <strong>Other</strong> category items.
+              </div>
+              <InvCategorySettings deviceFamily="other" />
             </div>
           )}
 
@@ -1805,17 +2042,6 @@ export default function SettingsPage() {
             <div className="card">
               <div className="card-title" style={{marginBottom:16}}>📏 HDD Capacity Options</div>
               <CapacitiesManager />
-            </div>
-          )}
-
-          {/* FIELD CONFIG */}
-          {activeTab === 'field_config' && (
-            <div className="card">
-              <div className="card-title" style={{marginBottom:4}}>🔧 HDD Field Configuration</div>
-              <div style={{fontSize:'0.78rem',color:'var(--text-muted)',marginBottom:16}}>
-                Choose an inventory category (WD 3.5", PCB, SSD, Phone, …). Set fields mandatory/optional/hidden and add custom fields — they appear on the Add Stock form for that category.
-              </div>
-              <HddFieldConfigManager />
             </div>
           )}
 

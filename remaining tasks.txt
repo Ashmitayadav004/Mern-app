@@ -1,0 +1,62 @@
+new case
+
+hdd no. -> case no. 
+problem description & dignosis manually and selection box (list)
+when start writing in the problem description and dignosis 
+validation and required fields in new case
+do not jump without filling all the fields from profile to device
+form will get disappear only after clicking x button.
+in hdd fields manufacturing country -> dropdown
+yhiland china malesiya , philipines.
+astrik on all fields 
+
+
+
+Settings
+
+coustom fields adding in new case through settings 
+hdd number prefix automatic / manual custom in new case
+adding dynamic drop down for the manufacturing country.  
+handle astrik dynamically
+
+catagorize setting sections. - done
+
+super Admin
+adding new user fields not showing on new member log in . - done
+
+
+
+
+clients : asc/desc for all fields
+active case order acs / desc : 4/10 
+total paid -> total panding  
+new create case me balance remainig ammount -> showing on total panding on clinets page
+
+
+
+
+
+Today's Work Updates 
+* Redesigned and improved the overall UI/UX across the application
+* Added floating chat UI component for better communication experience
+* Reorganized and optimized the Settings page structure/navigation
+* Improved multi-step Case Form validation and UX
+Case Form Improvements:
+* Added RED (*) indicators for all required fields
+* Validation errors now appear only:
+  * when invalid data is entered
+  * or when a touched field is left empty
+* Removed unnecessary initial validation error spam
+* "Next" button now enables only when the current step is valid
+* Preserved form data while navigating between steps
+* Added smoother step transition experience
+HDD Section Improvements:
+* Added searchable required dropdown for Manufacturing field
+* Manufacturing options added:
+  * Thailand
+  * China
+  * Malaysia
+  * Philippines
+Additional Changes:
+* Changed HDD No field to auto-use/improve Case Number handling
+* Overall form flow and usability improved for smoother operations
