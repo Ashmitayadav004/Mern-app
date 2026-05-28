@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth, PERMISSION_MODULES, buildFullPermissions, buildEmptyPermissions } from '../store/AuthContext';
 
+const stripDecorativeIcon = (label = '') => String(label).replace(/^[\p{Extended_Pictographic}\uFE0F]+\s*/gu, '').trim();
+
 const BASE_URL = '/api';
 const getToken = () => localStorage.getItem('accessToken');
 
@@ -46,7 +48,6 @@ function PermissionMatrix({ permissions, onChange, readonly = false }) {
         <div key={mod.key} style={{ border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: 'var(--bg-elevated)', borderBottom: '1px solid var(--border-subtle)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: '1rem' }}>{mod.icon}</span>
               <span style={{ fontWeight: 700, fontSize: '0.82rem', color: 'var(--text-primary)' }}>{mod.label}</span>
             </div>
             {!readonly && (

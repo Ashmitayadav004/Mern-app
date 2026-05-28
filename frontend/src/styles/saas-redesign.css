@@ -1,9 +1,3 @@
-/**
- * RecoverLab CRM — Acelle Mail Inspired Enterprise SaaS UI Redesign
- * 100% Scoped styling layer.
- * Strictly applies inside .saas-app to avoid Super Admin page leakage.
- */
-
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 /* ── Scoped Theme Variables ── */

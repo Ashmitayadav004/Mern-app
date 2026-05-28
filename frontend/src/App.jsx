@@ -41,7 +41,7 @@ const MarketingPage       = React.lazy(() => import('./pages/MarketingPage'));
 function LoadingScreen() {
   return (
     <div className="loading-screen">
-      <div className="loading-logo">💾</div>
+      <div className="loading-logo">RL</div>
       <div className="spinner" />
     </div>
   );
@@ -57,66 +57,66 @@ function Sidebar({ open, onClose }) {
   // Build nav with permission guards
   // Super Admin only sees their own console — no tenant-level Operations or Intelligence
   const opsItems = isSuperAdmin ? [] : [
-    { icon: '⬡', label: 'Dashboard', to: '/' },
-    ...(hasPermission('cases', 'view') || isAdmin ? [{ icon: '📂', label: 'Cases', to: '/cases' }] : []),
-    ...(hasPermission('clients', 'view') || isAdmin ? [{ icon: '👥', label: 'Clients', to: '/clients' }] : []),
+    { icon: '', label: 'Dashboard', to: '/' },
+    ...(hasPermission('cases', 'view') || isAdmin ? [{ icon: '', label: 'Cases', to: '/cases' }] : []),
+    ...(hasPermission('clients', 'view') || isAdmin ? [{ icon: '', label: 'Clients', to: '/clients' }] : []),
   ];
   const intelItems = isSuperAdmin ? [] : [
-    ...(hasPermission('inventory', 'view') || isAdmin ? [{ icon: '🔄', label: 'Inventory', to: '/inventory' }] : []),
-    ...(hasPermission('inventory', 'view') || isAdmin ? [{ icon: '💿', label: 'Donor Drive', to: '/donors' }] : []),
-    ...(hasPermission('inventory', 'view') || isAdmin ? [{ icon: '📤', label: 'Transferred Items', to: '/transferred-items' }] : []),
-    ...(hasPermission('knowledge_base', 'view') || isAdmin ? [{ icon: '📚', label: 'Knowledge Base', to: '/solutions' }] : []),
-    ...(isAdmin ? [{ icon: '📣', label: 'Marketing', to: '/marketing' }] : []),
+    ...(hasPermission('inventory', 'view') || isAdmin ? [{ icon: '', label: 'Inventory', to: '/inventory' }] : []),
+    ...(hasPermission('inventory', 'view') || isAdmin ? [{ icon: '', label: 'Donor Drive', to: '/donors' }] : []),
+    ...(hasPermission('inventory', 'view') || isAdmin ? [{ icon: '', label: 'Transferred Items', to: '/transferred-items' }] : []),
+    ...(hasPermission('knowledge_base', 'view') || isAdmin ? [{ icon: '', label: 'Knowledge Base', to: '/solutions' }] : []),
+    ...(isAdmin ? [{ icon: '', label: 'Marketing', to: '/marketing' }] : []),
   ];
   const financeItems = isSuperAdmin ? [] : [
-    ...(hasPermission('accounting', 'view') || isAdmin ? [{ icon: '💼', label: 'Accounting', to: '/accounting' }] : []),
-    ...(hasPermission('reports', 'view') || isAdmin ? [{ icon: '📊', label: 'Reports', to: '/reports' }] : []),
-    ...(hasPermission('analytics', 'view') || isAdmin ? [{ icon: '📈', label: 'Analytics', to: '/analytics' }] : []),
+    ...(hasPermission('accounting', 'view') || isAdmin ? [{ icon: '', label: 'Accounting', to: '/accounting' }] : []),
+    ...(hasPermission('reports', 'view') || isAdmin ? [{ icon: '', label: 'Reports', to: '/reports' }] : []),
+    ...(hasPermission('analytics', 'view') || isAdmin ? [{ icon: '', label: 'Analytics', to: '/analytics' }] : []),
   ];
   const systemItems = isSuperAdmin
     // Super Admin system items — platform-level only
     ? [
-        { icon: '🛡️', label: 'Security & Backup', to: '/security' },
-        { icon: '⚙️', label: 'Settings', to: '/settings' },
+        { icon: '', label: 'Security & Backup', to: '/security' },
+        { icon: '', label: 'Settings', to: '/settings' },
       ]
     // Regular user system items — all items now properly permission-gated
     : [
-        ...(isOwner ? [{ icon: '💎', label: 'Subscription', to: '/subscription' }] : []),
-        ...(isAdmin ? [{ icon: '🛡️', label: 'Security & Backup', to: '/security' }] : []),
-        { icon: '💬', label: 'Team Chat', to: '/chat' },
-        ...(hasPermission('recycle_bin', 'view') || isAdmin ? [{ icon: '🗑️', label: 'Recycle Bin', to: '/recycle-bin' }] : []),
-        ...(hasPermission('webhooks', 'view') || isAdmin ? [{ icon: '🔗', label: 'Webhooks', to: '/webhooks' }] : []),
-        ...(hasPermission('settings', 'view') || isAdmin ? [{ icon: '⚙️', label: 'Settings', to: '/settings' }] : []),
-        ...(isAdmin ? [{ icon: '📋', label: 'Client Portal', to: '/client-portal', external: true }] : []),
+        ...(isOwner ? [{ icon: '', label: 'Subscription', to: '/subscription' }] : []),
+        ...(isAdmin ? [{ icon: '', label: 'Security & Backup', to: '/security' }] : []),
+        { icon: '', label: 'Team Chat', to: '/chat' },
+        ...(hasPermission('recycle_bin', 'view') || isAdmin ? [{ icon: '', label: 'Recycle Bin', to: '/recycle-bin' }] : []),
+        ...(hasPermission('webhooks', 'view') || isAdmin ? [{ icon: '', label: 'Webhooks', to: '/webhooks' }] : []),
+        ...(hasPermission('settings', 'view') || isAdmin ? [{ icon: '', label: 'Settings', to: '/settings' }] : []),
+        ...(isAdmin ? [{ icon: '', label: 'Client Portal', to: '/client-portal', external: true }] : []),
       ];
 
   const nav = [
     ...(isSuperAdmin ? [
       { group: 'Overview', items: [
-        { icon: '⬡', label: 'Dashboard',      to: '/super-admin', end: true, saTab: 'dashboard' },
-        { icon: '🏢', label: 'Subscribers',    to: '/super-admin', saTab: 'tenants' },
-        { icon: '💳', label: 'Purchases',      to: '/super-admin', saTab: 'purchases' },
+        { icon: '', label: 'Dashboard',      to: '/super-admin', end: true, saTab: 'dashboard' },
+        { icon: '', label: 'Subscribers',    to: '/super-admin', saTab: 'tenants' },
+        { icon: '', label: 'Purchases',      to: '/super-admin', saTab: 'purchases' },
       ]},
       { group: 'Billing', items: [
-        { icon: '💎', label: 'Plans & Pricing', to: '/super-admin', saTab: 'plans' },
-        { icon: '💳', label: 'Razorpay',        to: '/super-admin', saTab: 'razorpay' },
-        { icon: '🏷️', label: 'Coupons',        to: '/super-admin', saTab: 'coupons' },
-        { icon: '🧾', label: 'Invoices',        to: '/super-admin', saTab: 'invoices' },
+        { icon: '', label: 'Plans & Pricing', to: '/super-admin', saTab: 'plans' },
+        { icon: '', label: 'Razorpay',        to: '/super-admin', saTab: 'razorpay' },
+        { icon: '', label: 'Coupons',        to: '/super-admin', saTab: 'coupons' },
+        { icon: '', label: 'Invoices',        to: '/super-admin', saTab: 'invoices' },
       ]},
       { group: 'Platform', items: [
-        { icon: '🎨', label: 'Branding',           to: '/super-admin', saTab: 'branding' },
-        { icon: '🔍', label: 'SEO',                to: '/super-admin', saTab: 'seo' },
-        { icon: '🏠', label: 'Homepage',           to: '/super-admin', saTab: 'homepage' },
-        { icon: '👤', label: 'SA Accounts',        to: '/super-admin', saTab: 'accounts' },
-        { icon: '📋', label: 'Activity Logs',      to: '/super-admin', saTab: 'logs' },
-        { icon: '⚙️', label: 'Platform',           to: '/super-admin', saTab: 'platform' },
-        { icon: '📬', label: 'Email Deliverability', to: '/super-admin', saTab: 'email_delivery' },
+        { icon: '', label: 'Branding',           to: '/super-admin', saTab: 'branding' },
+        { icon: '', label: 'SEO',                to: '/super-admin', saTab: 'seo' },
+        { icon: '', label: 'Homepage',           to: '/super-admin', saTab: 'homepage' },
+        { icon: '', label: 'SA Accounts',        to: '/super-admin', saTab: 'accounts' },
+        { icon: '', label: 'Activity Logs',      to: '/super-admin', saTab: 'logs' },
+        { icon: '', label: 'Platform',           to: '/super-admin', saTab: 'platform' },
+        { icon: '', label: 'Email Deliverability', to: '/super-admin', saTab: 'email_delivery' },
       ]},
       { group: 'Access', items: [
-        { icon: '👤', label: 'Users & Roles', to: '/users' },
-        { icon: '💬', label: 'Team Chat', to: '/chat' },
-        { icon: '🛡️', label: 'Security & Backup', to: '/security' },
-        { icon: '⚙️', label: 'Settings',           to: '/settings' },
+        { icon: '', label: 'Users & Roles', to: '/users' },
+        { icon: '', label: 'Team Chat', to: '/chat' },
+        { icon: '', label: 'Security & Backup', to: '/security' },
+        { icon: '', label: 'Settings',           to: '/settings' },
       ]},
     ] : []),
     ...(opsItems.length ? [{ group: 'Operations', items: opsItems }] : []),
@@ -135,7 +135,7 @@ function Sidebar({ open, onClose }) {
       <nav className={`sidebar${open ? ' open' : ''}`} data-theme-sidebar={theme}>
         <div className="sidebar-logo">
           <div className="logo-mark">
-            <div className="logo-icon">💾</div>
+            <div className="logo-icon">RL</div>
             <div className="logo-text">
               <span className="logo-title">RecoverLab</span>
               <span className="logo-subtitle">CRM Platform</span>
@@ -155,7 +155,6 @@ function Sidebar({ open, onClose }) {
                     onClick={() => { setSaTab(item.saTab); navigate('/super-admin'); onClose(); }}
                     style={{ width: '100%', textAlign: 'left', border: 'none', background: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
                   >
-                    <span className="nav-icon">{item.icon}</span>
                     {item.label}
                   </button>
                 ) : (
@@ -166,7 +165,6 @@ function Sidebar({ open, onClose }) {
                     className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
                     onClick={onClose}
                   >
-                    <span className="nav-icon">{item.icon}</span>
                     {item.label}
                   </NavLink>
                 )
@@ -197,7 +195,7 @@ function Sidebar({ open, onClose }) {
             onMouseEnter={e => { e.currentTarget.style.background='rgba(239,68,68,0.18)'; }}
             onMouseLeave={e => { e.currentTarget.style.background='rgba(239,68,68,0.08)'; }}
           >
-            🚪 Logout
+            Logout
           </button>
         </div>
       </nav>
@@ -291,10 +289,10 @@ function AppLayout() {
     <div className={`app-layout ${isSuperAdminUser ? 'super-admin-layout' : 'saas-app'}`} style={impersonating ? { paddingTop: 36 } : {}}>
       {impersonating && (
         <div className="impersonation-banner">
-          <span>👁️ Viewing as <strong>{impersonating}</strong> — Super Admin Impersonation Mode</span>
+          <span>Viewing as <strong>{impersonating}</strong> — Super Admin Impersonation Mode</span>
           <button onClick={() => { sessionStorage.removeItem('impersonating_as'); window.location.reload(); }}
             style={{ background:'rgba(255,255,255,0.2)',border:'1px solid rgba(255,255,255,0.4)',color:'white',padding:'3px 12px',borderRadius:6,cursor:'pointer',fontSize:'0.75rem' }}>
-            ✕ Exit
+            Exit
           </button>
         </div>
       )}

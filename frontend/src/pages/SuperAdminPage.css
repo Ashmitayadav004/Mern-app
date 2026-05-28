@@ -4,44 +4,71 @@
    ═══════════════════════════════════════════════════ */
 
 .super-admin-layout {
-  /* Super Admin Command Center Palette (Royal Indigo & Dark Amethyst) */
-  --sa-accent-primary: #8b5cf6;
-  --sa-accent-secondary: #0ea5e9;
-  --sa-accent-gradient: linear-gradient(135deg, #8b5cf6 0%, #6366f1 50%, #0ea5e9 100%);
-  --sa-border-glow: rgba(139, 92, 246, 0.25);
-  --sa-bg-hero: linear-gradient(135deg, #1b2130 0%, #2e1f4d 50%, #151922 100%);
-  --sa-shadow-panel: 0 10px 30px rgba(0, 0, 0, 0.18);
+  --bg-base: #f4f6f9;
+  --bg-surface: #ffffff;
+  --bg-elevated: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-hover: #fafafa;
+  --bg-input: #ffffff;
+  --bg-overlay: rgba(17, 24, 39, 0.35);
+  --accent-primary: #009688;
+  --accent-secondary: #00acc1;
+  --accent-gradient: linear-gradient(135deg, #009688 0%, #00acc1 100%);
+  --accent-glow: rgba(0, 150, 136, 0.05);
+  --accent-glow-strong: rgba(0, 150, 136, 0.12);
+  --border-subtle: #f1f3f5;
+  --border-default: #e4e6eb;
+  --border-strong: #d1d5db;
+  --text-primary: #212529;
+  --text-secondary: #495057;
+  --text-muted: #868e96;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.06), 0 2px 4px -1px rgba(0,0,0,0.04);
+  background: var(--bg-base);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .super-admin-layout {
+  --bg-base: #0f141c;
+  --bg-surface: #171d26;
+  --bg-elevated: #1e2633;
+  --bg-card: #171d26;
+  --bg-card-hover: #1e2633;
+  --bg-input: #11161d;
+  --bg-overlay: rgba(0, 0, 0, 0.6);
+
+  --accent-primary: #00acc1;
+  --accent-secondary: #00838f;
+  --accent-gradient: linear-gradient(135deg, #00acc1 0%, #00838f 100%);
+  --accent-glow: rgba(0, 172, 193, 0.06);
+  --accent-glow-strong: rgba(0, 172, 193, 0.16);
+
+  --border-subtle: #1e2633;
+  --border-default: #2a3447;
+  --border-strong: #3d4a61;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #64748b;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
 }
 
 /* ── Hero Banner ─────────────────────────────────── */
 .super-admin-layout .sa-hero {
   position: relative;
-  padding: 24px 28px;
+  padding: 22px 24px;
   margin-bottom: 24px;
   border-radius: 12px;
   overflow: hidden;
-  background: var(--sa-bg-hero);
-  border: 1px solid rgba(139, 92, 246, 0.3) !important;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  box-shadow: var(--shadow-sm);
 }
 
-.super-admin-layout .sa-hero::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse at 15% 60%, rgba(139, 92, 246, 0.15) 0%, transparent 55%),
-              radial-gradient(ellipse at 85% 20%, rgba(14, 165, 233, 0.1) 0%, transparent 50%);
-  pointer-events: none;
-}
-
+.super-admin-layout .sa-hero::before,
 .super-admin-layout .sa-hero::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.4), rgba(14, 165, 233, 0.3), transparent);
+  content: none;
 }
 
 .super-admin-layout .sa-hero-inner {
@@ -64,20 +91,20 @@
 .super-admin-layout .sa-hero-ctrl-group {
   display: flex;
   align-items: center;
-  gap: 2px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 6px;
-  padding: 2px;
+  gap: 4px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 4px;
 }
 
 .super-admin-layout .sa-fsize-btn {
-  padding: 4px 10px;
-  border-radius: 4px;
+  padding: 6px 12px;
+  border-radius: 8px;
   border: none;
   background: transparent;
-  color: rgba(203, 213, 225, 0.6);
-  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
   font-weight: 700;
   cursor: pointer;
   font-family: inherit;
@@ -85,26 +112,26 @@
 }
 
 .super-admin-layout .sa-fsize-btn.active {
-  background: rgba(139, 92, 246, 0.4) !important;
-  color: #ffffff !important;
+  background: rgba(0, 150, 136, 0.12) !important;
+  color: var(--accent-primary) !important;
 }
 
 .super-admin-layout .sa-fsize-btn:hover:not(.active) {
-  background: rgba(255, 255, 255, 0.08);
-  color: #ffffff;
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--text-primary);
 }
 
 .super-admin-layout .sa-hero-ctrl-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.05);
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(203, 213, 225, 0.7);
+  color: var(--text-secondary);
   transition: all 0.15s;
 }
 
@@ -114,69 +141,67 @@
 }
 
 .super-admin-layout .sa-hero-ctrl-btn:hover {
-  background: rgba(139, 92, 246, 0.25);
-  border-color: rgba(139, 92, 246, 0.4);
-  color: #ffffff;
+  background: var(--bg-card-hover);
+  border-color: var(--border-default);
+  color: var(--text-primary);
 }
 
 .super-admin-layout .sa-hero-clock {
-  padding: 4px 12px;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 6px 12px;
+  border-radius: 10px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
   text-align: center;
-  min-width: 90px;
+  min-width: 92px;
 }
 
 .super-admin-layout .sa-hero-clock-time {
-  font-size: 0.8rem;
+  font-size: 0.88rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-primary);
   font-family: var(--font-mono);
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   line-height: 1.2;
 }
 
 .super-admin-layout .sa-hero-clock-date {
-  font-size: 0.6rem;
-  color: rgba(148, 163, 184, 0.8);
+  font-size: 0.68rem;
+  color: var(--text-secondary);
   letter-spacing: 0.04em;
-  margin-top: 1px;
+  margin-top: 2px;
 }
 
 .super-admin-layout .sa-hero-badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 3px 12px;
+  padding: 4px 12px;
   border-radius: 999px;
-  background: rgba(139, 92, 246, 0.15);
-  border: 1px solid rgba(139, 92, 246, 0.35) !important;
-  font-size: 0.65rem;
+  background: rgba(0, 150, 136, 0.08);
+  border: 1px solid rgba(0, 150, 136, 0.18) !important;
+  font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.12em;
-  color: #c4b5fd !important;
+  letter-spacing: 0.08em;
+  color: var(--accent-primary) !important;
   text-transform: uppercase;
   margin-bottom: 8px;
 }
 
 .super-admin-layout .sa-hero-badge svg {
-  width: 9px;
-  height: 9px;
-  fill: #c4b5fd;
+  display: none;
 }
 
 .super-admin-layout .sa-hero-title {
-  font-size: 1.6rem !important;
+  font-size: 1.5rem !important;
   font-weight: 800;
-  color: #ffffff !important;
+  color: var(--text-primary) !important;
   letter-spacing: -0.02em;
-  margin: 0 0 4px;
+  margin: 0 0 6px;
 }
 
 .super-admin-layout .sa-hero-sub {
-  font-size: 0.8rem !important;
-  color: rgba(203, 213, 225, 0.65) !important;
+  font-size: 0.88rem !important;
+  color: var(--text-secondary) !important;
   margin: 0;
 }
 
@@ -185,23 +210,23 @@
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
-  border-radius: 6px;
-  background: var(--sa-accent-gradient);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: var(--accent-gradient);
+  border: 1px solid rgba(0, 150, 136, 0.22);
   color: #ffffff;
   font-weight: 700;
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35);
+  box-shadow: 0 8px 20px rgba(0, 150, 136, 0.18);
   font-family: inherit;
   white-space: nowrap;
 }
 
 .super-admin-layout .sa-btn-primary:hover {
-  background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+  filter: brightness(1.04);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.45);
+  box-shadow: 0 10px 24px rgba(0, 150, 136, 0.2);
 }
 
 /* ── Page Body (Sidebar + Content) ───────────────── */
@@ -338,35 +363,33 @@
 .super-admin-layout .sa-panel {
   background: var(--bg-card);
   border: 1px solid var(--border-default);
-  border-radius: 8px;
-  padding: 20px 18px;
+  border-radius: 12px;
+  padding: 20px 22px;
   box-shadow: var(--shadow-sm);
 }
 
 .super-admin-layout .sa-panel-title {
-  font-size: 0.85rem;
+  font-size: 0.92rem;
   font-weight: 700;
   color: var(--text-primary);
   margin-bottom: 16px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  gap: 10px;
+  letter-spacing: 0.02em;
   border-bottom: 1px solid var(--border-subtle);
   padding-bottom: 10px;
+  text-transform: none;
 }
 
 .super-admin-layout .sa-panel-title svg {
-  width: 14px;
-  height: 14px;
-  color: var(--text-muted);
+  display: none;
 }
 
 /* Quick Action Grid Buttons */
 .super-admin-layout .sa-quick-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -376,15 +399,15 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 16px 10px;
-  border-radius: 6px;
+  padding: 16px 14px;
+  border-radius: 12px;
   border: 1px solid var(--border-default);
-  background: var(--bg-surface);
+  background: var(--bg-card);
   cursor: pointer;
   transition: all var(--transition-fast);
   font-family: inherit;
   color: var(--text-secondary);
-  font-size: 0.75rem;
+  font-size: 0.82rem;
   font-weight: 600;
   box-shadow: var(--shadow-sm);
 }
@@ -396,14 +419,14 @@
 }
 
 .super-admin-layout .sa-quick-btn:hover {
-  background: rgba(139, 92, 246, 0.08);
-  border-color: rgba(139, 92, 246, 0.3);
-  color: var(--sa-accent-primary);
+  background: var(--bg-card-hover);
+  border-color: var(--border-default);
+  color: var(--text-primary);
   transform: translateY(-1px);
 }
 
 .super-admin-layout .sa-quick-btn:hover svg {
-  color: var(--sa-accent-primary);
+  color: var(--accent-primary);
 }
 
 /* Activity Feed */
@@ -552,7 +575,7 @@
 }
 
 .super-admin-layout .sa-perm-row:hover {
-  background: rgba(139, 92, 246, 0.04);
+  background: var(--bg-card-hover);
 }
 
 .super-admin-layout .sa-perm-module-col {
@@ -667,31 +690,31 @@
 /* ── SUPER ADMIN FLOATING MESSENGER OVERRIDES ── */
 /* Royal Violet visual styles for Super Admin FAB and Panel header */
 .sa-chat-container .sa-floating-chat-btn {
-  background: var(--sa-accent-gradient) !important;
-  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.35) !important;
+  background: var(--accent-gradient) !important;
+  box-shadow: 0 4px 14px rgba(0, 150, 136, 0.2) !important;
 }
 
 .sa-chat-container .sa-floating-chat-btn:hover {
-  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5) !important;
+  box-shadow: 0 6px 18px rgba(0, 150, 136, 0.25) !important;
 }
 
 .sa-chat-container .sa-chat-panel {
-  border-color: rgba(139, 92, 246, 0.25) !important;
-  box-shadow: 0 10px 30px rgba(139, 92, 246, 0.15), 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+  border-color: rgba(0, 150, 136, 0.18) !important;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.08) !important;
 }
 
 .sa-chat-container .sa-chat-header {
-  border-bottom: 2px solid rgba(139, 92, 246, 0.15) !important;
+  border-bottom: 2px solid rgba(0, 150, 136, 0.12) !important;
 }
 
 .sa-chat-container .sa-chat-unread-badge {
-  background: #8b5cf6 !important;
+  background: var(--accent-primary) !important;
 }
 
 .sa-chat-container .sa-chat-send-btn {
-  background: var(--sa-accent-gradient) !important;
+  background: var(--accent-gradient) !important;
 }
 
 .sa-chat-container .sa-chat-back-btn:hover {
-  color: #8b5cf6 !important;
+  color: var(--accent-primary) !important;
 }

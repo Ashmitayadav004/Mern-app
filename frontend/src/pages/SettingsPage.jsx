@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../store/AuthContext';
 import { usersApi } from '../services/api';
+import { fieldConfigApi } from '../services/fieldConfigApi';
 import HddFieldConfigManager from '../components/settings/HddFieldConfigManager';
 import InventoryStockConfigManager from '../components/settings/InventoryStockConfigManager';
 
 // ── Per-family Inventory field/dropdown manager ────────────────────────────────
+const stripDecorativeIcon = (label = '') => String(label).replace(/^[\p{Extended_Pictographic}\uFE0F]+\s*/gu, '').trim();
+
 const INV_DEFAULTS = {
   hdd: [
     { key: 'mfg_country',   label: 'Manufacturing Country', type: 'select', options: ['China', 'Thailand', 'Malaysia', 'Japan', 'USA', 'Philippines'] },
@@ -357,17 +360,54 @@ function getRoleDisplay(roleId) {
   };
 }
 
+const CASE_SETTINGS_DEFAULTS = {
+  stages: ['received','inspection','diagnosis','quotation','approved','rejected','recovery_in_progress','imaging','data_extraction','verification','completed','delivered','failed'],
+  symptoms: ['not_detected','clicking','slow','dead','beeping','grinding','pcb_burnt','corrupted','bad_sectors','head_crash','water_damage','not_spinning','read_errors'],
+  failure_types: ['logical','firmware','electrical','mechanical','head_crash','pcb_damage','motor_failure','bad_sectors','water_damage','fire_damage','unknown'],
+  brands: ['Western Digital','Seagate','Toshiba','Samsung','Hitachi (HGST)','Fujitsu','IBM','Maxtor','Apple','Sony','OnePlus','Xiaomi','Other'],
+  capacities: ['160GB','250GB','320GB','500GB','750GB','1TB','1.5TB','2TB','3TB','4TB','6TB','8TB','10TB','12TB','14TB','16TB','18TB','20TB'],
+  payment_methods: ['Cash','UPI','Card (Debit/Credit)','Bank Transfer','NEFT','RTGS','IMPS','Cheque','Online (Razorpay)','PayPal'],
+  hdd_types: [],
+};
+
+function loadCaseSettingsFromLocalStorage() {
+  try {
+    return {
+      stages: JSON.parse(localStorage.getItem('custom_stages')) || CASE_SETTINGS_DEFAULTS.stages,
+      symptoms: JSON.parse(localStorage.getItem('custom_symptoms')) || CASE_SETTINGS_DEFAULTS.symptoms,
+      failure_types: JSON.parse(localStorage.getItem('custom_failure_types')) || CASE_SETTINGS_DEFAULTS.failure_types,
+      brands: JSON.parse(localStorage.getItem('custom_brands')) || CASE_SETTINGS_DEFAULTS.brands,
+      capacities: JSON.parse(localStorage.getItem('custom_capacities')) || CASE_SETTINGS_DEFAULTS.capacities,
+      payment_methods: JSON.parse(localStorage.getItem('custom_payment_methods')) || CASE_SETTINGS_DEFAULTS.payment_methods,
+      hdd_types: JSON.parse(localStorage.getItem('custom_hdd_types')) || CASE_SETTINGS_DEFAULTS.hdd_types,
+    };
+  } catch {
+    return { ...CASE_SETTINGS_DEFAULTS };
+  }
+}
+
+function persistCaseSettingsToLocalStorage(settings) {
+  if (!settings || typeof settings !== 'object') return;
+  if (Array.isArray(settings.stages)) localStorage.setItem('custom_stages', JSON.stringify(settings.stages));
+  if (Array.isArray(settings.symptoms)) localStorage.setItem('custom_symptoms', JSON.stringify(settings.symptoms));
+  if (Array.isArray(settings.failure_types)) localStorage.setItem('custom_failure_types', JSON.stringify(settings.failure_types));
+  if (Array.isArray(settings.brands)) localStorage.setItem('custom_brands', JSON.stringify(settings.brands));
+  if (Array.isArray(settings.capacities)) localStorage.setItem('custom_capacities', JSON.stringify(settings.capacities));
+  if (Array.isArray(settings.payment_methods)) localStorage.setItem('custom_payment_methods', JSON.stringify(settings.payment_methods));
+  if (Array.isArray(settings.hdd_types)) localStorage.setItem('custom_hdd_types', JSON.stringify(settings.hdd_types));
+}
+
 const DEFAULT_STAGES = ['received','inspection','diagnosis','quotation','approved','rejected','recovery_in_progress','imaging','data_extraction','verification','completed','delivered','failed'];
 
-function StageCategoriesManager() {
-  const [stages, setStages] = useState(() => {
-    try { const s = JSON.parse(localStorage.getItem('custom_stages')); return s && s.length ? s : DEFAULT_STAGES; } catch { return DEFAULT_STAGES; }
-  });
+function StageCategoriesManager({ stages, onChange }) {
+  const [items, setItems] = useState(stages);
   const [newStage, setNewStage] = useState('');
-  const save = (s) => { setStages(s); localStorage.setItem('custom_stages', JSON.stringify(s)); };
-  
-  const moveUp = (idx) => { if(idx===0) return; const n=[...stages]; [n[idx-1],n[idx]]=[n[idx],n[idx-1]]; save(n); };
-  const moveDown = (idx) => { if(idx===stages.length-1) return; const n=[...stages]; [n[idx+1],n[idx]]=[n[idx],n[idx+1]]; save(n); };
+
+  useEffect(() => { setItems(stages); }, [stages]);
+
+  const save = (s) => { setItems(s); onChange(s); };
+  const moveUp = (idx) => { if(idx===0) return; const n=[...items]; [n[idx-1],n[idx]]=[n[idx],n[idx-1]]; save(n); };
+  const moveDown = (idx) => { if(idx===items.length-1) return; const n=[...items]; [n[idx+1],n[idx]]=[n[idx],n[idx+1]]; save(n); };
 
   return (
     <div>
@@ -375,13 +415,13 @@ function StageCategoriesManager() {
         <div className="form-label" style={{ marginBottom:8 }}>Dynamic Stages</div>
         <div style={{fontSize:'0.75rem',color:'var(--text-muted)',marginBottom:16}}>Add, edit, reorder, or remove case stages. The order here represents the workflow timeline.</div>
         <div style={{ display:'flex',flexDirection:'column',gap:8 }}>
-          {stages.map((s,i) => (
+          {items.map((s,i) => (
             <div key={i} style={{ display:'flex',gap:6,alignItems:'center' }}>
               <span className="font-mono text-muted text-xs" style={{width:24}}>{i+1}.</span>
-              <input className="form-input" value={s} onChange={e=>{ const n=[...stages]; n[i]=e.target.value; save(n); }} style={{ flex:1 }} />
+              <input className="form-input" value={s} onChange={e=>{ const n=[...items]; n[i]=e.target.value; save(n); }} style={{ flex:1 }} />
               <button className="btn btn-secondary btn-sm" onClick={()=>moveUp(i)}>↑</button>
               <button className="btn btn-secondary btn-sm" onClick={()=>moveDown(i)}>↓</button>
-              <button className="btn btn-danger btn-sm" onClick={()=>save(stages.filter((_,j)=>j!==i))}>✕</button>
+              <button className="btn btn-danger btn-sm" onClick={()=>save(items.filter((_,j)=>j!==i))}>✕</button>
             </div>
           ))}
         </div>
@@ -396,12 +436,12 @@ function StageCategoriesManager() {
 
 const DEFAULT_SYMPTOMS = ['not_detected', 'clicking', 'slow', 'dead', 'beeping', 'overheating', 'grinding', 'pcb_burnt', 'corrupted', 'bad_sectors', 'firmware_corrupt', 'head_crash'];
 
-function SymptomCategoriesManager() {
-  const [symptoms, setSymptoms] = useState(() => {
-    try { const s = JSON.parse(localStorage.getItem('custom_symptoms')); return s && s.length ? s : DEFAULT_SYMPTOMS; } catch { return DEFAULT_SYMPTOMS; }
-  });
+function SymptomCategoriesManager({ symptoms, onChange }) {
+  const [items, setItems] = useState(symptoms);
   const [newSymptom, setNewSymptom] = useState('');
-  const save = (s) => { setSymptoms(s); localStorage.setItem('custom_symptoms', JSON.stringify(s)); };
+
+  useEffect(() => { setItems(symptoms); }, [symptoms]);
+  const save = (s) => { setItems(s); onChange(s); };
 
   return (
     <div>
@@ -409,10 +449,10 @@ function SymptomCategoriesManager() {
         <div className="form-label" style={{ marginBottom:8 }}>Symptom Categories</div>
         <div style={{fontSize:'0.75rem',color:'var(--text-muted)',marginBottom:16}}>Add, edit, or remove symptom options shown when creating a case.</div>
         <div style={{ display:'flex',flexWrap:'wrap',gap:8,marginBottom:12 }}>
-          {symptoms.map((s,i) => (
+          {items.map((s,i) => (
             <div key={i} style={{ display:'flex',alignItems:'center',gap:4,background:'var(--bg-elevated)',padding:'4px 10px',borderRadius:999,border:'1px solid var(--border-subtle)' }}>
-              <input className="form-input" value={s} onChange={e=>{ const n=[...symptoms]; n[i]=e.target.value; save(n); }} style={{ background:'transparent',border:'none',padding:0,width:Math.max(80,s.length*8),fontSize:'0.75rem',fontFamily:'var(--font-mono)',color:'var(--text-primary)' }} />
-              <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.75rem',padding:0,lineHeight:1 }} onClick={()=>save(symptoms.filter((_,j)=>j!==i))}>✕</button>
+              <input className="form-input" value={s} onChange={e=>{ const n=[...items]; n[i]=e.target.value; save(n); }} style={{ background:'transparent',border:'none',padding:0,width:Math.max(80,s.length*8),fontSize:'0.75rem',fontFamily:'var(--font-mono)',color:'var(--text-primary)' }} />
+              <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.75rem',padding:0,lineHeight:1 }} onClick={()=>save(items.filter((_,j)=>j!==i))}>✕</button>
             </div>
           ))}
         </div>
@@ -427,12 +467,12 @@ function SymptomCategoriesManager() {
 
 const DEFAULT_FAILURE_TYPES_LIST = ['logical','firmware','electrical','mechanical','head_crash','pcb_damage','motor_failure','bad_sectors','water_damage','fire_damage','unknown'];
 
-function FailureTypesManager() {
-  const [items, setItems] = useState(() => {
-    try { const s = JSON.parse(localStorage.getItem('custom_failure_types')); return s && s.length ? s : DEFAULT_FAILURE_TYPES_LIST; } catch { return DEFAULT_FAILURE_TYPES_LIST; }
-  });
+function FailureTypesManager({ items: initialItems, onChange }) {
+  const [items, setItems] = useState(initialItems);
   const [newItem, setNewItem] = useState('');
-  const save = (s) => { setItems(s); localStorage.setItem('custom_failure_types', JSON.stringify(s)); };
+
+  useEffect(() => { setItems(initialItems); }, [initialItems]);
+  const save = (s) => { setItems(s); onChange(s); };
 
   return (
     <div>
@@ -456,12 +496,12 @@ function FailureTypesManager() {
 
 const DEFAULT_BRANDS = ['Western Digital','Seagate','Toshiba','Samsung','Hitachi (HGST)','Fujitsu','IBM','Maxtor','Apple','Sony','OnePlus','Xiaomi','Other'];
 
-function BrandsManager() {
-  const [items, setItems] = useState(() => {
-    try { const s = JSON.parse(localStorage.getItem('custom_brands')); return s && s.length ? s : DEFAULT_BRANDS; } catch { return DEFAULT_BRANDS; }
-  });
+function BrandsManager({ items: initialItems, onChange }) {
+  const [items, setItems] = useState(initialItems);
   const [newItem, setNewItem] = useState('');
-  const save = (s) => { setItems(s); localStorage.setItem('custom_brands', JSON.stringify(s)); };
+
+  useEffect(() => { setItems(initialItems); }, [initialItems]);
+  const save = (s) => { setItems(s); onChange(s); };
 
   return (
     <div>
@@ -485,12 +525,12 @@ function BrandsManager() {
 
 const DEFAULT_PAYMENT_METHODS = ['Cash','UPI','Card (Debit/Credit)','Bank Transfer','NEFT','RTGS','IMPS','Cheque','Online (Razorpay)','PayPal'];
 
-function PaymentMethodsManager() {
-  const [items, setItems] = useState(() => {
-    try { const s = JSON.parse(localStorage.getItem('custom_payment_methods')); return s && s.length ? s : DEFAULT_PAYMENT_METHODS; } catch { return DEFAULT_PAYMENT_METHODS; }
-  });
+function PaymentMethodsManager({ items: initialItems, onChange }) {
+  const [items, setItems] = useState(initialItems);
   const [newItem, setNewItem] = useState('');
-  const save = (s) => { setItems(s); localStorage.setItem('custom_payment_methods', JSON.stringify(s)); };
+
+  useEffect(() => { setItems(initialItems); }, [initialItems]);
+  const save = (s) => { setItems(s); onChange(s); };
 
   return (
     <div>
@@ -513,14 +553,13 @@ function PaymentMethodsManager() {
 }
 
 // ── Capacities Manager ────────────────────────────────────────────────────────
-function CapacitiesManager() {
+function CapacitiesManager({ capacities, onChange }) {
   const DEFAULT_CAPS = ['160GB','250GB','320GB','500GB','750GB','1TB','1.5TB','2TB','3TB','4TB','6TB','8TB','10TB','12TB','14TB','16TB','18TB','20TB'];
-  const [caps, setCaps] = useState(() => {
-    try { const v = JSON.parse(localStorage.getItem('custom_capacities')); return v && v.length ? v : DEFAULT_CAPS; } catch { return DEFAULT_CAPS; }
-  });
+  const [caps, setCaps] = useState(() => capacities || DEFAULT_CAPS);
   const [newCap, setNewCap] = useState('');
 
-  const save = (c) => { setCaps(c); localStorage.setItem('custom_capacities', JSON.stringify(c)); };
+  useEffect(() => { setCaps(capacities || DEFAULT_CAPS); }, [capacities]);
+  const save = (c) => { setCaps(c); onChange(c); };
   const remove = (c) => save(caps.filter(x=>x!==c));
   const add = () => { if (!newCap.trim() || caps.includes(newCap.trim())) return; save([...caps, newCap.trim()]); setNewCap(''); };
 
@@ -925,6 +964,34 @@ export default function SettingsPage() {
   const logoRef = useRef();
   const avatarRef = useRef();
 
+  const [caseSettings, setCaseSettings] = useState(() => loadCaseSettingsFromLocalStorage());
+  const [settingsSyncing, setSettingsSyncing] = useState(false);
+
+  useEffect(() => {
+    fieldConfigApi.getCaseSettings()
+      .then((data) => {
+        const merged = { ...CASE_SETTINGS_DEFAULTS, ...data };
+        setCaseSettings(merged);
+        persistCaseSettingsToLocalStorage(merged);
+      })
+      .catch(() => {})
+      .finally(() => setSettingsSyncing(false));
+  }, []);
+
+  const saveCaseSettings = async (patch) => {
+    const next = { ...caseSettings, ...patch };
+    setCaseSettings(next);
+    persistCaseSettingsToLocalStorage(next);
+    try {
+      setSettingsSyncing(true);
+      await fieldConfigApi.saveCaseSettings(patch);
+    } catch (err) {
+      console.error('Unable to save case settings:', err);
+    } finally {
+      setSettingsSyncing(false);
+    }
+  };
+
   useEffect(() => {
     if (activeTab === 'users' && isSuperAdmin) {
       setLoading(true);
@@ -1244,7 +1311,7 @@ export default function SettingsPage() {
                   className={`settings-nav-btn ${isTabActive ? 'active' : ''}`}
                   onClick={(e) => handleGroupClick(e, group)}
                 >
-                  <span>{group.label}</span>
+                  <span>{stripDecorativeIcon(group.label)}</span>
                 </button>
 
                 {!group.standalone && (
@@ -1914,7 +1981,10 @@ export default function SettingsPage() {
             <div className="card">
               <div className="card-title" style={{ marginBottom:16 }}>⚡ Stage Categories</div>
               <p style={{ fontSize:'0.82rem',color:'var(--text-muted)',marginBottom:20 }}>Customize case stages. Default stages are protected. You can add/remove/rename custom stages. Changes take effect for new cases.</p>
-              <StageCategoriesManager />
+              <StageCategoriesManager
+                stages={caseSettings.stages}
+                onChange={(stages) => saveCaseSettings({ stages })}
+              />
             </div>
           )}
 
@@ -1924,7 +1994,10 @@ export default function SettingsPage() {
               <div className="card-header">
                 <div className="card-title">🩺 Symptom Categories</div>
               </div>
-              <SymptomCategoriesManager />
+              <SymptomCategoriesManager
+                symptoms={caseSettings.symptoms}
+                onChange={(symptoms) => saveCaseSettings({ symptoms })}
+              />
             </div>
           )}
 
@@ -1932,7 +2005,10 @@ export default function SettingsPage() {
           {activeTab === 'failures' && (
             <div className="card">
               <div className="card-title" style={{ marginBottom:16 }}>🔧 Failure / Problem Types</div>
-              <FailureTypesManager />
+              <FailureTypesManager
+                items={caseSettings.failure_types}
+                onChange={(failure_types) => saveCaseSettings({ failure_types })}
+              />
             </div>
           )}
 
@@ -1940,7 +2016,10 @@ export default function SettingsPage() {
           {activeTab === 'brands' && (
             <div className="card">
               <div className="card-title" style={{ marginBottom:16 }}>🏷️ Device Brands Manager</div>
-              <BrandsManager />
+              <BrandsManager
+                items={caseSettings.brands}
+                onChange={(brands) => saveCaseSettings({ brands })}
+              />
             </div>
           )}
 
@@ -1948,7 +2027,10 @@ export default function SettingsPage() {
           {activeTab === 'payments_cfg' && (
             <div className="card">
               <div className="card-title" style={{ marginBottom:16 }}>💳 Payment Methods Manager</div>
-              <PaymentMethodsManager />
+              <PaymentMethodsManager
+                items={caseSettings.payment_methods}
+                onChange={(payment_methods) => saveCaseSettings({ payment_methods })}
+              />
             </div>
           )}
 
@@ -2041,7 +2123,10 @@ export default function SettingsPage() {
           {activeTab === 'capacities' && (
             <div className="card">
               <div className="card-title" style={{marginBottom:16}}>📏 HDD Capacity Options</div>
-              <CapacitiesManager />
+              <CapacitiesManager
+                capacities={caseSettings.capacities}
+                onChange={(capacities) => saveCaseSettings({ capacities })}
+              />
             </div>
           )}
 

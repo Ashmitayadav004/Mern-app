@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { casesApi } from '../services/api';
+import fieldConfigApi from '../services/fieldConfigApi';
 import { useAuth } from '../store/AuthContext';
 import NewCaseModal from '../components/NewCaseModal';
 
@@ -24,6 +25,7 @@ export default function CasesPage() {
   const [showNewCase, setShowNewCase] = useState(false);
   const [filters, setFilters] = useState({ stage: '', search: '', priority: '', failure_type: '' });
   const [page, setPage] = useState(1);
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
 
   const checkStale = (c) => {
     if (c.stage === 'delivered' || c.stage === 'failed' || c.stage === 'completed' || c.stage === 'rejected') return false;
@@ -53,6 +55,12 @@ export default function CasesPage() {
   }, [filters, page]);
 
   useEffect(() => { loadCases(); }, [loadCases]);
+
+  useEffect(() => {
+    fieldConfigApi.loadCaseSettingsToLocalStorage()
+      .catch(() => {})
+      .finally(() => setSettingsLoaded(true));
+  }, []);
 
   return (
     <div>

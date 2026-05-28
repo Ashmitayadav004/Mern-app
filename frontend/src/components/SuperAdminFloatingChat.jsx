@@ -373,7 +373,7 @@ export default function SuperAdminFloatingChat() {
             </div>
           ) : (
             <div className="chat-header-default-title">
-              <span className="chat-header-icon">🛡️</span>
+              <span className="chat-header-icon"></span>
               <div>
                 <div className="chat-header-title">SA Command Messenger</div>
                 <div className="chat-header-subtitle">Real-time system communications ({connected ? 'live' : 'offline'})</div>
@@ -416,7 +416,7 @@ export default function SuperAdminFloatingChat() {
                 ))
               ) : (
                 <div className="chat-empty-state">
-                  <div className="chat-empty-icon">🛡️</div>
+                  <div className="chat-empty-icon"></div>
                   <div className="chat-empty-text">Send a secure directive to establish connection.</div>
                 </div>
               )}
@@ -468,7 +468,6 @@ export default function SuperAdminFloatingChat() {
           <div className="chat-list-container">
             {/* Search Input */}
             <div className="chat-search-wrapper">
-              <span className="chat-search-icon">🔍</span>
               <input
                 type="text"
                 placeholder="Filter logs or subscribers..."
@@ -556,7 +555,7 @@ export default function SuperAdminFloatingChat() {
                 })
               ) : (
                 <div className="chat-empty-state">
-                  <div className="chat-empty-icon">🛡️</div>
+                  <div className="chat-empty-icon"></div>
                   <div className="chat-empty-text">No active nodes found</div>
                 </div>
               )}
@@ -566,10 +565,10 @@ export default function SuperAdminFloatingChat() {
       </div>
 
       {/* ── 2. Floating Action Button (FAB) ── */}
-      <button 
-        className={`floating-chat-btn sa-floating-chat-btn ${isOpen ? 'active' : ''}`} 
+      <button
+        className={`floating-chat-btn sa-floating-chat-btn ${isOpen ? 'active' : ''}`}
         onClick={() => setIsOpen(!isOpen)}
-        title="Toggle Platform Feed"
+        title="Toggle Team Chat"
       >
         <span className="chat-btn-icon">💬</span>
         {totalUnread > 0 && !isOpen && (

@@ -37,6 +37,7 @@ class ModalErrorBoundary extends React.Component {
   }
 }
 import { casesApi, clientsApi, usersApi, suggestionsApi } from "../services/api";
+import fieldConfigApi from "../services/fieldConfigApi";
 import { TextareaAutocomplete } from "./FormComponents";
 
 function getCustomProblemDescriptions() {
@@ -84,6 +85,13 @@ function getFieldConfig() {
     return {};
   }
 }
+// Ensure we have latest field config cached locally
+try {
+  // best-effort — don't block UI
+  fieldConfigApi.loadToLocalStorage().catch(() => {});
+} catch (e) {
+  // ignore
+}
 function parseCapacityGb(value) {
   if (value === undefined || value === null || value === "") return null;
   if (typeof value === "number" && Number.isFinite(value)) return Math.round(value);
@@ -117,6 +125,23 @@ const HDD_TYPES = [
   { key: "others_2.5", label: 'Others 2.5"', brand: "" },
   { key: "others_3.5", label: 'Others 3.5"', brand: "" },
 ];
+
+// Dynamic HDD types: prefer admin-configured list from localStorage ('custom_hdd_types')
+// Falls back to the built-in `HDD_TYPES`. Labels from storage map to existing keys when possible.
+const DYN_HDD_TYPES = (() => {
+  try {
+    const stored = JSON.parse(localStorage.getItem('custom_hdd_types'));
+    const labels = Array.isArray(stored) && stored.length ? stored : HDD_TYPES.map((h) => h.label);
+    return labels.map((label) => {
+      const existing = HDD_TYPES.find((h) => h.label === label);
+      if (existing) return existing;
+      const key = label.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+      return { key, label, brand: '' };
+    });
+  } catch {
+    return HDD_TYPES;
+  }
+})();
 
 const HDD_FIELDS = {
   wd_2_5: [
@@ -1381,7 +1406,7 @@ function StepDevice({ form, setForm, capacities, stepErrors }) {
             aria-invalid={!!stepErrors.hdd_type}
           >
             <option value="">Select HDD Type...</option>
-            {HDD_TYPES.map((h) => (
+            {DYN_HDD_TYPES.map((h) => (
               <option key={h.key} value={h.key}>
                 {h.label}
               </option>
@@ -1585,7 +1610,7 @@ function StepHddFieldsView({ form, setForm, stepErrors, showStepErrors }) {
       {form.hdd_type ? (
         <>
           <div style={{ marginBottom: 12, padding: "8px 12px", background: "var(--accent-glow)", borderRadius: 6, fontSize: "0.8rem", color: "var(--accent-primary)", fontWeight: 600 }}>
-            🔧 Fields for: {HDD_TYPES.find((h) => h.key === form.hdd_type)?.label}
+            🔧 Fields for: {DYN_HDD_TYPES.find((h) => h.key === form.hdd_type)?.label}
           </div>
           <HddFields hddKey={form.hdd_type} form={form} setForm={setForm} stepErrors={stepErrors} showStepErrors={showStepErrors} />
         </>
@@ -1824,6 +1849,13 @@ export default function NewCaseModal({ onClose, onCreated }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [printTemplate, setPrintTemplate] = useState("standard");
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
+
+  useEffect(() => {
+    fieldConfigApi.loadCaseSettingsToLocalStorage()
+      .catch(() => {})
+      .finally(() => setSettingsLoaded(true));
+  }, []);
 
   // Default deadline = 4 days from now
   useEffect(() => {
@@ -1871,7 +1903,7 @@ export default function NewCaseModal({ onClose, onCreated }) {
   const CAPACITIES = gs("custom_capacities", CAPACITY_OPTIONS);
   const ALL_HDD_TYPES = gs(
     "custom_hdd_types",
-    HDD_TYPES.map((h) => h.label),
+    DYN_HDD_TYPES.map((h) => h.label),
   );
 
   const set = (key, val) => setForm((f) => ({ ...f, [key]: val }));
@@ -1923,7 +1955,7 @@ export default function NewCaseModal({ onClose, onCreated }) {
         company: selectedClient?.company || form.company,
         device_model: form.model || form.device_model || "",
         device_brand: form.hdd_type
-          ? HDD_TYPES.find((h) => h.key === form.hdd_type)?.brand ||
+          ? DYN_HDD_TYPES.find((h) => h.key === form.hdd_type)?.brand ||
             form.hdd_type
           : form.device_brand,
         capacity_gb: parseCapacityGb(form.capacity_gb ?? form.capacity),

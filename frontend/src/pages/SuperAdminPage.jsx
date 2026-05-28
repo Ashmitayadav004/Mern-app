@@ -89,13 +89,13 @@ function AddTenantModal({ onClose, onDone }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal modal-xl" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
-          <h3 className="modal-title">🏢 Create New Subscriber (Paid Account)</h3>
+          <h3 className="modal-title">Create New Subscriber</h3>
           <button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button>
         </div>
         <div className="modal-body" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
           {/* Left — Account Details */}
           <div>
-            <div className="card-title" style={{ marginBottom: 12 }}>👤 Account Details</div>
+            <div className="card-title" style={{ marginBottom: 12 }}>Account Details</div>
             <div className="form-group">
               <label className="form-label required">Company / Lab Name</label>
               <input className="form-input" value={form.company_name} onChange={e => setForm(f => ({ ...f, company_name: e.target.value }))} placeholder="e.g. DataRescue Mumbai" />
@@ -136,7 +136,7 @@ function AddTenantModal({ onClose, onDone }) {
 
           {/* Right — Plan & Billing */}
           <div>
-            <div className="card-title" style={{ marginBottom: 12 }}>📋 Subscription Plan</div>
+            <div className="card-title" style={{ marginBottom: 12 }}>Subscription Plan</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 }}>
               {dynamicPlans.map(p => (
                 <div key={p.key} onClick={() => setForm(f => ({ ...f, plan: p.key, max_team_users: p.maxUsers === -1 ? 99 : p.maxUsers }))}
@@ -149,9 +149,9 @@ function AddTenantModal({ onClose, onDone }) {
             </div>
 
             <div className="card" style={{ background: `${selPlan.color}08`, border: `1px solid ${selPlan.color}25`, marginBottom: 14 }}>
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, marginBottom: 8, color: selPlan.color }}>✨ {selPlan.label} Plan Includes:</div>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, marginBottom: 8, color: selPlan.color }}>{selPlan.label} Plan Includes:</div>
               {selPlan.features.map(f => (
-                <div key={f} style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginBottom: 3 }}>✓ {f}</div>
+                <div key={f} style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginBottom: 3 }}>{f}</div>
               ))}
             </div>
 
@@ -180,15 +180,15 @@ function AddTenantModal({ onClose, onDone }) {
             </div>
 
             <button className="btn btn-secondary" style={{ width: '100%', marginBottom: 8, gap: 8 }} onClick={handleRazorpay}>
-              💳 Generate Razorpay Payment Link
-              {razorpayOrder && <span style={{ fontSize: '0.7rem', color: '#10b981' }}>✓ Created</span>}
+              Generate Razorpay Payment Link
+              {razorpayOrder && <span style={{ fontSize: '0.7rem', color: '#10b981' }}>Created</span>}
             </button>
           </div>
         </div>
         <div className="modal-footer">
           <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
           <button className="btn btn-primary" disabled={loading} onClick={handle}>
-            {loading ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Creating...</> : '🏢 Create Subscriber Account'}
+            {loading ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Creating...</> : 'Create Subscriber Account'}
           </button>
         </div>
       </div>
@@ -222,7 +222,7 @@ function EditTenantModal({ tenant, onClose, onDone }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 480 }}>
         <div className="modal-header">
-          <h3 className="modal-title">✏️ Edit Subscriber — {tenant.company_name}</h3>
+          <h3 className="modal-title">Edit Subscriber — {tenant.company_name}</h3>
           <button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button>
         </div>
         <div className="modal-body">
@@ -266,7 +266,7 @@ function EditTenantModal({ tenant, onClose, onDone }) {
         <div className="modal-footer">
           <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
           <button className="btn btn-primary" disabled={loading} onClick={handle}>
-            {loading ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Saving...</> : '💾 Save Changes'}
+            {loading ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Saving...</> : 'Save Changes'}
           </button>
         </div>
       </div>
@@ -295,7 +295,7 @@ function TenantUsersModal({ tenant, onClose }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 600 }}>
         <div className="modal-header">
-          <h3 className="modal-title">👥 Users — {tenant.company_name}</h3>
+          <h3 className="modal-title">Users — {tenant.company_name}</h3>
           <button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button>
         </div>
         <div className="modal-body">
@@ -303,7 +303,7 @@ function TenantUsersModal({ tenant, onClose }) {
             <div style={{ textAlign: 'center', padding: 40 }}><div className="spinner" style={{ width: 28, height: 28, margin: '0 auto' }} /></div>
           ) : users.length === 0 ? (
             <div className="empty-state" style={{ padding: 30 }}>
-              <div className="empty-icon">👤</div>
+              <div className="empty-icon"></div>
               <div className="empty-title">No users found</div>
               <div className="empty-desc">This subscriber has no team members yet</div>
             </div>
@@ -312,7 +312,7 @@ function TenantUsersModal({ tenant, onClose }) {
               {users.map(u => (
                 <div key={u.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 8, opacity: u.is_active ? 1 : 0.55 }}>
                   <div style={{ width: 36, height: 36, borderRadius: '50%', background: `${ROLE_COLORS[u.role] || '#64748b'}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', border: `2px solid ${ROLE_COLORS[u.role] || '#64748b'}30` }}>
-                    {u.role === 'admin' ? '👑' : '👤'}
+                    {u.role ? u.role[0].toUpperCase() : ''}
                   </div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 700, fontSize: '0.83rem' }}>{u.full_name || u.username || u.email}</div>
@@ -351,7 +351,6 @@ function TenantRow({ tenant, onEdit, onImpersonate, onToggle, onViewUsers }) {
       <td>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(0,212,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', border: '1px solid rgba(0,212,255,0.2)' }}>
-            🏢
           </div>
           <div>
             <div style={{ fontWeight: 700, fontSize: '0.85rem' }}>{tenant.company_name}</div>
@@ -384,14 +383,14 @@ function TenantRow({ tenant, onEdit, onImpersonate, onToggle, onViewUsers }) {
       </td>
       <td>
         <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
-          <button className="btn btn-sm btn-secondary" onClick={() => onEdit(tenant)} title="Edit">✏️</button>
+          <button className="btn btn-sm btn-secondary" onClick={() => onEdit(tenant)} title="Edit">Edit</button>
           <button className="btn btn-sm" style={{ background: 'rgba(16,185,129,0.1)', color: '#10b981', borderColor: 'rgba(16,185,129,0.3)', fontSize: '0.7rem' }}
             onClick={() => onViewUsers(tenant)} title="View users in this subscriber">
-            👥 Users
+            Users
           </button>
           <button className="btn btn-sm" style={{ background: 'rgba(99,102,241,0.1)', color: '#6366f1', borderColor: 'rgba(99,102,241,0.3)', fontSize: '0.7rem' }}
             onClick={() => onImpersonate(tenant)} title="View as this subscriber">
-            👁️ View
+            View
           </button>
           <button className="btn btn-sm" style={{ background: tenant.status === 'suspended' ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)', color: tenant.status === 'suspended' ? '#10b981' : '#f59e0b', borderColor: 'transparent', fontSize: '0.7rem' }}
             onClick={() => onToggle(tenant)}>
@@ -405,16 +404,16 @@ function TenantRow({ tenant, onEdit, onImpersonate, onToggle, onViewUsers }) {
 
 // ── Plans Manager (with Permissions) ─────────────────────────────────────
 const ALL_MODULES = [
-  { key: 'cases',         label: 'Cases',          icon: '📁' },
-  { key: 'clients',       label: 'Clients',         icon: '👥' },
-  { key: 'inventory',     label: 'Inventory',         icon: '📦' },
-  { key: 'accounting',    label: 'Accounting',         icon: '💰' },
-  { key: 'reports',       label: 'Reports',         icon: '📊' },
-  { key: 'analytics',     label: 'Analytics',       icon: '📈' },
-  { key: 'knowledge_base',label: 'Knowledge Base',       icon: '📚' },
-  { key: 'settings',      label: 'Settings',        icon: '⚙️' },
-  { key: 'recycle_bin',   label: 'Recycle Bin',         icon: '🗑️' },
-  { key: 'webhooks',      label: 'Webhooks',             icon: '🔗' },
+  { key: 'cases',         label: 'Cases',          icon: '' },
+  { key: 'clients',       label: 'Clients',         icon: '' },
+  { key: 'inventory',     label: 'Inventory',         icon: '' },
+  { key: 'accounting',    label: 'Accounting',         icon: '' },
+  { key: 'reports',       label: 'Reports',         icon: '' },
+  { key: 'analytics',     label: 'Analytics',       icon: '' },
+  { key: 'knowledge_base',label: 'Knowledge Base',       icon: '' },
+  { key: 'settings',      label: 'Settings',        icon: '' },
+  { key: 'recycle_bin',   label: 'Recycle Bin',         icon: '' },
+  { key: 'webhooks',      label: 'Webhooks',             icon: '' },
 ];
 const ALL_ACTIONS = ['view', 'create', 'edit', 'delete', 'export'];
 const DEFAULT_PERMISSIONS = {
@@ -504,7 +503,7 @@ function PlansManager({ tenants }) {
       {/* View Toggle */}
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:16, flexWrap:'wrap', gap:10 }}>
         <div style={{ display:'flex', gap:4, background:'var(--bg-elevated)', borderRadius:10, padding:3, border:'1px solid var(--border-subtle)' }}>
-          {[{v:'plans',label:'📋 Plans'},{v:'permissions',label:'🔒 Permissions & Access'}].map(t => (
+          {[{v:'plans',label:'Plans'},{v:'permissions',label:'Permissions & Access'}].map(t => (
             <button key={t.v}
               onClick={() => setActiveView(t.v)}
               style={{ padding:'6px 16px', borderRadius:8, border:'none', cursor:'pointer', fontWeight:700, fontSize:'0.79rem', fontFamily:'inherit',
@@ -514,7 +513,7 @@ function PlansManager({ tenants }) {
           ))}
         </div>
         {activeView === 'plans' && (
-          <button className="btn btn-primary btn-sm" onClick={() => setShowAdd(!showAdd)}>+ Add Plan</button>
+          <button className="btn btn-primary btn-sm" onClick={() => setShowAdd(!showAdd)}>Add Plan</button>
         )}
       </div>
 
@@ -522,7 +521,7 @@ function PlansManager({ tenants }) {
       {activeView === 'plans' && (
         <div>
           <div style={{ marginBottom: 14, padding: '10px 14px', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: '1.1rem' }}>⚠️</span>
+            <span style={{ fontSize: '1.1rem' }}></span>
             <div>
               <div style={{ fontWeight: 700, fontSize: '0.82rem', color: '#f59e0b' }}>Super Admin Only — Plan Management</div>
               <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 2 }}>Only the platform Super Admin can create, edit, or remove subscription plans.</div>
@@ -531,13 +530,13 @@ function PlansManager({ tenants }) {
 
           {showAdd && (
             <div className="card" style={{ marginBottom:16, border:'1px solid var(--accent-primary)' }}>
-              <div style={{fontWeight:700,marginBottom:12}}>➕ New Plan</div>
+              <div style={{fontWeight:700,marginBottom:12}}>New Plan</div>
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr auto', gap:10, alignItems:'flex-end' }}>
                 <div className="form-group" style={{margin:0}}><label className="form-label">Key (unique)</label><input className="form-input font-mono" value={newPlan.key} onChange={e=>setNewPlan(p=>({...p,key:e.target.value.toLowerCase().replace(/\s/g,'_')}))} placeholder="starter" /></div>
                 <div className="form-group" style={{margin:0}}><label className="form-label">Label</label><input className="form-input" value={newPlan.label} onChange={e=>setNewPlan(p=>({...p,label:e.target.value}))} placeholder="Starter" /></div>
                 <div className="form-group" style={{margin:0}}><label className="form-label">Price/mo (₹)</label><input type="number" className="form-input" value={newPlan.price} onChange={e=>setNewPlan(p=>({...p,price:parseInt(e.target.value)||0}))} /></div>
                 <div className="form-group" style={{margin:0}}><label className="form-label">Max Users (-1=∞)</label><input type="number" className="form-input" value={newPlan.maxUsers} onChange={e=>setNewPlan(p=>({...p,maxUsers:parseInt(e.target.value)||5}))} /></div>
-                <div style={{display:'flex',gap:6}}><button className="btn btn-primary" onClick={addPlan}>✓ Add</button><button className="btn btn-ghost" onClick={()=>setShowAdd(false)}>✕</button></div>
+                <div style={{display:'flex',gap:6}}><button className="btn btn-primary" onClick={addPlan}>Add</button><button className="btn btn-ghost" onClick={()=>setShowAdd(false)}>Close</button></div>
               </div>
             </div>
           )}
@@ -562,7 +561,7 @@ function PlansManager({ tenants }) {
                         {editing.features.map((f,i) => (
                           <div key={i} style={{display:'flex',gap:4,marginBottom:4}}>
                             <input className="form-input" style={{flex:1,fontSize:'0.75rem',padding:'4px 8px'}} value={f} onChange={e=>{const ff=[...editing.features];ff[i]=e.target.value;setEditing(p=>({...p,features:ff}));}} />
-                            <button onClick={()=>setEditing(p=>({...p,features:p.features.filter((_,j)=>j!==i)}))} style={{background:'none',border:'none',color:'var(--danger)',cursor:'pointer'}}>✕</button>
+                            <button onClick={()=>setEditing(p=>({...p,features:p.features.filter((_,j)=>j!==i)}))} style={{background:'none',border:'none',color:'var(--danger)',cursor:'pointer'}}>Remove</button>
                           </div>
                         ))}
                         <div style={{display:'flex',gap:4}}>
@@ -571,7 +570,7 @@ function PlansManager({ tenants }) {
                         </div>
                       </div>
                       <div style={{display:'flex',gap:6}}>
-                        <button className="btn btn-primary btn-sm" onClick={saveEdit}>✓ Save</button>
+                        <button className="btn btn-primary btn-sm" onClick={saveEdit}>Save</button>
                         <button className="btn btn-ghost btn-sm" onClick={()=>setEditing(null)}>Cancel</button>
                       </div>
                     </div>
@@ -588,15 +587,15 @@ function PlansManager({ tenants }) {
                           <div style={{ fontSize:'0.65rem', color:'var(--text-muted)' }}>subscribers</div>
                         </div>
                       </div>
-                      <div style={{ marginBottom:12 }}>{plan.features.map(f => <div key={f} style={{ fontSize:'0.72rem', color:'var(--text-secondary)', marginBottom:3 }}>✓ {f}</div>)}</div>
+                      <div style={{ marginBottom:12 }}>{plan.features.map(f => <div key={f} style={{ fontSize:'0.72rem', color:'var(--text-secondary)', marginBottom:3 }}>{f}</div>)}</div>
                       <div style={{ fontSize:'0.72rem', color:'var(--text-muted)', borderTop:'1px solid var(--border-subtle)', paddingTop:8, marginBottom:10 }}>
                         MRR: <strong style={{ color:plan.color }}>₹{(plan.price * tenantCount).toLocaleString('en-IN')}</strong>
                       </div>
                       <div style={{ display:'flex', gap:6 }}>
-                        <button className="btn btn-sm btn-secondary" onClick={() => startEdit(plan)}>✏️ Edit</button>
+                        <button className="btn btn-sm btn-secondary" onClick={() => startEdit(plan)}>Edit</button>
                         <button className="btn btn-sm" style={{background:'rgba(16,185,129,0.1)',color:'#10b981',borderColor:'rgba(16,185,129,0.2)',fontSize:'0.72rem'}}
-                          onClick={() => { setSelPermPlan(plan.key); setActiveView('permissions'); }}>🔒 Permissions</button>
-                        <button className="btn btn-sm" style={{background:'rgba(239,68,68,0.1)',color:'#ef4444',borderColor:'rgba(239,68,68,0.2)',fontSize:'0.72rem'}} onClick={() => removePlan(plan.key)}>✕</button>
+                          onClick={() => { setSelPermPlan(plan.key); setActiveView('permissions'); }}>Permissions</button>
+                        <button className="btn btn-sm" style={{background:'rgba(239,68,68,0.1)',color:'#ef4444',borderColor:'rgba(239,68,68,0.2)',fontSize:'0.72rem'}} onClick={() => removePlan(plan.key)}>Remove</button>
                       </div>
                     </>
                   )}
@@ -611,7 +610,7 @@ function PlansManager({ tenants }) {
       {activeView === 'permissions' && (
         <div>
           <div style={{ marginBottom:14, padding:'10px 14px', background:'rgba(124,58,237,0.08)', border:'1px solid rgba(124,58,237,0.25)', borderRadius:10, display:'flex', alignItems:'center', gap:10 }}>
-            <span style={{fontSize:'1.1rem'}}>⚠️</span>
+            <span style={{fontSize:'1.1rem'}}></span>
             <div>
               <div style={{fontWeight:700,fontSize:'0.82rem',color:'#a78bfa'}}>Module-level Permissions per Plan</div>
               <div style={{fontSize:'0.72rem',color:'var(--text-muted)',marginTop:2}}>Define exactly which modules and actions each subscription plan grants to subscriber users. Changes apply to all subscribers on this plan.</div>
@@ -678,7 +677,7 @@ function PlansManager({ tenants }) {
         </div>
       )}
 
-      {saved && <div style={{position:'fixed',bottom:24,right:24,background:'linear-gradient(135deg,#7c3aed,#10b981)',color:'#fff',padding:'10px 18px',borderRadius:10,fontWeight:700,fontSize:'0.85rem',zIndex:9999,boxShadow:'0 4px 18px rgba(0,0,0,0.3)'}}>✓ Saved successfully</div>}
+      {saved && <div style={{position:'fixed',bottom:24,right:24,background:'linear-gradient(135deg,#7c3aed,#10b981)',color:'#fff',padding:'10px 18px',borderRadius:10,fontWeight:700,fontSize:'0.85rem',zIndex:9999,boxShadow:'0 4px 18px rgba(0,0,0,0.3)'}}>Saved successfully</div>}
     </div>
   );
 }
@@ -714,10 +713,10 @@ function RazorpayTab({ tenants, simulateWebhook, filtered }) {
         display:'flex', alignItems:'center', justifyContent:'space-between', gap:12 }}>
         <div style={{ display:'flex', alignItems:'center', gap:12 }}>
           <div style={{ width:40, height:40, borderRadius:10, background: isVerified ? 'rgba(16,185,129,0.15)' : 'rgba(245,158,11,0.15)',
-            display:'flex', alignItems:'center', justifyContent:'center', fontSize:'1.4rem' }}>💳</div>
+            display:'flex', alignItems:'center', justifyContent:'center', fontSize:'1.4rem' }}>R</div>
           <div>
             <div style={{ fontWeight:700, fontSize:'0.9rem', color: isVerified ? '#10b981' : '#f59e0b' }}>
-              {isVerified ? '✓ Razorpay — Connected & Verified' : '⚠ Razorpay — Not Configured'}
+              {isVerified ? 'Razorpay — Connected & Verified' : 'Razorpay — Not Configured'}
             </div>
             <div style={{ fontSize:'0.72rem', color:'var(--text-muted)', marginTop:2 }}>
               {isVerified ? `Merchant: ${localStorage.getItem('sa_rzp_merchant_name')} · Mode: ${rzpMode.toUpperCase()}` : 'Enter your credentials below to enable payment collection'}
@@ -735,7 +734,7 @@ function RazorpayTab({ tenants, simulateWebhook, filtered }) {
         {/* Left — Credentials */}
         <div>
           <div className="card" style={{ marginBottom:16 }}>
-            <div className="card-title" style={{ marginBottom:14 }}>🔑 API Credentials</div>
+            <div className="card-title" style={{ marginBottom:14 }}>API Credentials</div>
 
             {/* Mode Toggle */}
             <div className="form-group">
@@ -747,7 +746,7 @@ function RazorpayTab({ tenants, simulateWebhook, filtered }) {
                       background: rzpMode===m ? (m==='live'?'rgba(16,185,129,0.12)':'rgba(59,130,246,0.12)') : 'transparent',
                       color: rzpMode===m ? (m==='live'?'#10b981':'#3b82f6') : 'var(--text-muted)',
                       fontWeight:700, fontSize:'0.8rem', cursor:'pointer', fontFamily:'inherit' }}>
-                    {m === 'live' ? '🟢 Live' : '🧪 Test'}
+                    {m === 'live' ? 'Live' : 'Test'}
                   </button>
                 ))}
               </div>
@@ -766,11 +765,11 @@ function RazorpayTab({ tenants, simulateWebhook, filtered }) {
               <input className="form-input font-mono" placeholder="whsec_..." value={rzpWebhook} onChange={e=>setRzpWebhook(e.target.value)} />
             </div>
             <div style={{ display:'flex', gap:8, marginTop:4 }}>
-              <button className="btn btn-primary" onClick={save}>✅ Save & Verify</button>
+              <button className="btn btn-primary" onClick={save}>Save & Verify</button>
               <button className="btn btn-secondary" onClick={() => {
                 simulateWebhook(filtered[0]||{company_name:'Test Co',admin_email:'test@demo.com'}, getPlans()[1]||getPlans()[0], true);
                 alert('✅ Simulated a successful payment webhook!');
-              }}>🔗 Simulate Webhook</button>
+              }}>Simulate Webhook</button>
             </div>
           </div>
         </div>
@@ -778,7 +777,7 @@ function RazorpayTab({ tenants, simulateWebhook, filtered }) {
         {/* Right — Webhook Config */}
         <div>
           <div className="card" style={{ marginBottom:16 }}>
-            <div className="card-title" style={{ marginBottom:14 }}>🔗 Webhook Configuration</div>
+            <div className="card-title" style={{ marginBottom:14 }}>Webhook Configuration</div>
             <div style={{ marginBottom:12 }}>
               <div style={{ fontSize:'0.72rem', color:'var(--text-muted)', marginBottom:6 }}>Set this URL in your <strong>Razorpay Dashboard → Webhooks</strong>:</div>
               <div style={{ display:'flex', alignItems:'center', gap:8, padding:'8px 12px', background:'var(--bg-elevated)', borderRadius:8, border:'1px solid var(--border-subtle)' }}>
@@ -787,7 +786,7 @@ function RazorpayTab({ tenants, simulateWebhook, filtered }) {
                 </code>
                 <button style={{ background:'none', border:'none', cursor:'pointer', color:'var(--text-muted)', fontSize:'0.7rem', padding:4, borderRadius:4, transition:'all 0.15s' }}
                   onClick={() => navigator.clipboard?.writeText('https://your-domain.com/api/razorpay/webhook').then(() => alert('Copied!'))}>
-                  💳
+                  
                 </button>
               </div>
             </div>
@@ -815,7 +814,7 @@ function RazorpayTab({ tenants, simulateWebhook, filtered }) {
           </div>
         </div>
       </div>
-      {saved && <div style={{position:'fixed',bottom:24,right:24,background:'linear-gradient(135deg,#7c3aed,#10b981)',color:'#fff',padding:'10px 18px',borderRadius:10,fontWeight:700,fontSize:'0.85rem',zIndex:9999}}>✓ Razorpay settings saved!</div>}
+      {saved && <div style={{position:'fixed',bottom:24,right:24,background:'linear-gradient(135deg,#7c3aed,#10b981)',color:'#fff',padding:'10px 18px',borderRadius:10,fontWeight:700,fontSize:'0.85rem',zIndex:9999}}>Razorpay settings saved!</div>}
     </div>
   );
 }
@@ -859,20 +858,20 @@ function CouponManager() {
 
       {showAdd && (
         <div className="card" style={{ marginBottom:16, border:'1px solid var(--accent-primary)' }}>
-          <div style={{fontWeight:700,marginBottom:14}}>🏷️ New Coupon Code</div>
+          <div style={{fontWeight:700,marginBottom:14}}>New Coupon Code</div>
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
             <div className="form-group" style={{margin:0}}>
               <label className="form-label">Coupon Code</label>
               <div style={{display:'flex',gap:6}}>
                 <input className="form-input font-mono" style={{flex:1,textTransform:'uppercase'}} value={form.code} onChange={e=>setForm(f=>({...f,code:e.target.value.toUpperCase()}))} placeholder="e.g. SAVE20" />
-                <button className="btn btn-secondary btn-sm" onClick={genCode} title="Auto-generate">🎲</button>
+                <button className="btn btn-secondary btn-sm" onClick={genCode} title="Auto-generate">Auto</button>
               </div>
             </div>
             <div className="form-group" style={{margin:0}}>
               <label className="form-label">Coupon Type</label>
               <select className="form-select" value={form.type} onChange={e=>setForm(f=>({...f,type:e.target.value,target_email:''}))}>
-                <option value="global">🌐 Global (anyone can use)</option>
-                <option value="user">👤 User-Specific</option>
+                <option value="global">Global (anyone can use)</option>
+                <option value="user">User-Specific</option>
               </select>
             </div>
             {form.type === 'user' && (
@@ -906,7 +905,7 @@ function CouponManager() {
             </div>
           </div>
           <div style={{display:'flex',gap:8,marginTop:14}}>
-            <button className="btn btn-primary" onClick={addCoupon}>✓ Create Coupon</button>
+            <button className="btn btn-primary" onClick={addCoupon}>Create Coupon</button>
             <button className="btn btn-ghost" onClick={()=>setShowAdd(false)}>Cancel</button>
           </div>
         </div>
@@ -915,7 +914,7 @@ function CouponManager() {
       {loadingCoupons ? (
         <div style={{ textAlign: 'center', padding: 40 }}><div className="spinner" style={{ width: 28, height: 28, margin: '0 auto' }} /></div>
       ) : coupons.length === 0 ? (
-        <div className="empty-state" style={{padding:40}}><div className="empty-icon">🏷️</div><div className="empty-title">No coupons yet</div><div className="empty-desc">Create your first coupon code</div></div>
+        <div className="empty-state" style={{padding:40}}><div className="empty-icon"></div><div className="empty-title">No coupons yet</div><div className="empty-desc">Create your first coupon code</div></div>
       ) : (
         <div className="table-container">
           <table>
@@ -937,7 +936,7 @@ function CouponManager() {
                     <td>
                       <div style={{display:'flex',gap:4}}>
                         <span style={{fontSize:'0.68rem',padding:'2px 6px',borderRadius:4,background:expired||exhausted?'rgba(239,68,68,0.1)':'rgba(34,197,94,0.1)',color:expired||exhausted?'#ef4444':'#22c55e',fontWeight:700}}>{expired?'Expired':exhausted?'Exhausted':'Active'}</span>
-                        <button className="btn btn-sm btn-ghost" style={{color:'var(--danger)',fontSize:'0.7rem'}} onClick={()=>removeCoupon(c.code)}>✕</button>
+                        <button className="btn btn-sm btn-ghost" style={{color:'var(--danger)',fontSize:'0.7rem'}} onClick={()=>removeCoupon(c.code)}>Remove</button>
                       </div>
                     </td>
                   </tr>
@@ -947,7 +946,7 @@ function CouponManager() {
           </table>
         </div>
       )}
-      {saved && <div style={{position:'fixed',bottom:24,right:24,background:'#22c55e',color:'#fff',padding:'10px 18px',borderRadius:8,fontWeight:700,fontSize:'0.85rem',zIndex:9999}}>✓ Coupons saved</div>}
+      {saved && <div style={{position:'fixed',bottom:24,right:24,background:'#22c55e',color:'#fff',padding:'10px 18px',borderRadius:8,fontWeight:700,fontSize:'0.85rem',zIndex:9999}}>Coupons saved</div>}
     </div>
   );
 }
@@ -963,7 +962,7 @@ function BrandingTab() {
   return (
     <div style={{ display: 'grid', gap: 16 }}>
       <div className="card">
-        <div className="card-title" style={{ marginBottom: 14 }}>🔒 Platform Identity</div>
+        <div className="card-title" style={{ marginBottom: 14 }}>Platform Identity</div>
         <div className="form-row form-row-2">
           <div className="form-group"><label className="form-label">Platform Name</label><input className="form-input" value={form.platform_name} onChange={e => setForm(f => ({ ...f, platform_name: e.target.value }))} /></div>
           <div className="form-group"><label className="form-label">Tagline</label><input className="form-input" value={form.tagline} onChange={e => setForm(f => ({ ...f, tagline: e.target.value }))} /></div>
@@ -978,7 +977,7 @@ function BrandingTab() {
         </div>
       </div>
       <div className="card">
-        <div className="card-title" style={{ marginBottom: 14 }}>📞 Contact & Legal</div>
+        <div className="card-title" style={{ marginBottom: 14 }}>Contact & Legal</div>
         <div className="form-row form-row-2">
           <div className="form-group"><label className="form-label">Support Email</label><input type="email" className="form-input" value={form.support_email} onChange={e => setForm(f => ({ ...f, support_email: e.target.value }))} /></div>
           <div className="form-group"><label className="form-label">Support Phone</label><input className="form-input" value={form.support_phone} onChange={e => setForm(f => ({ ...f, support_phone: e.target.value }))} placeholder="+91 98765 43210" /></div>
@@ -989,13 +988,13 @@ function BrandingTab() {
         </div>
       </div>
       <div className="card">
-        <div className="card-title" style={{ marginBottom: 14 }}>🔗 Social Links</div>
+        <div className="card-title" style={{ marginBottom: 14 }}>Social Links</div>
         <div className="form-row form-row-2">
           <div className="form-group"><label className="form-label">Twitter / X</label><input className="form-input" value={form.twitter_url} onChange={e => setForm(f => ({ ...f, twitter_url: e.target.value }))} placeholder="https://twitter.com/recoverlab" /></div>
           <div className="form-group"><label className="form-label">LinkedIn</label><input className="form-input" value={form.linkedin_url} onChange={e => setForm(f => ({ ...f, linkedin_url: e.target.value }))} placeholder="https://linkedin.com/company/recoverlab" /></div>
         </div>
       </div>
-      <div><button className="btn btn-primary" onClick={save}>{saved ? '✅ Saved!' : '💾 Save Branding Settings'}</button></div>
+      <div><button className="btn btn-primary" onClick={save}>{saved ? 'Saved!' : 'Save Branding Settings'}</button></div>
     </div>
   );
 }
@@ -1012,7 +1011,7 @@ function SeoTab() {
   return (
     <div style={{ display: 'grid', gap: 16 }}>
       <div className="card">
-        <div className="card-title" style={{ marginBottom: 14 }}>🏷️ Core Meta Tags</div>
+        <div className="card-title" style={{ marginBottom: 14 }}>Core Meta Tags</div>
         <div className="form-group">
           <div style={{ display: 'flex', justifyContent: 'space-between' }}><label className="form-label">Meta Title</label><span style={{ fontSize: '0.7rem', ...charCount(form.meta_title, 60) }}>{charCount(form.meta_title, 60).text}</span></div>
           <input className="form-input" value={form.meta_title} onChange={e => setForm(f => ({ ...f, meta_title: e.target.value }))} />
@@ -1038,7 +1037,7 @@ function SeoTab() {
         </div>
       </div>
       <div className="card">
-        <div className="card-title" style={{ marginBottom: 14 }}>📊 Analytics & Tracking</div>
+        <div className="card-title" style={{ marginBottom: 14 }}>Analytics & Tracking</div>
         <div className="form-row form-row-2">
           <div className="form-group"><label className="form-label">Google Analytics ID</label><input className="form-input font-mono" placeholder="G-XXXXXXXXXX" value={form.google_analytics_id} onChange={e => setForm(f => ({ ...f, google_analytics_id: e.target.value }))} /></div>
           <div className="form-group"><label className="form-label">Google Tag Manager ID</label><input className="form-input font-mono" placeholder="GTM-XXXXXXX" value={form.google_tag_manager_id} onChange={e => setForm(f => ({ ...f, google_tag_manager_id: e.target.value }))} /></div>
@@ -1046,15 +1045,15 @@ function SeoTab() {
         <div className="form-group"><label className="form-label">Facebook Pixel ID</label><input className="form-input font-mono" placeholder="1234567890123456" value={form.facebook_pixel_id} onChange={e => setForm(f => ({ ...f, facebook_pixel_id: e.target.value }))} /></div>
       </div>
       <div className="card">
-        <div className="card-title" style={{ marginBottom: 12 }}>⚙️ Advanced SEO</div>
-        {[['sitemap_enabled', '🗺️ Auto-generate XML Sitemap', 'Generates /sitemap.xml automatically'], ['schema_org_enabled', '📋 Schema.org Structured Data', 'Adds JSON-LD for rich snippets in search results']].map(([key, label, desc]) => (
+        <div className="card-title" style={{ marginBottom: 12 }}>Advanced SEO</div>
+        {[['sitemap_enabled', 'Auto-generate XML Sitemap', 'Generates /sitemap.xml automatically'], ['schema_org_enabled', 'Schema.org Structured Data', 'Adds JSON-LD for rich snippets in search results']].map(([key, label, desc]) => (
           <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '10px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', marginBottom: 8 }}>
             <input type="checkbox" checked={!!form[key]} onChange={e => setForm(f => ({ ...f, [key]: e.target.checked }))} style={{ accentColor: 'var(--accent-primary)', width: 16, height: 16 }} />
             <div><div style={{ fontWeight: 600, fontSize: '0.82rem' }}>{label}</div><div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{desc}</div></div>
           </label>
         ))}
       </div>
-      <div><button className="btn btn-primary" onClick={save}>{saved ? '✅ Saved!' : '💾 Save SEO Settings'}</button></div>
+      <div><button className="btn btn-primary" onClick={save}>{saved ? 'Saved!' : 'Save SEO Settings'}</button></div>
     </div>
   );
 }
@@ -1069,16 +1068,16 @@ function HomepageTab() {
     hero_cta_url: '/signup',
     hero_secondary_cta: 'View Demo',
     announcement_enabled: false,
-    announcement_text: '🔔 New: WhatsApp notifications now available!',
+    announcement_text: 'New: WhatsApp notifications now available!',
     announcement_color: '#3b82f6',
     show_pricing_section: true,
     show_features_section: true,
     show_testimonials: true,
     show_faq: true,
     features: [
-      { icon: '📁', title: 'Case Management', desc: 'Full lifecycle tracking from intake to delivery' },
-      { icon: '💰', title: 'Billing & Invoicing', desc: 'Auto-generate invoices, quotations and receipts' },
-      { icon: '📦', title: 'Inventory & Donors', desc: 'Smart matching of donor drives to active cases' },
+      { icon: '', title: 'Case Management', desc: 'Full lifecycle tracking from intake to delivery' },
+      { icon: '', title: 'Billing & Invoicing', desc: 'Auto-generate invoices, quotations and receipts' },
+      { icon: '', title: 'Inventory & Donors', desc: 'Smart matching of donor drives to active cases' },
     ],
     footer_copyright: `© ${new Date().getFullYear()} RecoverLab. All rights reserved.`,
     ...load(),
@@ -1110,7 +1109,7 @@ function HomepageTab() {
 
       {/* Hero Section */}
       <div className="card">
-        <div className="card-title" style={{ marginBottom: 12 }}>🖼️ Hero Section</div>
+        <div className="card-title" style={{ marginBottom: 12 }}>Hero Section</div>
         <div className="form-group"><label className="form-label">Hero Title</label><input className="form-input" value={form.hero_title} onChange={e => setForm(f => ({ ...f, hero_title: e.target.value }))} /></div>
         <div className="form-group"><label className="form-label">Hero Subtitle</label><textarea className="form-textarea" style={{ minHeight: 60 }} value={form.hero_subtitle} onChange={e => setForm(f => ({ ...f, hero_subtitle: e.target.value }))} /></div>
         <div className="form-row form-row-2">
@@ -1122,8 +1121,8 @@ function HomepageTab() {
 
       {/* Section Visibility */}
       <div className="card">
-        <div className="card-title" style={{ marginBottom: 12 }}>👁️ Section Visibility</div>
-        {[['show_pricing_section', '💰 Pricing / Plans Section'], ['show_features_section', '⚡ Features Grid Section'], ['show_testimonials', '⭐ Testimonials Section'], ['show_faq', '❓ FAQ Section']].map(([key, label]) => (
+        <div className="card-title" style={{ marginBottom: 12 }}>Section Visibility</div>
+        {[['show_pricing_section', 'Pricing / Plans Section'], ['show_features_section', 'Features Grid Section'], ['show_testimonials', 'Testimonials Section'], ['show_faq', 'FAQ Section']].map(([key, label]) => (
           <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '8px 12px', borderRadius: 'var(--radius-md)', background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', marginBottom: 6 }}>
             <input type="checkbox" checked={!!form[key]} onChange={e => setForm(f => ({ ...f, [key]: e.target.checked }))} style={{ accentColor: 'var(--accent-primary)', width: 15, height: 15 }} />
             <span style={{ fontWeight: 600, fontSize: '0.82rem' }}>{label}</span>
@@ -1133,20 +1132,20 @@ function HomepageTab() {
 
       {/* Features */}
       <div className="card">
-        <div className="card-title" style={{ marginBottom: 12 }}>⚡ Feature Cards</div>
+        <div className="card-title" style={{ marginBottom: 12 }}>Feature Cards</div>
         {form.features.map((feat, idx) => (
           <div key={idx} style={{ display: 'grid', gridTemplateColumns: '60px 1fr 1fr auto', gap: 8, marginBottom: 10, alignItems: 'flex-end' }}>
             <div className="form-group" style={{ margin: 0 }}><label className="form-label" style={{ fontSize: '0.68rem' }}>Icon</label><input className="form-input" value={feat.icon} onChange={e => { const ff = [...form.features]; ff[idx] = { ...ff[idx], icon: e.target.value }; setForm(f => ({ ...f, features: ff })); }} /></div>
             <div className="form-group" style={{ margin: 0 }}><label className="form-label" style={{ fontSize: '0.68rem' }}>Title</label><input className="form-input" value={feat.title} onChange={e => { const ff = [...form.features]; ff[idx] = { ...ff[idx], title: e.target.value }; setForm(f => ({ ...f, features: ff })); }} /></div>
             <div className="form-group" style={{ margin: 0 }}><label className="form-label" style={{ fontSize: '0.68rem' }}>Description</label><input className="form-input" value={feat.desc} onChange={e => { const ff = [...form.features]; ff[idx] = { ...ff[idx], desc: e.target.value }; setForm(f => ({ ...f, features: ff })); }} /></div>
-            <button onClick={() => setForm(f => ({ ...f, features: f.features.filter((_, i) => i !== idx) }))} style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444', borderRadius: 6, padding: '7px 10px', cursor: 'pointer', marginBottom: 0 }}>✕</button>
+            <button onClick={() => setForm(f => ({ ...f, features: f.features.filter((_, i) => i !== idx) }))} style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444', borderRadius: 6, padding: '7px 10px', cursor: 'pointer', marginBottom: 0 }}>Remove</button>
           </div>
         ))}
-        <button className="btn btn-secondary btn-sm" onClick={() => setForm(f => ({ ...f, features: [...f.features, { icon: '⭐', title: 'New Feature', desc: 'Describe this feature' }] }))}>+ Add Feature Card</button>
+        <button className="btn btn-secondary btn-sm" onClick={() => setForm(f => ({ ...f, features: [...f.features, { icon: '⭐', title: 'New Feature', desc: 'Describe this feature' }] }))}>Add Feature Card</button>
       </div>
 
       <div className="form-group"><label className="form-label">Footer Copyright Text</label><input className="form-input" value={form.footer_copyright} onChange={e => setForm(f => ({ ...f, footer_copyright: e.target.value }))} /></div>
-      <div><button className="btn btn-primary" onClick={save}>{saved ? '✅ Saved!' : '💾 Save Homepage Settings'}</button></div>
+      <div><button className="btn btn-primary" onClick={save}>{saved ? 'Saved!' : 'Save Homepage Settings'}</button></div>
     </div>
   );
 }
@@ -1171,7 +1170,7 @@ function InvoicesTab({ purchases, tenants }) {
       <div className="card">
         <div className="card-title" style={{ marginBottom: 14 }}>📄 Invoice & Auto-Activation Settings</div>
         <div style={{ display: 'grid', gap: 8, marginBottom: 16 }}>
-          {[['auto_send', '📧 Auto-send invoice email on payment success'], ['auto_activate_tenant', '✅ Auto-activate subscriber account on payment'], ['include_pdf', '📧 Attach PDF invoice to email']].map(([key, label]) => (
+          {[['auto_send', 'Auto-send invoice email on payment success'], ['auto_activate_tenant', 'Auto-activate subscriber account on payment'], ['include_pdf', 'Attach PDF invoice to email']].map(([key, label]) => (
             <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '10px 14px', borderRadius: 'var(--radius-md)', background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)' }}>
               <input type="checkbox" checked={!!settings[key]} onChange={e => setSettings(s => ({ ...s, [key]: e.target.checked }))} style={{ accentColor: 'var(--accent-primary)', width: 16, height: 16 }} />
               <div><div style={{ fontWeight: 600, fontSize: '0.82rem' }}>{label}</div></div>
@@ -1189,14 +1188,14 @@ function InvoicesTab({ purchases, tenants }) {
         <div className="form-group"><label className="form-label">Company GSTIN (printed on invoice)</label><input className="form-input font-mono" value={settings.company_gstin} onChange={e => setSettings(s => ({ ...s, company_gstin: e.target.value }))} placeholder="27AABCT1332L1ZX" /></div>
         <div className="form-group"><label className="form-label">Email Subject Template</label><input className="form-input" value={settings.subject_template} onChange={e => setSettings(s => ({ ...s, subject_template: e.target.value }))} /><div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: 4 }}>Variables: {'{{plan_label}}'}, {'{{invoice_number}}'}, {'{{tenant_name}}'}, {'{{amount}}'}</div></div>
         <div className="form-group"><label className="form-label">Email Body Introduction</label><textarea className="form-textarea" style={{ minHeight: 70 }} value={settings.body_intro} onChange={e => setSettings(s => ({ ...s, body_intro: e.target.value }))} /></div>
-        <button className="btn btn-primary" onClick={save}>{saved ? '✅ Saved!' : '💾 Save Invoice Settings'}</button>
+        <button className="btn btn-primary" onClick={save}>{saved ? 'Saved!' : 'Save Invoice Settings'}</button>
       </div>
 
       {/* Invoice list */}
       <div className="card">
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14 }}>
           <div className="card-title" style={{ margin: 0 }}>📄 Generated Invoices ({invoices.length})</div>
-          {invoices.length > 0 && <button className="btn btn-secondary btn-sm" onClick={() => alert('In production: exports all invoices as ZIP with PDFs')}>📦 Export All</button>}
+          {invoices.length > 0 && <button className="btn btn-secondary btn-sm" onClick={() => alert('In production: exports all invoices as ZIP with PDFs')}>Export All</button>}
         </div>
         {invoices.length === 0 ? (
           <div className="empty-state" style={{ padding: 40 }}><div className="empty-icon">📭</div><div className="empty-title">No paid subscriptions yet</div><div className="empty-desc">Invoices are auto-generated when Razorpay payment.captured webhook fires</div></div>
@@ -1254,8 +1253,8 @@ function AccountsTab() {
     reload();
   };
 
-  const ROLE_LABELS = { super_admin: '👑 Super Admin', support_admin: '🎧 Support Admin', billing_admin: '💳 Billing Admin', content_admin: '✍️ Content Admin' };
-  const PERM_LABELS = { full: '🔓 Full Access', billing_only: '💳 Billing Only', view_only: '👁️ View Only' };
+  const ROLE_LABELS = { super_admin: 'Super Admin', support_admin: 'Support Admin', billing_admin: 'Billing Admin', content_admin: 'Content Admin' };
+  const PERM_LABELS = { full: 'Full Access', billing_only: 'Billing Only', view_only: 'View Only' };
 
   return (
     <div style={{ display: 'grid', gap: 16 }}>
@@ -1269,7 +1268,7 @@ function AccountsTab() {
 
       {showAdd && (
         <div className="card" style={{ border: '1px solid var(--accent-primary)' }}>
-          <div style={{ fontWeight: 700, marginBottom: 12 }}>➕ New Super Admin Account</div>
+          <div style={{ fontWeight: 700, marginBottom: 12 }}>New Super Admin Account</div>
           <div className="form-row form-row-2">
             <div className="form-group" style={{ margin: 0 }}><label className="form-label">Full Name</label><input className="form-input" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></div>
             <div className="form-group" style={{ margin: 0 }}><label className="form-label">Email</label><input type="email" className="form-input" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} /></div>
@@ -1288,7 +1287,7 @@ function AccountsTab() {
             </select>
           </div>
           <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-            <button className="btn btn-primary btn-sm" onClick={addAccount}>✓ Create Account</button>
+            <button className="btn btn-primary btn-sm" onClick={addAccount}>Create Account</button>
             <button className="btn btn-ghost btn-sm" onClick={() => setShowAdd(false)}>Cancel</button>
           </div>
         </div>
@@ -1301,7 +1300,7 @@ function AccountsTab() {
           {accounts.map(acc => (
             <div key={acc.id} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', opacity: acc.is_active ? 1 : 0.5 }}>
               <div style={{ width: 42, height: 42, borderRadius: '50%', background: 'rgba(0,212,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', border: '2px solid rgba(0,212,255,0.2)' }}>
-                {acc.role === 'super_admin' ? '👑' : acc.role === 'billing_admin' ? '\uD83D\uDCB3' : acc.role === 'content_admin' ? '\u270D\uFE0F' : '👤'}
+                {acc.role ? acc.role[0].toUpperCase() : ''}
               </div>
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -1318,7 +1317,7 @@ function AccountsTab() {
                     <button className="btn btn-sm btn-secondary" onClick={async () => { const res = await saApi.patch(`/accounts/${acc.id}`, { is_active: !acc.is_active }); if (!res.error) reload(); }}>
                       {acc.is_active ? '\u23F8 Deactivate' : '\u25B6 Activate'}
                     </button>
-                    <button className="btn btn-sm" style={{ background: 'rgba(239,68,68,0.08)', color: '#ef4444', borderColor: 'rgba(239,68,68,0.2)', fontSize: '0.72rem' }} onClick={async () => { if (!confirm(`Delete ${acc.name}?`)) return; const res = await saApi.del(`/accounts/${acc.id}`); if (!res.error) reload(); }}>🗑️ Delete</button>
+                    <button className="btn btn-sm" style={{ background: 'rgba(239,68,68,0.08)', color: '#ef4444', borderColor: 'rgba(239,68,68,0.2)', fontSize: '0.72rem' }} onClick={async () => { if (!confirm(`Delete ${acc.name}?`)) return; const res = await saApi.del(`/accounts/${acc.id}`); if (!res.error) reload(); }}>Delete</button>
                   </>
                 )}
               </div>
@@ -1326,7 +1325,7 @@ function AccountsTab() {
           ))}
         </div>
       )}
-      {saved && <div style={{ position: 'fixed', bottom: 24, right: 24, background: '#22c55e', color: '#fff', padding: '10px 18px', borderRadius: 8, fontWeight: 700, fontSize: '0.85rem', zIndex: 9999 }}>✓ Saved</div>}
+      {saved && <div style={{ position: 'fixed', bottom: 24, right: 24, background: '#22c55e', color: '#fff', padding: '10px 18px', borderRadius: 8, fontWeight: 700, fontSize: '0.85rem', zIndex: 9999 }}>Saved</div>}
     </div>
   );
 }
@@ -1348,7 +1347,6 @@ function ActivityLogsTab() {
     <div style={{ display: 'grid', gap: 16 }}>
       <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <div className="search-bar" style={{ flex: 1, minWidth: 200 }}>
-          <span className="search-icon">🔍</span>
           <input className="search-input" placeholder="Search logs..." value={filter} onChange={e => setFilter(e.target.value)} />
         </div>
         <select className="form-select" style={{ width: 'auto' }} value={filter} onChange={e => setFilter(e.target.value)}>
@@ -1359,14 +1357,14 @@ function ActivityLogsTab() {
           <option value="LOGIN">Login Events</option>
           <option value="COUPON">Coupon Events</option>
         </select>
-        <button className="btn btn-secondary btn-sm" onClick={() => { setLogsLoading(true); saApi.get('/audit-log').then(d => { setLogs(d.logs || []); setLogsLoading(false); }).catch(() => setLogsLoading(false)); }}>🔄 Refresh</button>
-        <button className="btn btn-secondary btn-sm" onClick={() => alert('[Demo] Exporting activity logs as CSV...')}>📊 Export CSV</button>
+        <button className="btn btn-secondary btn-sm" onClick={() => { setLogsLoading(true); saApi.get('/audit-log').then(d => { setLogs(d.logs || []); setLogsLoading(false); }).catch(() => setLogsLoading(false)); }}>Refresh</button>
+        <button className="btn btn-secondary btn-sm" onClick={() => alert('[Demo] Exporting activity logs as CSV...')}>Export CSV</button>
       </div>
 
       {logsLoading ? (
         <div style={{ textAlign: 'center', padding: 40 }}><div className="spinner" style={{ width: 28, height: 28, margin: '0 auto' }} /></div>
       ) : filtered.length === 0 ? (
-        <div className="empty-state" style={{ padding: 30 }}><div className="empty-icon">📋</div><div className="empty-title">No log entries</div><div className="empty-desc">Platform activity will appear here</div></div>
+        <div className="empty-state" style={{ padding: 30 }}><div className="empty-icon"></div><div className="empty-title">No log entries</div><div className="empty-desc">Platform activity will appear here</div></div>
       ) : null}
 
       <div style={{ display: 'grid', gap: 8 }}>
@@ -1411,7 +1409,7 @@ function PlatformTab() {
     <div style={{ display: 'grid', gap: 16 }}>
       {/* System Health */}
       <div className="card">
-        <div className="card-title" style={{ marginBottom: 14 }}>🔧 System Health</div>
+        <div className="card-title" style={{ marginBottom: 14 }}>System Health</div>
         <div style={{ display: 'grid', gap: 8 }}>
           {health.map(h => (
             <div key={h.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)' }}>
@@ -1431,10 +1429,10 @@ function PlatformTab() {
       {/* Maintenance Mode */}
       <div className="card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <div className="card-title" style={{ margin: 0 }}>⚙️ Maintenance Mode</div>
+          <div className="card-title" style={{ margin: 0 }}>Maintenance Mode</div>
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
             <input type="checkbox" checked={form.maintenance_mode} onChange={e => setForm(f => ({ ...f, maintenance_mode: e.target.checked }))} style={{ accentColor: '#f59e0b', width: 16, height: 16 }} />
-            <span style={{ fontSize: '0.82rem', fontWeight: 600, color: form.maintenance_mode ? '#f59e0b' : 'var(--text-muted)' }}>{form.maintenance_mode ? '🔴 ENABLED' : 'Disabled'}</span>
+            <span style={{ fontSize: '0.82rem', fontWeight: 600, color: form.maintenance_mode ? '#f59e0b' : 'var(--text-muted)' }}>{form.maintenance_mode ? 'Enabled' : 'Disabled'}</span>
           </label>
         </div>
         {form.maintenance_mode && <div className="form-group"><label className="form-label">Maintenance Message</label><textarea className="form-textarea" style={{ minHeight: 60 }} value={form.maintenance_message} onChange={e => setForm(f => ({ ...f, maintenance_message: e.target.value }))} /></div>}
@@ -1442,7 +1440,7 @@ function PlatformTab() {
 
       {/* Tenant Limits */}
       <div className="card">
-        <div className="card-title" style={{ marginBottom: 14 }}>⚙️ Default Limits for New Subscribers</div>
+        <div className="card-title" style={{ marginBottom: 14 }}>Default Limits for New Subscribers</div>
         <div className="form-row form-row-2">
           <div className="form-group"><label className="form-label">Trial Duration (days)</label><input type="number" className="form-input" value={form.trial_days} onChange={e => setForm(f => ({ ...f, trial_days: parseInt(e.target.value) || 14 }))} min={1} max={90} /></div>
           <div className="form-group"><label className="form-label">Auto-suspend after expiry (days)</label><input type="number" className="form-input" value={form.auto_suspend_days} onChange={e => setForm(f => ({ ...f, auto_suspend_days: parseInt(e.target.value) || 7 }))} min={0} max={30} /></div>
@@ -1463,7 +1461,7 @@ function PlatformTab() {
         </div>
         <div className="form-group"><label className="form-label">From Email Address</label><input type="email" className="form-input" value={form.smtp_from} onChange={e => setForm(f => ({ ...f, smtp_from: e.target.value }))} /></div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button className="btn btn-primary" onClick={save}>{saved ? '✅ Saved!' : '💾 Save Platform Settings'}</button>
+          <button className="btn btn-primary" onClick={save}>{saved ? 'Saved!' : 'Save Platform Settings'}</button>
           <button className="btn btn-secondary" onClick={() => alert('[Demo] Test email sent to ' + form.smtp_from)}>📧 Send Test Email</button>
         </div>
       </div>
@@ -1667,13 +1665,13 @@ function EmailDeliverabilityTab() {
   };
 
   const INBOX_TIPS = [
-    { icon: '🔐', title: 'SPF Record', status: 'critical', desc: 'Authorizes your SMTP server to send on behalf of your domain. Add a TXT record at the root (@) of your domain in DNS:', code: 'v=spf1 ip4:YOUR.SMTP.SERVER.IP ~all' },
-    { icon: '🔑', title: 'DKIM Signing', status: 'critical', desc: 'Cryptographically signs outbound emails. Generate a DKIM key pair — add the public key as a TXT DNS record. Configure your SMTP server (Postfix/Exim/etc.) with the private key. Most important factor for inbox placement.' },
-    { icon: '🛡️', title: 'DMARC Policy', status: 'recommended', desc: 'Ties SPF + DKIM together and tells receiving servers what to do with failing emails. Add a TXT record at _dmarc.yourdomain.com:', code: 'v=DMARC1; p=quarantine; rua=mailto:dmarc@yourdomain.com' },
-    { icon: '🌐', title: 'Custom Sending Domain', status: 'recommended', desc: 'Send from a dedicated subdomain (e.g. mail.yourdomain.com). Set the SMTP EHLO/HELO hostname to match. This protects your root domain reputation.' },
-    { icon: '📮', title: 'Reverse DNS (PTR)', status: 'critical', desc: 'Your SMTP server\'s IP must have a valid PTR (reverse DNS) record pointing to your hostname. Ask your hosting/VPS provider. Missing PTR = instant spam folder.' },
-    { icon: '🌡️', title: 'Domain Warmup', status: 'critical', desc: 'New IPs/domains must be warmed up. Start with 50 emails/day, double weekly for 4–6 weeks. Sending too many too fast triggers spam filters at Gmail, Yahoo, Outlook.' },
-    { icon: '📋', title: 'Unsubscribe Header', status: 'critical', desc: 'Include List-Unsubscribe header and a visible unsubscribe link in every marketing email. Required by Gmail and Yahoo since 2024. Non-compliance leads to deliverability drops.' },
+    { icon: '', title: 'SPF Record', status: 'critical', desc: 'Authorizes your SMTP server to send on behalf of your domain. Add a TXT record at the root (@) of your domain in DNS:', code: 'v=spf1 ip4:YOUR.SMTP.SERVER.IP ~all' },
+    { icon: '', title: 'DKIM Signing', status: 'critical', desc: 'Cryptographically signs outbound emails. Generate a DKIM key pair — add the public key as a TXT DNS record. Configure your SMTP server (Postfix/Exim/etc.) with the private key. Most important factor for inbox placement.' },
+    { icon: '', title: 'DMARC Policy', status: 'recommended', desc: 'Ties SPF + DKIM together and tells receiving servers what to do with failing emails. Add a TXT record at _dmarc.yourdomain.com:', code: 'v=DMARC1; p=quarantine; rua=mailto:dmarc@yourdomain.com' },
+    { icon: '', title: 'Custom Sending Domain', status: 'recommended', desc: 'Send from a dedicated subdomain (e.g. mail.yourdomain.com). Set the SMTP EHLO/HELO hostname to match. This protects your root domain reputation.' },
+    { icon: '', title: 'Reverse DNS (PTR)', status: 'critical', desc: 'Your SMTP server\'s IP must have a valid PTR (reverse DNS) record pointing to your hostname. Ask your hosting/VPS provider. Missing PTR = instant spam folder.' },
+    { icon: '', title: 'Domain Warmup', status: 'critical', desc: 'New IPs/domains must be warmed up. Start with 50 emails/day, double weekly for 4–6 weeks. Sending too many too fast triggers spam filters at Gmail, Yahoo, Outlook.' },
+    { icon: '', title: 'Unsubscribe Header', status: 'critical', desc: 'Include List-Unsubscribe header and a visible unsubscribe link in every marketing email. Required by Gmail and Yahoo since 2024. Non-compliance leads to deliverability drops.' },
     { icon: '🧹', title: 'List Hygiene', status: 'recommended', desc: 'Remove hard-bounced addresses immediately. Remove soft-bounce addresses after 3 failures. Hard bounce rate >2% or spam rate >0.1% will get your IP/domain flagged.' },
     { icon: '📝', title: 'Plain Text Fallback', status: 'recommended', desc: 'Always include a plain text version alongside HTML. Emails with HTML-only content are flagged as suspicious by many spam filters. Add text/plain alternative in your templates.' },
     { icon: '🚫', title: 'Avoid Spam Triggers', status: 'recommended', desc: 'Avoid ALL CAPS, excessive "!!!", "FREE", "CLICK HERE NOW", image-heavy emails with little text, URL shorteners. Keep image-to-text ratio balanced. Never use purchased lists.' },
@@ -1693,7 +1691,7 @@ function EmailDeliverabilityTab() {
   return (
     <div>
       <div style={{ background: 'linear-gradient(135deg, rgba(16,185,129,0.1), rgba(59,130,246,0.1))', border: '1px solid rgba(16,185,129,0.2)', borderRadius: 12, padding: '16px 20px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 12 }}>
-        <div style={{ fontSize: '2rem' }}>📬</div>
+        <div style={{ fontSize: '2rem' }}></div>
         <div>
           <div style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--text-primary)' }}>Email Deliverability Center</div>
           <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 2 }}>Configure your SMTP server, set up SPF/DKIM/DMARC, and ensure marketing emails land in the inbox — not spam.</div>
@@ -1702,7 +1700,7 @@ function EmailDeliverabilityTab() {
 
       {/* Sub-tabs */}
       <div style={{ display: 'flex', gap: 4, marginBottom: 20, borderBottom: '2px solid var(--border-subtle)', paddingBottom: 0 }}>
-        {[['smtp', '⚙️ SMTP Configuration'], ['dns', '🔐 DNS & Authentication'], ['tips', '✉️ Inbox Best Practices']].map(([t, l]) => (
+        {[['smtp', 'SMTP Configuration'], ['dns', 'DNS & Authentication'], ['tips', 'Inbox Best Practices']].map(([t, l]) => (
           <button key={t} onClick={() => setTab(t)} style={{ padding: '8px 16px', background: 'none', border: 'none', borderBottom: tab===t ? '2px solid var(--accent-primary)' : '2px solid transparent', marginBottom: -2, color: tab===t ? 'var(--accent-primary)' : 'var(--text-muted)', cursor: 'pointer', fontSize: '0.82rem', fontWeight: tab===t ? 700 : 400 }}>{l}</button>
         ))}
       </div>
@@ -1712,7 +1710,7 @@ function EmailDeliverabilityTab() {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
           {/* Left — server credentials */}
           <div>
-            <div style={{ fontWeight: 700, fontSize: '0.85rem', marginBottom: 14, color: 'var(--text-secondary)' }}>🖥️ SMTP Server Credentials</div>
+            <div style={{ fontWeight: 700, fontSize: '0.85rem', marginBottom: 14, color: 'var(--text-secondary)' }}>SMTP Server Credentials</div>
             <div style={{ padding: '10px 14px', background: 'rgba(59,130,246,0.06)', borderRadius: 8, border: '1px solid rgba(59,130,246,0.15)', marginBottom: 16, fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
               Works with any SMTP server — Gmail Workspace, Zoho Mail, your own Postfix/Exim, cPanel Mail, or any hosting provider. Just enter the credentials below.
             </div>
@@ -1761,7 +1759,7 @@ function EmailDeliverabilityTab() {
 
           {/* Right — sender identity + test */}
           <div>
-            <div style={{ fontWeight: 700, fontSize: '0.85rem', marginBottom: 14, color: 'var(--text-secondary)' }}>✉️ Sender Identity</div>
+            <div style={{ fontWeight: 700, fontSize: '0.85rem', marginBottom: 14, color: 'var(--text-secondary)' }}>Sender Identity</div>
             <div className="form-group">
               <label className="form-label">From Email Address</label>
               <input className="form-input" value={cfg.smtp_from_email} onChange={e => setCfg(c => ({...c, smtp_from_email: e.target.value}))} placeholder="noreply@yourdomain.com" />
@@ -1789,22 +1787,22 @@ function EmailDeliverabilityTab() {
 
             {/* Test send */}
             <div style={{ padding: '14px 16px', background: 'rgba(0,212,255,0.06)', borderRadius: 10, border: '1px solid rgba(0,212,255,0.15)', marginTop: 8 }}>
-              <div style={{ fontWeight: 700, fontSize: '0.8rem', marginBottom: 10, color: 'var(--text-secondary)' }}>🧪 Test SMTP Connection</div>
+              <div style={{ fontWeight: 700, fontSize: '0.8rem', marginBottom: 10, color: 'var(--text-secondary)' }}>Test SMTP Connection</div>
               <div style={{ display: 'flex', gap: 8 }}>
                 <input className="form-input" value={testEmail} onChange={e => setTestEmail(e.target.value)} placeholder="Send test to: you@example.com" style={{ flex: 1 }} />
                 <button className="btn btn-secondary" onClick={sendTest} disabled={testStatus === 'testing'} style={{ whiteSpace: 'nowrap' }}>
-                  {testStatus === 'testing' ? '⏳ Sending…' : '📤 Send Test'}
+                  {testStatus === 'testing' ? 'Sending…' : 'Send Test'}
                 </button>
               </div>
               {testMsg && (
                 <div style={{ marginTop: 8, padding: '8px 10px', borderRadius: 7, background: testStatus === 'ok' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', border: `1px solid ${testStatus === 'ok' ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}`, fontSize: '0.75rem', color: testStatus === 'ok' ? '#10b981' : '#ef4444' }}>
-                  {testStatus === 'ok' ? '✅ ' : '❌ '}{testMsg}
+                  {testMsg}
                 </div>
               )}
             </div>
 
             <div style={{ marginTop: 14, display: 'flex', gap: 8 }}>
-              <button className="btn btn-primary" onClick={save} style={{ flex: 1 }}>{saved ? '✅ Saved & Synced!' : '💾 Save SMTP Settings'}</button>
+              <button className="btn btn-primary" onClick={save} style={{ flex: 1 }}>{saved ? 'Saved & Synced!' : 'Save SMTP Settings'}</button>
             </div>
           </div>
         </div>
@@ -1814,7 +1812,7 @@ function EmailDeliverabilityTab() {
       {tab === 'dns' && (
         <div>
           <div style={{ padding: '12px 16px', background: 'rgba(239,68,68,0.06)', borderRadius: 10, border: '1px solid rgba(239,68,68,0.2)', marginBottom: 20, fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-            ⚠️ <strong>Critical:</strong> Without SPF and DKIM set up, emails from your SMTP server will almost always land in spam. Set up all records marked CRITICAL before sending any campaigns.
+            <strong>Critical:</strong> Without SPF and DKIM set up, emails from your SMTP server will almost always land in spam. Set up all records marked CRITICAL before sending any campaigns.
           </div>
           <div style={{ display: 'grid', gap: 14 }}>
             {DNS_RECORDS.map(r => (
@@ -1828,7 +1826,7 @@ function EmailDeliverabilityTab() {
                   <code style={{ fontSize: '0.72rem', background: 'var(--bg-base)', padding: '3px 8px', borderRadius: 4, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.host}</code>
                   <code style={{ fontSize: '0.72rem', background: 'var(--bg-base)', padding: '3px 8px', borderRadius: 4, color: '#10b981', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.value}</code>
                   <button style={{ background: 'none', border: '1px solid var(--border-subtle)', padding: '3px 8px', borderRadius: 6, cursor: 'pointer', fontSize: '0.7rem', color: 'var(--text-muted)' }}
-                    onClick={() => { navigator.clipboard?.writeText(r.value); alert('Copied!'); }}>📋</button>
+                    onClick={() => { navigator.clipboard?.writeText(r.value); alert('Copied!'); }}>Copy</button>
                 </div>
                 <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{r.note}</div>
               </div>
@@ -1862,7 +1860,7 @@ function EmailDeliverabilityTab() {
       )}
 
       {/* Saved toast */}
-      {saved && <div style={{ position: 'fixed', bottom: 24, right: 24, background: 'linear-gradient(135deg,#10b981,#059669)', color: '#fff', padding: '10px 18px', borderRadius: 10, fontWeight: 700, zIndex: 9999, boxShadow: '0 4px 16px rgba(16,185,129,0.4)' }}>✅ SMTP settings saved!</div>}
+      {saved && <div style={{ position: 'fixed', bottom: 24, right: 24, background: 'linear-gradient(135deg,#10b981,#059669)', color: '#fff', padding: '10px 18px', borderRadius: 10, fontWeight: 700, zIndex: 9999, boxShadow: '0 4px 16px rgba(16,185,129,0.4)' }}>SMTP settings saved!</div>}
     </div>
   );
 }
@@ -1912,7 +1910,7 @@ export default function SuperAdminPage() {
   const handleImpersonate = (tenant) => {
     sessionStorage.setItem('impersonating_as', tenant.company_name);
     sessionStorage.setItem('impersonating_tenant_id', tenant.id);
-    alert(`👁️ Now viewing as: ${tenant.company_name}\n\nYou'll see their CRM data. Click "Exit" in the banner to return.`);
+    alert(`Now viewing as: ${tenant.company_name}\n\nYou'll see their CRM data. Click "Exit" in the banner to return.`);
     navigate('/');
   };
 
@@ -2038,7 +2036,6 @@ export default function SuperAdminPage() {
           {/* Filters */}
           <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
             <div className="search-bar" style={{ flex: 1, minWidth: 200 }}>
-              <span className="search-icon">🔍</span>
               <input className="search-input" placeholder="Search by company, email, city..." value={search} onChange={e => setSearch(e.target.value)} />
             </div>
             <select className="form-select" style={{ width: 'auto' }} value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
@@ -2096,7 +2093,7 @@ export default function SuperAdminPage() {
       {activeTab === 'plans' && (
         <div>
           <div style={{ marginBottom:12 }}>
-            <div className="card-title">📋 Subscription Plans & Access Control</div>
+            <div className="card-title">Subscription Plans & Access Control</div>
             <div style={{fontSize:'0.78rem',color:'var(--text-muted)'}}>Manage plans, pricing, and define which modules each plan can access.</div>
           </div>
           <PlansManager tenants={tenants} />
@@ -2111,7 +2108,7 @@ export default function SuperAdminPage() {
       {/* Coupons Tab */}
       {activeTab === 'coupons' && (
         <div>
-          <div className="card-title" style={{ marginBottom: 12 }}>🏷️ Coupon Code Management</div>
+          <div className="card-title" style={{ marginBottom: 12 }}>Coupon Code Management</div>
           <CouponManager />
         </div>
       )}
@@ -2120,11 +2117,11 @@ export default function SuperAdminPage() {
       {activeTab === 'purchases' && (
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <div className="card-title">💳 Subscription Purchase Tracker</div>
+            <div className="card-title">Subscription Purchase Tracker</div>
             <div style={{ display: 'flex', gap: 8 }}>
               {newPurchaseCount > 0 && (
                 <span style={{ padding: '4px 12px', background: 'rgba(16,185,129,0.15)', color: '#10b981', borderRadius: 999, fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer' }} onClick={clearNewCount}>
-                  ✓ Mark {newPurchaseCount} as seen
+                  Mark {newPurchaseCount} as seen
                 </span>
               )}
               <button className="btn btn-secondary btn-sm" onClick={() => {
@@ -2133,20 +2130,20 @@ export default function SuperAdminPage() {
                   setPurchases([]);
                   clearNewCount();
                 }
-              }}>🗑️ Clear Logs</button>
+              }}>Clear Logs</button>
             </div>
           </div>
 
           {/* Stats row */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 16 }}>
             {[[
-              '✅', 'Successful', purchases.filter(p => p.status === 'success').length, '#10b981',
+              '', 'Successful', purchases.filter(p => p.status === 'success').length, '#10b981',
             ], [
-              '❌', 'Failed / Abandoned', purchases.filter(p => p.status === 'failed').length, '#ef4444',
+              '', 'Failed / Abandoned', purchases.filter(p => p.status === 'failed').length, '#ef4444',
             ], [
-              '⏳', 'Pending', purchases.filter(p => p.status === 'pending').length, '#f59e0b',
+              '', 'Pending', purchases.filter(p => p.status === 'pending').length, '#f59e0b',
             ], [
-              '💰', 'Total Revenue', fmtAmt(purchases.filter(p => p.status === 'success').reduce((s, p) => s + (p.amount || 0), 0)), '#8b5cf6',
+              '', 'Total Revenue', fmtAmt(purchases.filter(p => p.status === 'success').reduce((s, p) => s + (p.amount || 0), 0)), '#8b5cf6',
             ]].map(([icon, label, val, color]) => (
               <div key={label} className="card" style={{ borderLeft: `3px solid ${color}`, padding: '12px 16px' }}>
                 <div style={{ fontSize: '1.4rem' }}>{icon}</div>
@@ -2212,11 +2209,11 @@ export default function SuperAdminPage() {
                             const tenant = tenants.find(t => t.company_name === p.tenant_name);
                             if (tenant) { setEditTenant(tenant); }
                             else alert('Tenant not found — may need manual update');
-                          }}>✏️ Update Tenant</button>
+                          }}>Update Tenant</button>
                         )}
                         {p.status === 'failed' && (
                           <button className="btn btn-sm" style={{ background: 'rgba(0,212,255,0.1)', color: 'var(--accent-primary)', borderColor: 'rgba(0,212,255,0.3)', fontSize: '0.72rem' }}
-                            onClick={() => alert(`Retry contact: ${p.tenant_email}`)}>🔄 Retry</button>
+                            onClick={() => alert(`Retry contact: ${p.tenant_email}`)}>Retry</button>
                         )}
                       </div>
                     </td>

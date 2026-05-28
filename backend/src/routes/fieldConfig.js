@@ -110,6 +110,117 @@ router.get('/', async (req, res) => {
   }
 });
 
+const CASE_SETTINGS_KEY = 'case_settings';
+const DEFAULT_CASE_SETTINGS = {
+  stages: [
+    'received','inspection','diagnosis','quotation','approved','rejected','recovery_in_progress',
+    'imaging','data_extraction','verification','completed','delivered','failed',
+  ],
+  symptoms: [
+    'not_detected','clicking','slow','dead','beeping','grinding','pcb_burnt','corrupted',
+    'bad_sectors','head_crash','water_damage','not_spinning','read_errors',
+  ],
+  failure_types: [
+    'logical','firmware','electrical','mechanical','head_crash','pcb_damage',
+    'motor_failure','bad_sectors','water_damage','fire_damage','unknown',
+  ],
+  brands: [
+    'Western Digital','Seagate','Toshiba','Samsung','Hitachi (HGST)','Fujitsu','IBM','Maxtor','Apple','Sony','OnePlus','Xiaomi','Other',
+  ],
+  capacities: [
+    '160GB','250GB','320GB','500GB','750GB','1TB','1.5TB','2TB','3TB','4TB','6TB','8TB','10TB','12TB','14TB','16TB','18TB','20TB',
+  ],
+  hdd_types: [],
+};
+
+function mergeCaseSettings(stored, tenantId) {
+  const global = stored?.global || {};
+  const tenants = stored?.tenants || {};
+  const tenantSettings = tenantId ? tenants[tenantId] || {} : {};
+  return {
+    ...DEFAULT_CASE_SETTINGS,
+    ...global,
+    ...tenantSettings,
+  };
+}
+
+router.get('/settings', async (req, res) => {
+  try {
+    const tenantId = currentTenantId(req);
+    const result = await query('SELECT value FROM platform_settings WHERE key = $1', [CASE_SETTINGS_KEY]);
+    const stored = result.rows.length ? result.rows[0].value : {};
+    const settings = mergeCaseSettings(stored, tenantId);
+    res.json(settings);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.put(
+  '/settings',
+  requireMinRole('admin'),
+  [
+    body('stages').optional().isArray(),
+    body('stages.*').optional().isString(),
+    body('symptoms').optional().isArray(),
+    body('symptoms.*').optional().isString(),
+    body('failure_types').optional().isArray(),
+    body('failure_types.*').optional().isString(),
+    body('brands').optional().isArray(),
+    body('brands.*').optional().isString(),
+    body('capacities').optional().isArray(),
+    body('capacities.*').optional().isString(),
+    body('hdd_types').optional().isArray(),
+    body('hdd_types.*').optional().isString(),
+  ],
+  auditLog('update_case_settings', 'field_config'),
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+
+    try {
+      const tenantId = currentTenantId(req);
+      const result = await query('SELECT value FROM platform_settings WHERE key = $1', [CASE_SETTINGS_KEY]);
+      const current = result.rows.length ? result.rows[0].value : {};
+      const updated = {
+        global: current.global || {},
+        tenants: current.tenants || {},
+      };
+      const payload = {
+        ...(req.body.stages ? { stages: req.body.stages } : {}),
+        ...(req.body.symptoms ? { symptoms: req.body.symptoms } : {}),
+        ...(req.body.failure_types ? { failure_types: req.body.failure_types } : {}),
+        ...(req.body.brands ? { brands: req.body.brands } : {}),
+        ...(req.body.capacities ? { capacities: req.body.capacities } : {}),
+        ...(req.body.hdd_types ? { hdd_types: req.body.hdd_types } : {}),
+      };
+
+      if (tenantId) {
+        updated.tenants[tenantId] = {
+          ...mergeCaseSettings(current, tenantId),
+          ...payload,
+        };
+      } else {
+        updated.global = {
+          ...mergeCaseSettings(current, tenantId),
+          ...payload,
+        };
+      }
+
+      await query(
+        `INSERT INTO platform_settings (key, value, updated_by, updated_at)
+         VALUES ($1, $2, $3, NOW())
+         ON CONFLICT (key) DO UPDATE SET value = $2, updated_by = $3, updated_at = NOW()`,
+        [CASE_SETTINGS_KEY, JSON.stringify(updated), req.user.id],
+      );
+
+      res.json({ settings: tenantId ? updated.tenants[tenantId] : updated.global });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+);
+
 // GET /api/field-config/hdd-fields — all HDD field definitions
 router.get('/hdd-fields', async (req, res) => {
   try {

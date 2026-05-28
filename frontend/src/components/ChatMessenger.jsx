@@ -55,7 +55,7 @@ export default function ChatMessenger({
   variant = 'floating',
   title = 'Team Chat',
   subtitle = 'Secure team messaging',
-  headerIcon = '💬',
+  headerIcon = '',
   containerClassName = '',
   panelClassName = '',
 }) {
@@ -161,7 +161,6 @@ export default function ChatMessenger({
   const listView = (
     <div className="chat-list-container">
       <div className="chat-search-wrapper">
-        <span className="chat-search-icon">🔍</span>
         <input
           type="text"
           placeholder="Search people…"
@@ -176,7 +175,7 @@ export default function ChatMessenger({
       <div className="chat-list-scroller">
         {filteredContacts.length === 0 ? (
           <div className="chat-empty-state">
-            <div className="chat-empty-icon">💬</div>
+            <div className="chat-empty-icon"></div>
             <div className="chat-empty-text">No contacts available</div>
           </div>
         ) : (
@@ -308,7 +307,7 @@ export default function ChatMessenger({
           <div className="chat-header chat-page-thread-header">{threadHeader}</div>
           {selectedContact ? threadView : (
             <div className="chat-empty-state chat-page-pick">
-              <div className="chat-empty-icon">💬</div>
+              <div className="chat-empty-icon"></div>
               <div className="chat-empty-text">Select someone to start chatting</div>
             </div>
           )}
@@ -371,7 +370,7 @@ export default function ChatMessenger({
         onClick={() => setIsOpen((o) => !o)}
         title="Team Chat"
       >
-        <span className="chat-btn-icon">💬</span>
+        <span className="chat-btn-icon">Chat</span>
         {totalUnread > 0 && !isOpen ? (
           <span className="chat-btn-unread-badge">{totalUnread > 99 ? '99+' : totalUnread}</span>
         ) : null}
