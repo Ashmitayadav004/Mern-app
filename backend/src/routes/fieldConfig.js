@@ -127,9 +127,12 @@ const DEFAULT_CASE_SETTINGS = {
   brands: [
     'Western Digital','Seagate','Toshiba','Samsung','Hitachi (HGST)','Fujitsu','IBM','Maxtor','Apple','Sony','OnePlus','Xiaomi','Other',
   ],
+  manufacture_countries: ['Thailand','China','Malaysia','Philippines'],
+  interfaces: ['SATA','NVMe','SAS','IDE','USB','PCIe','M.2','eSATA'],
   capacities: [
     '160GB','250GB','320GB','500GB','750GB','1TB','1.5TB','2TB','3TB','4TB','6TB','8TB','10TB','12TB','14TB','16TB','18TB','20TB',
   ],
+  payment_methods: ['Cash','UPI','Card (Debit/Credit)','Bank Transfer','NEFT','RTGS','IMPS','Cheque','Online (Razorpay)','PayPal'],
   hdd_types: [],
 };
 
@@ -172,6 +175,12 @@ router.put(
     body('capacities.*').optional().isString(),
     body('hdd_types').optional().isArray(),
     body('hdd_types.*').optional().isString(),
+    body('manufacture_countries').optional().isArray(),
+    body('manufacture_countries.*').optional().isString(),
+    body('interfaces').optional().isArray(),
+    body('interfaces.*').optional().isString(),
+    body('payment_methods').optional().isArray(),
+    body('payment_methods.*').optional().isString(),
   ],
   auditLog('update_case_settings', 'field_config'),
   async (req, res) => {
@@ -191,7 +200,10 @@ router.put(
         ...(req.body.symptoms ? { symptoms: req.body.symptoms } : {}),
         ...(req.body.failure_types ? { failure_types: req.body.failure_types } : {}),
         ...(req.body.brands ? { brands: req.body.brands } : {}),
+        ...(req.body.manufacture_countries ? { manufacture_countries: req.body.manufacture_countries } : {}),
+        ...(req.body.interfaces ? { interfaces: req.body.interfaces } : {}),
         ...(req.body.capacities ? { capacities: req.body.capacities } : {}),
+        ...(req.body.payment_methods ? { payment_methods: req.body.payment_methods } : {}),
         ...(req.body.hdd_types ? { hdd_types: req.body.hdd_types } : {}),
       };
 

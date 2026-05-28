@@ -1069,10 +1069,13 @@ export default function SettingsPage() {
     const next = { ...caseSettings, ...patch };
     setCaseSettings(next);
     persistCaseSettingsToLocalStorage(next);
-    window.dispatchEvent(new CustomEvent('caseSettingsUpdated', { detail: next }));
     try {
       setSettingsSyncing(true);
-      await fieldConfigApi.saveCaseSettings(patch);
+      const result = await fieldConfigApi.saveCaseSettings(patch);
+      const saved = { ...CASE_SETTINGS_DEFAULTS, ...(result?.settings || next) };
+      setCaseSettings(saved);
+      persistCaseSettingsToLocalStorage(saved);
+      window.dispatchEvent(new CustomEvent('caseSettingsUpdated', { detail: saved }));
     } catch (err) {
       console.error('Unable to save case settings:', err);
     } finally {
