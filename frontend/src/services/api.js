@@ -127,6 +127,7 @@ export const casesApi = {
   get: (id) => api.get(`/cases/${id}`),
   create: (data) => api.post('/cases', data),
   update: (id, data) => api.put(`/cases/${id}`, data),
+  delete: (id) => api.delete(`/cases/${id}`),
   transition: (id, data) => api.patch(`/cases/${id}/stage`, data),
   smartAssist: (id) => api.get(`/cases/${id}/smart-assist`),
   donors: (id) => api.get(`/cases/${id}/donors`),
@@ -171,6 +172,7 @@ export const clientsApi = {
   create: (data) => api.post('/clients', data),
   update: (id, data) => api.put(`/clients/${id}`, data),
   addComm: (id, data) => api.post(`/clients/${id}/communications`, data),
+  collectPending: (id) => api.post(`/clients/${id}/collect-pending`, {}),
 };
 
 // Storage Models
