@@ -7,7 +7,7 @@ DROP TABLE IF EXISTS chat_conversations CASCADE;
 CREATE TABLE chat_conversations (
     id         SERIAL PRIMARY KEY,
     name       VARCHAR(100) UNIQUE NOT NULL,
-    participant_user_ids INTEGER[] NOT NULL DEFAULT '{}',
+    participant_user_ids TEXT[] NOT NULL DEFAULT '{}',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -15,11 +15,15 @@ CREATE TABLE chat_conversations (
 CREATE TABLE chat_messages (
     id              SERIAL PRIMARY KEY,
     conversation_id INTEGER NOT NULL,
-    sender_id       INTEGER NOT NULL,
+    sender_id       TEXT NOT NULL,
+    recipient_id    TEXT,
+    tenant_id       UUID,
     content         TEXT,
     type            VARCHAR(20) NOT NULL DEFAULT 'text',
     attachment_path TEXT,
     mime_type       VARCHAR(200),
+    deleted_at      TIMESTAMP WITH TIME ZONE,
+    updated_at      TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     created_at      TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     delivered_at    TIMESTAMP WITH TIME ZONE,
     seen_at         TIMESTAMP WITH TIME ZONE

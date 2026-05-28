@@ -4,20 +4,30 @@ const logger = require('../config/logger');
 
 async function ensureChatTables() {
   try {
+    // Main conversation table
     await query(`
       CREATE TABLE IF NOT EXISTS chat_conversations (
         id SERIAL PRIMARY KEY,
         tenant_id UUID,
         name VARCHAR(200) UNIQUE NOT NULL,
         participant_user_ids TEXT[] NOT NULL DEFAULT '{}',
+        status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'archived', 'deleted')),
         created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
       )
     `);
+
+    await query(`ALTER TABLE chat_conversations ADD COLUMN IF NOT EXISTS tenant_id UUID`);
+    await query(`ALTER TABLE chat_conversations ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'active'`);
+    await query(`ALTER TABLE chat_conversations ADD COLUMN IF NOT EXISTS created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()`);
+    await query(`ALTER TABLE chat_conversations ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()`);
+    await query(`ALTER TABLE chat_conversations ALTER COLUMN participant_user_ids TYPE TEXT[] USING participant_user_ids::text[]`);
+    
+    // Messages table
     await query(`
       CREATE TABLE IF NOT EXISTS chat_messages (
         id SERIAL PRIMARY KEY,
-        conversation_id INTEGER NOT NULL,
+        conversation_id INTEGER NOT NULL REFERENCES chat_conversations(id) ON DELETE CASCADE,
         tenant_id UUID,
         sender_id TEXT NOT NULL,
         recipient_id TEXT,
@@ -25,18 +35,41 @@ async function ensureChatTables() {
         type VARCHAR(20) NOT NULL DEFAULT 'text',
         attachment_path TEXT,
         mime_type VARCHAR(200),
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-        delivered_at TIMESTAMP WITH TIME ZONE,
-        seen_at TIMESTAMP WITH TIME ZONE
+        deleted_at TIMESTAMP WITH TIME ZONE,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
       )
     `);
-    await query(`ALTER TABLE chat_conversations ADD COLUMN IF NOT EXISTS tenant_id UUID`);
-    await query(`ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS tenant_id UUID`);
+
     await query(`ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS recipient_id TEXT`);
+    await query(`ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS tenant_id UUID`);
+    await query(`ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZONE`);
+    await query(`ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()`);
+    await query(`ALTER TABLE chat_messages ALTER COLUMN sender_id TYPE TEXT USING sender_id::text`);
+
+    // Message reads tracking (for unread counts)
+    await query(`
+      CREATE TABLE IF NOT EXISTS chat_message_reads (
+        id SERIAL PRIMARY KEY,
+        message_id INTEGER NOT NULL REFERENCES chat_messages(id) ON DELETE CASCADE,
+        reader_id TEXT NOT NULL,
+        read_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        UNIQUE(message_id, reader_id)
+      )
+    `);
+
+    // Indexes for performance
     await query(`CREATE INDEX IF NOT EXISTS idx_chat_messages_conv ON chat_messages(conversation_id)`);
     await query(`CREATE INDEX IF NOT EXISTS idx_chat_messages_tenant ON chat_messages(tenant_id)`);
+    await query(`CREATE INDEX IF NOT EXISTS idx_chat_messages_sender_recipient ON chat_messages(sender_id, recipient_id)`);
+    await query(`CREATE INDEX IF NOT EXISTS idx_chat_messages_created_at ON chat_messages(created_at DESC)`);
     await query(`CREATE INDEX IF NOT EXISTS idx_chat_conversations_name ON chat_conversations(name)`);
     await query(`CREATE INDEX IF NOT EXISTS idx_chat_conversations_tenant ON chat_conversations(tenant_id)`);
+    await query(`CREATE INDEX IF NOT EXISTS idx_chat_conversations_participant_ids ON chat_conversations USING GIN(participant_user_ids)`);
+    await query(`CREATE INDEX IF NOT EXISTS idx_chat_message_reads_message ON chat_message_reads(message_id)`);
+    await query(`CREATE INDEX IF NOT EXISTS idx_chat_message_reads_reader ON chat_message_reads(reader_id)`);
+    
+    logger.info('✅ Chat tables initialized successfully');
   } catch (e) {
     logger.warn('chatService ensureChatTables warning', { error: e.message });
   }
@@ -67,21 +100,22 @@ function toAttachmentUrl(messageId) {
   return `/api/chat/messages/${messageId}/attachment`;
 }
 
-function mapMessageRow(row) {
+function mapMessageRow(row, viewerId = null) {
   return {
     id: row.id,
     sender_id: row.sender_id,
-    recipientId: row.recipient_id,
+    recipient_id: row.recipient_id,
     sender_name: row.sender_name,
     sender_role: row.sender_role,
-    text: row.text,
+    text: row.text || row.content,
     type: row.type,
     filePath: row.attachment_path ? toAttachmentUrl(row.id) : null,
     fileName: row.attachment_path ? path.basename(row.attachment_path) : null,
-    mimeType: row.mimeType || row.mime_type || null,
+    mimeType: row.mime_type || null,
     created_at: row.created_at,
-    seen_at: row.seen_at || null,
+    seen_at: row.seen_at || (row.read_at ? row.read_at : null),
     delivered_at: row.delivered_at || null,
+    is_read: viewerId ? (String(row.reader_id) === String(viewerId) && row.read_at) : null,
     room: row.room || null,
   };
 }
@@ -124,24 +158,41 @@ async function getAllowedChatUsers(userId) {
        FROM users
        WHERE is_active = true
          AND id::text <> $1
-       ORDER BY role = 'admin' DESC, full_name ASC`,
+         AND role = 'admin'
+       ORDER BY full_name ASC`,
       [meId]
     );
     return res.rows;
   }
 
   const tenantId = effectiveTenantId(me);
+
+  if (me.role === 'admin') {
+    const res = await query(
+      `SELECT id::text AS id, full_name, username, role, tenant_id::text AS tenant_id,
+              tenant_owner_id::text AS tenant_owner_id
+       FROM users
+       WHERE is_active = true
+         AND id::text <> $1
+         AND (
+           role = 'super_admin'
+           OR COALESCE(tenant_id::text, tenant_owner_id::text, id::text) = $2
+         )
+       ORDER BY role = 'super_admin' DESC, role = 'admin' DESC, full_name ASC`,
+      [meId, tenantId]
+    );
+    return res.rows;
+  }
+
   const res = await query(
     `SELECT id::text AS id, full_name, username, role, tenant_id::text AS tenant_id,
             tenant_owner_id::text AS tenant_owner_id
      FROM users
      WHERE is_active = true
        AND id::text <> $1
-       AND (
-         role = 'super_admin'
-         OR COALESCE(tenant_id::text, tenant_owner_id::text, id::text) = $2
-       )
-     ORDER BY role = 'super_admin' DESC, role = 'admin' DESC, full_name ASC`,
+       AND role <> 'super_admin'
+       AND COALESCE(tenant_id::text, tenant_owner_id::text, id::text) = $2
+     ORDER BY role = 'admin' DESC, full_name ASC`,
     [meId, tenantId]
   );
   return res.rows;
@@ -157,13 +208,25 @@ async function getOrCreateConversationForUsers(userA, userB) {
   const room = normalizeConversationName(userA, userB);
   const participantIds = [normalizeUserId(userA), normalizeUserId(userB)].sort();
   const tenantId = await resolveConversationTenantId(userA, userB);
-  const findRes = await query('SELECT id, tenant_id FROM chat_conversations WHERE name = $1', [room]);
+  const findRes = await query('SELECT id, tenant_id, participant_user_ids FROM chat_conversations WHERE name = $1', [room]);
+
   if (findRes.rowCount > 0) {
-    if (!findRes.rows[0].tenant_id && tenantId) {
-      await query('UPDATE chat_conversations SET tenant_id = $1, updated_at = NOW() WHERE id = $2', [tenantId, findRes.rows[0].id]);
+    const existing = findRes.rows[0];
+    const needsUpdate = (!existing.tenant_id && tenantId)
+      || !Array.isArray(existing.participant_user_ids)
+      || existing.participant_user_ids.length !== 2
+      || existing.participant_user_ids.map(normalizeUserId).sort().join(',') !== participantIds.join(',');
+
+    if (needsUpdate) {
+      await query(
+        'UPDATE chat_conversations SET tenant_id = COALESCE(tenant_id, $1), participant_user_ids = $2, updated_at = NOW() WHERE id = $3',
+        [tenantId, participantIds, existing.id]
+      );
     }
-    return { conversationId: findRes.rows[0].id, room, tenantId };
+
+    return { conversationId: existing.id, room, tenantId: existing.tenant_id || tenantId };
   }
+
   const insertRes = await query(
     'INSERT INTO chat_conversations (tenant_id, name, participant_user_ids) VALUES ($1, $2, $3) RETURNING id',
     [tenantId, room, participantIds]
@@ -331,7 +394,16 @@ async function getRecentConversationsForUser(userId) {
        lm.content AS last_message_text,
        lm.type AS last_message_type,
        lm.attachment_path AS last_message_attachment_path,
-       lm.created_at AS last_message_created_at
+       lm.created_at AS last_message_created_at,
+       COALESCE(
+         (SELECT COUNT(1)
+          FROM chat_messages cm2
+          WHERE cm2.conversation_id = cc.id
+            AND cm2.recipient_id = $1
+            AND cm2.sender_id <> $1
+            AND cm2.seen_at IS NULL),
+         0
+       ) AS unread_count
      FROM chat_conversations cc
      LEFT JOIN LATERAL (
        SELECT id, content, type, attachment_path, created_at
@@ -340,7 +412,7 @@ async function getRecentConversationsForUser(userId) {
        ORDER BY created_at DESC
        LIMIT 1
      ) lm ON true
-     WHERE $1 = ANY(cc.participant_user_ids)
+     WHERE $1 = ANY(cc.participant_user_ids::text[])
        AND ($2::text IS NULL OR cc.tenant_id::text IS NULL OR cc.tenant_id::text = $2::text OR $3 = true)
      ORDER BY lm.created_at DESC NULLS LAST, cc.updated_at DESC`,
     [me, meTenantId, meUser?.role === 'super_admin']
@@ -354,6 +426,7 @@ async function getRecentConversationsForUser(userId) {
       return {
         room: row.name,
         participant: contact,
+        unread_count: Number(row.unread_count || 0),
         lastMessage: row.last_message_id
           ? {
               id: row.last_message_id,
@@ -366,6 +439,12 @@ async function getRecentConversationsForUser(userId) {
       };
     })
     .filter(Boolean);
+}
+
+function resolveAttachmentDiskPath(attachmentPath) {
+  if (!attachmentPath) return null;
+  const relativePath = attachmentPath.replace(/^\/+/, '');
+  return path.resolve(path.join(__dirname, '..', '..'), relativePath);
 }
 
 async function getAttachmentForMessage(messageId, viewerUserId) {
@@ -381,7 +460,7 @@ async function getAttachmentForMessage(messageId, viewerUserId) {
   if (!row.attachment_path) return null;
   await assertConversationAccess(row.room, viewerUserId);
   return {
-    path: row.attachment_path,
+    path: resolveAttachmentDiskPath(row.attachment_path),
     mimeType: row.mime_type || 'application/octet-stream',
     fileName: path.basename(row.attachment_path),
     room: row.room,
@@ -398,6 +477,11 @@ module.exports = {
   getMessagesBetweenUsers,
   markMessagesSeen,
   markMessagesDelivered,
+  normalizeConversationName,
+  getAttachmentForMessage,
+  participantIdsFromRoom,
+  normalizeUserId,
+  effectiveTenantId,
   normalizeConversationName,
   getAttachmentForMessage,
 };

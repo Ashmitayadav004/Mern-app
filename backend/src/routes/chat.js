@@ -81,7 +81,13 @@ router.post('/messages', authenticate, upload.single('file'), async (req, res) =
     // Broadcast created message via Socket.IO if available
     try {
       const io = req.app.get('io');
-      if (io) io.to(newMsg.room).emit('newMessage', newMsg);
+      if (io) {
+        io.to(newMsg.room).emit('newMessage', newMsg);
+        io.to(`user:${String(newMsg.sender_id)}`).emit('newMessage', newMsg);
+        if (newMsg.recipient_id && String(newMsg.recipient_id) !== String(newMsg.sender_id)) {
+          io.to(`user:${String(newMsg.recipient_id)}`).emit('newMessage', newMsg);
+        }
+      }
     } catch (e) {
       console.warn('Unable to broadcast chat message via io', e.message);
     }
@@ -108,8 +114,10 @@ router.get('/messages/:id/attachment', async (req, res) => {
     if (!fs.existsSync(attachment.path)) {
       return res.status(404).json({ error: 'Attachment not available on disk' });
     }
+    const stats = fs.statSync(attachment.path);
     res.setHeader('Content-Type', attachment.mimeType);
-    res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(attachment.fileName)}"`);
+    res.setHeader('Content-Length', stats.size);
+    res.setHeader('Content-Disposition', `inline; filename*=UTF-8''${encodeURIComponent(attachment.fileName)}`);
     fs.createReadStream(attachment.path).pipe(res);
   } catch (e) {
     if (e.statusCode) return res.status(e.statusCode).json({ error: e.message });

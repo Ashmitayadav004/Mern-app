@@ -9,6 +9,10 @@ const getToken = () => localStorage.getItem('accessToken');
 const initials = (name) => (name || '?').split(' ').map((s) => s[0]).join('').slice(0, 2).toUpperCase();
 const isImageType = (mime) => mime && mime.startsWith('image/');
 const buildRoom = (a, b) => `dm:${[String(a), String(b)].sort().join(':')}`;
+const otherUserIdFromRoom = (room, myId) => {
+  if (!room || !myId || !room.startsWith('dm:')) return null;
+  return room.replace('dm:', '').split(':').find((id) => String(id) !== String(myId)) || null;
+};
 
 function formatTime(value) {
   if (!value) return '';
@@ -59,7 +63,12 @@ export default function TeamChatPage() {
     const res = await fetch(`${API}/chat/contacts`, { headers: { Authorization: `Bearer ${token}` } });
     const data = await res.json();
     const users = Array.isArray(data.users) ? data.users : [];
-    setContacts(users);
+    const convos = Array.isArray(data.conversations) ? data.conversations : [];
+    const unreadById = new Map(convos.map((c) => [String(c.participant?.id), Number(c.unread_count || 0)]));
+    setContacts(users.map((user) => ({
+      ...user,
+      unread: unreadById.get(String(user.id)) || 0,
+    })));
     if (!selectedUserId && users[0]) setSelectedUserId(String(users[0].id));
   }, [selectedUserId]);
 
@@ -92,23 +101,32 @@ export default function TeamChatPage() {
     socket.on('onlineUsers', (ids) => setOnlineIds((ids || []).map(String)));
 
     socket.on('newMessage', (msg) => {
-      const otherId = String(msg.sender_id) === String(user?.id) ? String(selectedUserId) : String(msg.sender_id);
+      const otherId = otherUserIdFromRoom(msg.room, user?.id) || String(msg.sender_id);
       if (!otherId) return;
       setMessagesByUser((prev) => {
         const current = prev[otherId] || [];
         if (current.some((m) => String(m.id) === String(msg.id))) return prev;
         return { ...prev, [otherId]: [...current, msg] };
       });
+      setContacts((prev) => prev.map((c) => {
+        if (String(c.id) !== String(otherId)) return c;
+        if (String(otherId) === String(selectedUserId)) return { ...c, unread: 0 };
+        return { ...c, unread: Number(c.unread || 0) + 1 };
+      }));
     });
 
     socket.on('messagesSeen', ({ room, userId }) => {
-      if (!selectedRoom || room !== selectedRoom || String(userId) === String(user?.id)) return;
+      const otherId = otherUserIdFromRoom(room, user?.id);
+      if (!otherId) return;
       setMessagesByUser((prev) => ({
         ...prev,
-        [selectedUserId]: (prev[selectedUserId] || []).map((m) =>
-          String(m.sender_id) === String(user?.id) ? { ...m, seen_at: new Date().toISOString() } : m
+        [otherId]: (prev[otherId] || []).map((m) =>
+          String(m.sender_id) === String(user?.id) ? { ...m, seen_at: m.seen_at || new Date().toISOString() } : m
         ),
       }));
+      setContacts((prev) => prev.map((c) =>
+        String(c.id) === String(otherId) ? { ...c, unread: 0 } : c
+      ));
     });
 
     socket.on('messagesDelivered', ({ room, userId }) => {
@@ -142,7 +160,10 @@ export default function TeamChatPage() {
     if (!selectedRoom || !socketRef.current) return;
     socketRef.current.emit('joinRoom', selectedRoom);
     socketRef.current.emit('markSeen', { room: selectedRoom });
-  }, [selectedRoom]);
+    setContacts((prev) => prev.map((c) =>
+      String(c.id) === String(selectedUserId) ? { ...c, unread: 0 } : c
+    ));
+  }, [selectedRoom, selectedUserId]);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -211,7 +232,12 @@ export default function TeamChatPage() {
                 onClick={() => setSelectedUserId(String(contact.id))}
               >
                 <span>{online ? '🟢' : '⚪'}</span>
-                <span>{contact.full_name || contact.username}</span>
+                <span style={{ fontWeight: contact.unread > 0 ? 600 : 400 }}>{contact.full_name || contact.username}</span>
+                {contact.unread > 0 && (
+                  <span style={{ marginLeft: 8, minWidth: 22, height: 22, lineHeight: '22px', borderRadius: 999, background: '#ef4444', color: '#fff', fontSize: 12, padding: '0 8px' }}>
+                    {contact.unread}
+                  </span>
+                )}
               </button>
             );
           })}

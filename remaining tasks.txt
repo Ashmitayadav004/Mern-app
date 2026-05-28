@@ -34,34 +34,6 @@ new create case me balance remainig ammount -> showing on total panding on cline
 
 
 
-
-
-Today's Work Updates 
-* Redesigned and improved the overall UI/UX across the application
-* Added floating chat UI component for better communication experience
-* Reorganized and optimized the Settings page structure/navigation
-* Improved multi-step Case Form validation and UX
-Case Form Improvements:
-* Added RED (*) indicators for all required fields
-* Validation errors now appear only:
-  * when invalid data is entered
-  * or when a touched field is left empty
-* Removed unnecessary initial validation error spam
-* "Next" button now enables only when the current step is valid
-* Preserved form data while navigating between steps
-* Added smoother step transition experience
-HDD Section Improvements:
-* Added searchable required dropdown for Manufacturing field
-* Manufacturing options added:
-  * Thailand
-  * China
-  * Malaysia
-  * Philippines
-Additional Changes:
-* Changed HDD No field to auto-use/improve Case Number handling
-* Overall form flow and usability improved for smoother operations
-
-
 26/05/26
 
 Inventory

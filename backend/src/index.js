@@ -217,26 +217,47 @@ async function start() {
     const http = require('http');
     const server = http.createServer(app);
     const { Server } = require('socket.io');
+    
     const io = new Server(server, {
       cors: {
         origin: process.env.NODE_ENV === 'production' ? (process.env.FRONTEND_URL || 'http://localhost:5174') : '*',
         methods: ['GET', 'POST'],
         credentials: true,
       },
+      pingInterval: 25000,
+      pingTimeout: 60000,
+      transports: ['websocket', 'polling'],
     });
 
-    // Expose io on app for route handlers to broadcast (e.g. file uploads)
+    // Expose io on app for route handlers to broadcast
     app.set('io', io);
 
-    const onlineUsers = new Map();
+    const onlineUsers = new Map(); // Maps socketId -> userId
+    const userSockets = new Map(); // Maps userId -> Set of socketIds
     const chatService = require('./services/chatService');
     const { verifySocketToken } = require('./middleware/auth');
+
+    const addUserSocket = (userId, socketId) => {
+      if (!userSockets.has(userId)) {
+        userSockets.set(userId, new Set());
+      }
+      userSockets.get(userId).add(socketId);
+    };
+
+    const removeUserSocket = (userId, socketId) => {
+      if (userSockets.has(userId)) {
+        userSockets.get(userId).delete(socketId);
+        if (userSockets.get(userId).size === 0) {
+          userSockets.delete(userId);
+        }
+      }
+    };
 
     const emitAllowedOnlineUsers = async (targetSocket) => {
       try {
         const allowedUsers = await chatService.getAllowedChatUsers(targetSocket.userId);
         const allowedIds = new Set(allowedUsers.map((u) => String(u.id)));
-        const onlineAllowed = Array.from(new Set(onlineUsers.values())).filter((id) => allowedIds.has(String(id)));
+        const onlineAllowed = Array.from(userSockets.keys()).filter((id) => allowedIds.has(String(id)));
         targetSocket.emit('onlineUsers', onlineAllowed);
       } catch (e) {
         logger.warn('Failed to emit allowed online users', { error: e.message });
@@ -244,96 +265,191 @@ async function start() {
     };
 
     const refreshOnlineUsersForAll = async () => {
-      const sockets = await io.fetchSockets();
-      await Promise.all(sockets.map((s) => emitAllowedOnlineUsers(s)));
+      try {
+        const sockets = await io.fetchSockets();
+        await Promise.all(sockets.map((s) => emitAllowedOnlineUsers(s)));
+      } catch (e) {
+        logger.warn('Failed to refresh online users', { error: e.message });
+      }
     };
 
+    // ──── Socket.IO Authentication & Connection Middleware ────
     io.use(async (socket, next) => {
       const token = socket.handshake.auth?.token || socket.handshake.query?.token;
-      if (!token) return next(new Error('Authentication error'));
+      if (!token) {
+        return next(new Error('Authentication error: No token provided'));
+      }
       try {
         const user = await verifySocketToken(token);
         socket.userId = String(user.id);
         socket.user = user;
+        socket.tenantId = user.tenantId || null;
         return next();
       } catch (err) {
-        return next(new Error('Invalid token'));
+        logger.warn('Socket authentication failed', { error: err.message });
+        return next(new Error('Invalid or expired token'));
       }
     });
 
+    // ──── Socket.IO Connection Handler ────
     io.on('connection', (socket) => {
-      logger.info(`⚡ Socket connected: ${socket.id} (user ${socket.userId})`);
-      onlineUsers.set(socket.id, String(socket.userId));
-      // Personal room for reliable delivery even if DM room not joined yet
-      socket.join(`user:${String(socket.userId)}`);
-      if (socket.user?.tenant_id) {
-        socket.join(`tenant:${String(socket.user.tenant_id)}`);
+      const userId = socket.userId;
+      logger.info(`⚡ Socket connected: ${socket.id} (user: ${userId})`);
+      
+      onlineUsers.set(socket.id, userId);
+      addUserSocket(userId, socket.id);
+
+      // Join personal user room for direct message delivery
+      socket.join(`user:${userId}`);
+      
+      // Join tenant room if applicable (for multi-tenant filtering)
+      if (socket.tenantId) {
+        socket.join(`tenant:${socket.tenantId}`);
       }
+      
+      // Notify all users about online status change
       refreshOnlineUsersForAll();
 
+      // ──── Join DM Room Handler ────
       socket.on('joinRoom', async (room) => {
-        if (!room || typeof room !== 'string' || !room.startsWith('dm:')) return;
-        const participantIds = room.replace('dm:', '').split(':').filter(Boolean);
-        if (!participantIds.includes(String(socket.userId))) return;
-        const otherUserId = participantIds.find((id) => id !== String(socket.userId));
-        if (!otherUserId) return;
-        const canChat = await chatService.canUsersChat(socket.userId, otherUserId);
-        if (!canChat) return;
-        socket.join(room);
-        await chatService.markMessagesDelivered(room, socket.userId);
-        io.to(room).emit('messagesDelivered', { room, userId: socket.userId, deliveredAt: new Date().toISOString() });
-        logger.info(`User ${socket.userId} joined room ${room}`);
+        try {
+          if (!room || typeof room !== 'string' || !room.startsWith('dm:')) {
+            logger.warn(`Invalid room format: ${room}`);
+            return;
+          }
+          
+          const participantIds = chatService.participantIdsFromRoom(room);
+          if (!participantIds.includes(String(userId))) {
+            logger.warn(`User ${userId} not in room participants: ${participantIds}`);
+            return;
+          }
+          
+          const otherUserId = participantIds.find((id) => id !== String(userId));
+          if (!otherUserId) {
+            logger.warn(`No other participant found in room: ${room}`);
+            return;
+          }
+          
+          // Verify both users can chat
+          const canChat = await chatService.canUsersChat(userId, otherUserId);
+          if (!canChat) {
+            logger.warn(`Chat denied between ${userId} and ${otherUserId}`);
+            socket.emit('error', { message: 'Not allowed to chat with this user' });
+            return;
+          }
+          
+          socket.join(room);
+          logger.info(`✓ User ${userId} joined room: ${room}`);
+        } catch (e) {
+          logger.error('Error in joinRoom handler', { error: e.message, room });
+          socket.emit('error', { message: 'Failed to join room' });
+        }
       });
 
+      // ──── Send Message Handler ────
       socket.on('sendMessage', async (msg) => {
         try {
+          if (!msg || !msg.room || !msg.recipientId) {
+            logger.warn('Invalid sendMessage payload', { msg });
+            return;
+          }
+
           const saved = await chatService.createMessage({
-            senderId: socket.userId,
+            senderId: userId,
             recipientId: msg.recipientId,
             room: msg.room,
-            text: msg.text,
-            filePath: msg.filePath,
-            mimeType: msg.mimeType,
+            text: msg.text || null,
+            type: msg.type || 'text',
+            filePath: msg.filePath || null,
+            mimeType: msg.mimeType || null,
           });
-          if (saved?.room) io.to(saved.room).emit('newMessage', saved);
-          // Deliver to recipient's personal room so they get it even without joinRoom
-          if (msg.recipientId && String(msg.recipientId) !== String(socket.userId)) {
-            io.to(`user:${String(msg.recipientId)}`).emit('newMessage', saved);
+
+          if (saved?.room) {
+            // Emit to all users in the conversation room
+            io.to(saved.room).emit('newMessage', saved);
+            logger.info(`Message sent in room ${saved.room} by ${userId}`);
+          }
+
+          // Ensure both sender and recipient receive the message instantly,
+          // even if they are not currently in the room.
+          io.to(`user:${String(saved.sender_id)}`).emit('newMessage', saved);
+          if (saved.recipient_id && String(saved.recipient_id) !== String(saved.sender_id)) {
+            io.to(`user:${String(saved.recipient_id)}`).emit('newMessage', saved);
           }
         } catch (e) {
-          logger.error('Error saving message', { error: e.message });
+          logger.error('Error saving message', { error: e.message, msg });
+          socket.emit('error', { message: 'Failed to send message' });
         }
       });
 
-      // Mark messages in a room as seen by the current user
+      // ──── Mark Messages as Seen Handler ────
       socket.on('markSeen', async ({ room }) => {
         try {
-          if (!room || typeof room !== 'string' || !room.startsWith('dm:')) return;
-          const participantIds = room.replace('dm:', '').split(':').filter(Boolean);
-          if (!participantIds.includes(String(socket.userId))) return;
-          const otherUserId = participantIds.find((id) => id !== String(socket.userId));
-          const canChat = await chatService.canUsersChat(socket.userId, otherUserId);
-          if (!canChat) return;
-          await chatService.markMessagesSeen(room, socket.userId);
-          io.to(room).emit('messagesSeen', { room, userId: socket.userId });
+          if (!room || typeof room !== 'string' || !room.startsWith('dm:')) {
+            logger.warn(`Invalid room in markSeen: ${room}`);
+            return;
+          }
+          
+          const participantIds = chatService.participantIdsFromRoom(room);
+          if (!participantIds.includes(String(userId))) {
+            logger.warn(`User ${userId} not authorized for room: ${room}`);
+            return;
+          }
+          
+          const otherUserId = participantIds.find((id) => id !== String(userId));
+          const canChat = await chatService.canUsersChat(userId, otherUserId);
+          
+          if (!canChat) {
+            logger.warn(`Unauthorized markSeen attempt: ${userId} -> ${otherUserId}`);
+            return;
+          }
+          
+          const count = await chatService.markMessagesSeen(room, userId);
+          io.to(room).emit('messagesSeen', { room, userId, markedCount: count });
+          logger.info(`Marked ${count} messages as seen in room ${room} by user ${userId}`);
         } catch (e) {
-          logger.warn('markSeen failed', { error: e.message });
+          logger.error('Error in markSeen handler', { error: e.message, room, userId });
         }
       });
 
+      // ──── Typing Indicator Handler ────
       socket.on('typing', (data) => {
-        socket.to(data.room).emit('typing', data.userName);
+        try {
+          if (data && data.room) {
+            socket.to(data.room).emit('typing', { userId, userName: data.userName || 'User' });
+          }
+        } catch (e) {
+          logger.warn('Error in typing handler', { error: e.message });
+        }
       });
 
+      // ──── Disconnect Handler ────
       socket.on('disconnect', () => {
+        logger.info(`⚡ Socket disconnected: ${socket.id} (user: ${userId})`);
         onlineUsers.delete(socket.id);
+        removeUserSocket(userId, socket.id);
         refreshOnlineUsersForAll();
-        logger.info(`⚡ Socket disconnected: ${socket.id}`);
+      });
+
+      // ──── Error Handler ────
+      socket.on('error', (err) => {
+        logger.error('Socket error', { error: err, userId });
       });
     });
+
     server.listen(PORT, () => {
       logger.info(`🚀 Data Recovery CRM API running on port ${PORT}`);
       logger.info(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+      logger.info(`💬 Socket.IO real-time chat enabled`);
+    });
+    
+    // Graceful shutdown
+    process.on('SIGTERM', () => {
+      logger.info('SIGTERM received, closing server gracefully');
+      server.close(() => {
+        logger.info('Server closed');
+        process.exit(0);
+      });
     });
   } catch (err) {
     logger.error('Failed to start server', { error: err.message });

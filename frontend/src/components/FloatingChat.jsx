@@ -144,59 +144,95 @@ export default function FloatingChat() {
     const token = localStorage.getItem('accessToken');
     if (!token) return;
 
-    // fetch current user
+    // Fetch current user
     fetch('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json())
       .then(user => setCurrentUser(user))
-      .catch(() => {});
+      .catch(err => console.warn('Failed to fetch current user', err));
 
-    // fetch allowed contacts & conversations
+    // Fetch allowed contacts & existing conversations
     fetch('/api/chat/contacts', { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json())
       .then(data => {
         if (data.users) setContacts(data.users || []);
         if (data.conversations) {
-          const loadedChats = (data.conversations || []).map((conv) => ({
-            id: `conv-${conv.participant.id}`,
-            participantId: conv.participant.id,
-            name: conv.participant.full_name || conv.participant.username,
-            role: conv.participant.role,
-            avatar: (conv.participant.full_name || conv.participant.username || '').split(' ').map(n=>n[0]).slice(0,2).join('').toUpperCase(),
-            avatarBg: conv.participant.role === 'admin' || conv.participant.role === 'super_admin' ? 'linear-gradient(135deg, #8b5cf6, #6d28d9)' : 'linear-gradient(135deg, #0ea5e9, #0369a1)',
-            lastMessage: conv.lastMessage ? (conv.lastMessage.text || (conv.lastMessage.filePath ? 'Attachment' : '')) : '',
-            time: conv.lastMessage && conv.lastMessage.created_at ? new Date(conv.lastMessage.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : '',
-            unread: 0,
-            tab: (conv.participant.role === 'admin' || conv.participant.role === 'super_admin') ? 'focused' : 'other',
-            room: conv.room,
-            messages: [],
-          }));
+          const loadedChats = (data.conversations || []).map((conv) => {
+            const contactName = conv.participant?.full_name || conv.participant?.username || 'Unknown';
+            return {
+              id: `conv-${conv.participant.id}`,
+              participantId: conv.participant.id,
+              name: contactName,
+              role: conv.participant.role,
+              avatar: contactName.split(' ').map(n=>n[0]).slice(0,2).join('').toUpperCase(),
+              avatarBg: conv.participant.role === 'admin' || conv.participant.role === 'super_admin' 
+                ? 'linear-gradient(135deg, #8b5cf6, #6d28d9)' 
+                : 'linear-gradient(135deg, #0ea5e9, #0369a1)',
+              lastMessage: conv.lastMessage ? (conv.lastMessage.text || (conv.lastMessage.filePath ? '📎 Attachment' : '')) : '',
+              time: conv.lastMessage?.created_at 
+                ? new Date(conv.lastMessage.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) 
+                : '',
+              unread: Number(conv.unread_count || 0),
+              tab: (conv.participant.role === 'admin' || conv.participant.role === 'super_admin') ? 'focused' : 'other',
+              room: conv.room,
+              messages: [],
+            };
+          });
           setChats(loadedChats);
         }
       })
-      .catch(() => {});
+      .catch(err => console.warn('Failed to fetch chat contacts', err));
 
-    // connect directly to backend server
-    const backendUrl = import.meta.env.VITE_API_URL || `${location.protocol}//${location.hostname}:5001`;
-    const s = io(backendUrl, { auth: { token } });
+    // Connect to backend Socket.IO server
+    // Use the same host as frontend, Socket.IO will figure out the correct port
+    const backendUrl = window.location.origin;
+    const s = io(backendUrl, {
+      auth: { token },
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      reconnectionAttempts: Infinity,
+      transports: ['websocket', 'polling'],
+    });
+    
     setSocket(s);
 
+    // Handle socket connection
     s.on('connect', () => {
+      console.info('✓ Socket connected');
       const activeChat = chatsRef.current.find((c) => c.id === selectedChatIdRef.current);
-      if (activeChat?.room) s.emit('joinRoom', activeChat.room);
+      if (activeChat?.room) {
+        s.emit('joinRoom', activeChat.room);
+      }
     });
 
+    // Handle socket disconnection
+    s.on('disconnect', () => {
+      console.warn('Socket disconnected');
+    });
+
+    // Handle connection error
+    s.on('connect_error', (err) => {
+      console.error('Socket connection error', err);
+    });
+
+    // Handle online users list
     s.on('onlineUsers', (users) => {
       setOnlineUsers(Array.isArray(users) ? users.map(String) : []);
     });
 
+    // Handle incoming messages
     s.on('newMessage', (msg) => {
       const currentUserId = currentUserRef.current?.id;
-      const otherId = String(msg.sender_id) === String(currentUserId) ? String(msg.recipientId) : String(msg.sender_id);
+      const otherId = String(msg.sender_id) === String(currentUserId) 
+        ? String(msg.recipient_id) 
+        : String(msg.sender_id);
+      
       if (!otherId || otherId === 'undefined') return;
 
       setChats((prev) => {
         const existing = prev.find((c) => c.room === msg.room);
         const isOwn = String(msg.sender_id) === String(currentUserId);
+        
         const formattedMsg = {
           id: msg.id,
           sender: isOwn ? 'me' : 'them',
@@ -204,23 +240,28 @@ export default function FloatingChat() {
           time: new Date(msg.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
           filePath: msg.filePath,
           mimeType: msg.mimeType,
+          created_at: msg.created_at,
+          seen: !!msg.seen_at,
         };
 
         if (existing) {
+          // Check if message already exists (prevent duplicates)
           if (existing.messages.some((m) => String(m.id) === String(msg.id))) return prev;
+          
           return prev.map((c) =>
             c.room === msg.room
               ? {
                   ...c,
                   messages: [...(c.messages || []), formattedMsg],
-                  lastMessage: msg.text || (msg.filePath ? 'Attachment' : ''),
+                  lastMessage: msg.text || (msg.filePath ? '📎 Attachment' : ''),
                   time: new Date(msg.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
-                  unread: isOwn || selectedChatIdRef.current === c.id ? c.unread : c.unread + 1,
+                  // Only increment unread if not currently viewing this chat and message is not from current user
+                  unread: !isOwn && selectedChatIdRef.current !== c.id ? c.unread + 1 : c.unread,
                 }
               : c
           );
         } else {
-          // If conversation is brand new, resolve contact info from list
+          // Create new conversation if it doesn't exist
           const contact = contactsRef.current.find((u) => String(u.id) === String(otherId));
           if (!contact) return prev;
 
@@ -230,8 +271,10 @@ export default function FloatingChat() {
             name: contact.full_name || contact.username,
             role: contact.role,
             avatar: (contact.full_name || contact.username || '').split(' ').map(n=>n[0]).slice(0,2).join('').toUpperCase(),
-            avatarBg: contact.role === 'admin' || contact.role === 'super_admin' ? 'linear-gradient(135deg, #8b5cf6, #6d28d9)' : 'linear-gradient(135deg, #0ea5e9, #0369a1)',
-            lastMessage: msg.text || (msg.filePath ? 'Attachment' : ''),
+            avatarBg: contact.role === 'admin' || contact.role === 'super_admin' 
+              ? 'linear-gradient(135deg, #8b5cf6, #6d28d9)' 
+              : 'linear-gradient(135deg, #0ea5e9, #0369a1)',
+            lastMessage: msg.text || (msg.filePath ? '📎 Attachment' : ''),
             time: new Date(msg.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
             unread: isOwn ? 0 : 1,
             tab: (contact.role === 'admin' || contact.role === 'super_admin') ? 'focused' : 'other',
@@ -243,8 +286,22 @@ export default function FloatingChat() {
       });
     });
 
-    s.on('messagesSeen', ({ room }) => {
-      setChats(prev => prev.map(c => c.room === room ? ({ ...c, messages: (c.messages || []).map(m => ({ ...m, seen: true })) }) : c));
+    // Handle messages marked as seen
+    s.on('messagesSeen', ({ room, userId }) => {
+      setChats(prev => prev.map(c => 
+        c.room === room 
+          ? { 
+              ...c, 
+              unread: 0,
+              messages: (c.messages || []).map(m => ({ ...m, seen: true })) 
+            } 
+          : c
+      ));
+    });
+
+    // Handle errors
+    s.on('error', (err) => {
+      console.error('Socket error:', err);
     });
 
     return () => { s.disconnect(); };
@@ -294,21 +351,46 @@ export default function FloatingChat() {
   const handleSelectChat = (id) => {
     const chat = chats.find(c => c.id === id);
     setSelectedChatId(id);
+    
+    // Reset unread count when chat is opened
     setChats(prevChats => prevChats.map(c => c.id === id ? { ...c, unread: 0 } : c));
 
-    if (chat && chat.participantId && currentUser) {
-      if (socket && chat.room) {
+    if (chat && chat.participantId && currentUser && socket) {
+      // Join the room and mark messages as seen
+      if (chat.room) {
         socket.emit('joinRoom', chat.room);
         socket.emit('markSeen', { room: chat.room });
+        
+        // Load message history
         setLoadingMessages(true);
         const token = localStorage.getItem('accessToken');
-        fetch(`/api/chat/conversations/${chat.participantId}/messages?limit=200`, { headers: { Authorization: `Bearer ${token}` } })
+        fetch(`/api/chat/conversations/${chat.participantId}/messages?limit=200`, { 
+          headers: { Authorization: `Bearer ${token}` } 
+        })
           .then(r => r.json())
           .then(data => {
             if (Array.isArray(data.messages)) {
-              setChats(prev => prev.map(pc => pc.id === id ? ({ ...pc, messages: data.messages.map(m => ({ id: m.id, sender: String(m.sender_id) === String(currentUser.id) ? 'me' : 'them', text: m.text || '', time: new Date(m.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }), filePath: m.filePath, mimeType: m.mimeType, seen: !!m.seen_at })) }) : pc));
+              setChats(prev => prev.map(pc => 
+                pc.id === id 
+                  ? {
+                      ...pc, 
+                      messages: data.messages.map(m => ({
+                        id: m.id,
+                        sender: String(m.sender_id) === String(currentUser.id) ? 'me' : 'them',
+                        text: m.text || '',
+                        time: new Date(m.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
+                        filePath: m.filePath,
+                        mimeType: m.mimeType,
+                        created_at: m.created_at,
+                        seen: !!m.seen_at,
+                      }))
+                    }
+                  : pc
+              ));
             }
-          }).finally(() => setLoadingMessages(false));
+          })
+          .catch(err => console.warn('Failed to load message history', err))
+          .finally(() => setLoadingMessages(false));
       }
     }
   };

@@ -1,0 +1,2 @@
+stock_number,category,company,brand,model,serial_number,pcb_number,capacity,interface,form_factor,firmware,site_code,date_code,head_map,family,condition,status,quantity,min_quantity,unit_cost,location,notes
+STK-001,wd_35,Western Digital,Western Digital,WD10EZEX,WD-WCAZBB12345,2060-771824-000,1TB,SATA,3.5" HDD,CC4H,WCAZBB,2502,00 01 02 03,RYNO5,used,available,1,1,500,Cabinet A,Sample item

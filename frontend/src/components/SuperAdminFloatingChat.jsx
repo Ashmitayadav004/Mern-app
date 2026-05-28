@@ -78,7 +78,7 @@ export default function SuperAdminFloatingChat() {
             avatarBg: conv.participant.role === 'admin' ? 'linear-gradient(135deg, #8b5cf6, #6d28d9)' : 'linear-gradient(135deg, #0ea5e9, #0369a1)',
             lastMessage: conv.lastMessage ? (conv.lastMessage.text || (conv.lastMessage.filePath ? 'Attachment' : '')) : '',
             time: conv.lastMessage && conv.lastMessage.created_at ? new Date(conv.lastMessage.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : '',
-            unread: 0,
+            unread: Number(conv.unread_count || 0),
             tab: (conv.participant.role === 'admin' || conv.participant.role === 'super_admin') ? 'focused' : 'other',
             room: conv.room,
             messages: [],
@@ -110,7 +110,8 @@ export default function SuperAdminFloatingChat() {
 
     s.on('newMessage', (msg) => {
       const currentUserId = currentUserRef.current?.id;
-      const otherId = String(msg.sender_id) === String(currentUserId) ? String(msg.recipientId) : String(msg.sender_id);
+      const recipientId = msg.recipient_id || msg.recipientId;
+      const otherId = String(msg.sender_id) === String(currentUserId) ? String(recipientId) : String(msg.sender_id);
       if (!otherId || otherId === 'undefined') return;
 
       setChats((prev) => {
@@ -168,6 +169,7 @@ export default function SuperAdminFloatingChat() {
           c.room === room
             ? {
                 ...c,
+                unread: 0,
                 messages: (c.messages || []).map((m) => ({ ...m, seen: true })),
               }
             : c
