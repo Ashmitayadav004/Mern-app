@@ -37,7 +37,7 @@ class ModalErrorBoundary extends React.Component {
   }
 }
 import { casesApi, clientsApi, usersApi, suggestionsApi } from "../services/api";
-import fieldConfigApi from "../services/fieldConfigApi";
+import { fieldConfigApi } from "../services/fieldConfigApi";
 import { TextareaAutocomplete } from "./FormComponents";
 
 function getCustomProblemDescriptions() {
@@ -85,6 +85,13 @@ function getFieldConfig() {
     return {};
   }
 }
+
+function getCaseSettingsList(caseSettings, key, fallback) {
+  const list = caseSettings?.[key];
+  if (Array.isArray(list) && list.length) return list;
+  return gs(`custom_${key}`, fallback);
+}
+
 // Ensure we have latest field config cached locally
 try {
   // best-effort — don't block UI
@@ -126,11 +133,21 @@ const HDD_TYPES = [
   { key: "others_3.5", label: 'Others 3.5"', brand: "" },
 ];
 
-// Dynamic HDD types: prefer admin-configured list from localStorage ('custom_hdd_types')
-// Falls back to the built-in `HDD_TYPES`. Labels from storage map to existing keys when possible.
-const DYN_HDD_TYPES = (() => {
+// Dynamic HDD types: prefer admin-configured list from Case Settings (backend)
+// Falls back to localStorage ('custom_hdd_types') and then built-in `HDD_TYPES`.
+function resolveDynamicHddTypes(caseSettings) {
   try {
-    const stored = JSON.parse(localStorage.getItem('custom_hdd_types'));
+    const fromSettings = caseSettings?.hdd_types;
+    if (Array.isArray(fromSettings) && fromSettings.length) {
+      return fromSettings.map((label) => {
+        const existing = HDD_TYPES.find((h) => h.label === label);
+        if (existing) return existing;
+        const key = label.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+        return { key, label, brand: '' };
+      });
+    }
+
+    const stored = JSON.parse(localStorage.getItem('custom_hdd_types') || 'null');
     const labels = Array.isArray(stored) && stored.length ? stored : HDD_TYPES.map((h) => h.label);
     return labels.map((label) => {
       const existing = HDD_TYPES.find((h) => h.label === label);
@@ -141,7 +158,7 @@ const DYN_HDD_TYPES = (() => {
   } catch {
     return HDD_TYPES;
   }
-})();
+}
 
 const HDD_FIELDS = {
   wd_2_5: [
@@ -799,7 +816,7 @@ function FileUploadArea({ files, onChange }) {
 
 // ── HDD Dynamic Fields ─────────────────────────────────────────────────────
 // ── HDD Dynamic Fields ─────────────────────────────────────────────────────
-function HddFields({ hddKey, form, setForm, stepErrors, showStepErrors }) {
+function HddFields({ hddKey, form, setForm, stepErrors, showStepErrors, caseSettings }) {
   const normKey = hddKey.replace(/\./g, "_").replace(/-/g, "_");
 
   const fields = useMemo(() => {
@@ -944,7 +961,9 @@ function HddFields({ hddKey, form, setForm, stepErrors, showStepErrors }) {
                   aria-invalid={!!stepErrors?.[field]}
                 >
                   <option value="">Select Manufacturing Country...</option>
-                  { ["Thailand","China","Malaysia","Philippines"].map(c => <option key={c} value={c}>{c}</option>) }
+                  {getCaseSettingsList(caseSettings, "manufacture_countries", ["Thailand","China","Malaysia","Philippines"]).map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
                 </select>
               ) : (
                 <input
@@ -1379,7 +1398,7 @@ function StepClient({
   );
 }
 
-function StepDevice({ form, setForm, capacities, stepErrors }) {
+function StepDevice({ form, setForm, capacities, stepErrors, caseSettings, hddTypes }) {
   const set = (key, val) => setForm((f) => ({ ...f, [key]: val }));
   const inputStyle = { fontSize: "0.82rem", padding: "8px 10px", minHeight: 44 };
   const invalidStyle = (field) =>
@@ -1406,7 +1425,7 @@ function StepDevice({ form, setForm, capacities, stepErrors }) {
             aria-invalid={!!stepErrors.hdd_type}
           >
             <option value="">Select HDD Type...</option>
-            {DYN_HDD_TYPES.map((h) => (
+            {hddTypes.map((h) => (
               <option key={h.key} value={h.key}>
                 {h.label}
               </option>
@@ -1488,7 +1507,7 @@ function StepDevice({ form, setForm, capacities, stepErrors }) {
             aria-invalid={!!stepErrors.interface}
           >
             <option value="">Select...</option>
-            {["SATA", "NVMe", "SAS", "IDE", "USB", "PCIe", "M.2", "eSATA"].map(
+            {getCaseSettingsList(caseSettings, "interfaces", ["SATA", "NVMe", "SAS", "IDE", "USB", "PCIe", "M.2", "eSATA"]).map(
               (i) => (
                 <option key={i} value={i}>
                   {i}
@@ -1604,15 +1623,15 @@ function StepDeviceCustomInput({ form, setForm, inputStyle, stepErrors }) {
   );
 }
 
-function StepHddFieldsView({ form, setForm, stepErrors, showStepErrors }) {
+function StepHddFieldsView({ form, setForm, stepErrors, showStepErrors, hddTypes, caseSettings }) {
   return (
     <div>
       {form.hdd_type ? (
         <>
           <div style={{ marginBottom: 12, padding: "8px 12px", background: "var(--accent-glow)", borderRadius: 6, fontSize: "0.8rem", color: "var(--accent-primary)", fontWeight: 600 }}>
-            🔧 Fields for: {DYN_HDD_TYPES.find((h) => h.key === form.hdd_type)?.label}
+            🔧 Fields for: {hddTypes.find((h) => h.key === form.hdd_type)?.label}
           </div>
-          <HddFields hddKey={form.hdd_type} form={form} setForm={setForm} stepErrors={stepErrors} showStepErrors={showStepErrors} />
+          <HddFields hddKey={form.hdd_type} form={form} setForm={setForm} stepErrors={stepErrors} showStepErrors={showStepErrors} caseSettings={caseSettings} />
         </>
       ) : (
         <div style={{ padding: "30px", textAlign: "center", color: "var(--text-muted)", fontSize: "0.85rem" }}>
@@ -1850,11 +1869,62 @@ export default function NewCaseModal({ onClose, onCreated }) {
   const [error, setError] = useState("");
   const [printTemplate, setPrintTemplate] = useState("standard");
   const [settingsLoaded, setSettingsLoaded] = useState(false);
+  const [caseSettings, setCaseSettings] = useState(null);
 
   useEffect(() => {
     fieldConfigApi.loadCaseSettingsToLocalStorage()
+      .then((s) => setCaseSettings(s || null))
       .catch(() => {})
       .finally(() => setSettingsLoaded(true));
+  }, []);
+
+  useEffect(() => {
+    fieldConfigApi.getCaseSettings()
+      .then((s) => setCaseSettings(s || null))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    const refreshCaseSettings = (next) => {
+      if (!next) {
+        return;
+      }
+      setCaseSettings(next);
+    };
+
+    const onCaseSettingsUpdated = (event) => {
+      refreshCaseSettings(event?.detail);
+    };
+
+    const onStorage = (event) => {
+      if (!event?.key) {
+        return;
+      }
+      const watchedKeys = [
+        'custom_stages',
+        'custom_symptoms',
+        'custom_failure_types',
+        'custom_brands',
+        'custom_manufacture_countries',
+        'custom_interfaces',
+        'custom_capacities',
+        'custom_payment_methods',
+        'custom_hdd_types',
+      ];
+      if (!watchedKeys.includes(event.key)) {
+        return;
+      }
+      fieldConfigApi.loadCaseSettingsToLocalStorage()
+        .then((s) => refreshCaseSettings(s || null))
+        .catch(() => {});
+    };
+
+    window.addEventListener('caseSettingsUpdated', onCaseSettingsUpdated);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      window.removeEventListener('caseSettingsUpdated', onCaseSettingsUpdated);
+      window.removeEventListener('storage', onStorage);
+    };
   }, []);
 
   // Default deadline = 4 days from now
@@ -1884,7 +1954,7 @@ export default function NewCaseModal({ onClose, onCreated }) {
     }
   }, [clientSearch]);
 
-  const SYMPTOMS = gs("custom_symptoms", [
+  const SYMPTOMS = getCaseSettingsList(caseSettings, "symptoms", [
     "not_detected",
     "clicking",
     "slow",
@@ -1899,8 +1969,10 @@ export default function NewCaseModal({ onClose, onCreated }) {
     "not_spinning",
     "read_errors",
   ]);
-  const FAILURE_TYPES_LIST = gs("custom_failure_types", FAILURE_TYPES);
-  const CAPACITIES = gs("custom_capacities", CAPACITY_OPTIONS);
+  const FAILURE_TYPES_LIST = getCaseSettingsList(caseSettings, "failure_types", FAILURE_TYPES);
+  const CAPACITIES = getCaseSettingsList(caseSettings, "capacities", CAPACITY_OPTIONS);
+  const DYN_HDD_TYPES = resolveDynamicHddTypes(caseSettings);
+
   const ALL_HDD_TYPES = gs(
     "custom_hdd_types",
     DYN_HDD_TYPES.map((h) => h.label),
@@ -2048,12 +2120,16 @@ export default function NewCaseModal({ onClose, onCreated }) {
       capacities={CAPACITIES}
       stepErrors={stepErrors}
       showStepErrors={showStepErrors}
+      caseSettings={caseSettings}
+      hddTypes={DYN_HDD_TYPES}
     />,
     <StepHddFieldsView
       form={form}
       setForm={setForm}
       stepErrors={stepErrors}
       showStepErrors={showStepErrors}
+      hddTypes={DYN_HDD_TYPES}
+      caseSettings={caseSettings}
     />,
     <StepProblemView
       form={form}

@@ -368,9 +368,9 @@ export default function ChatMessenger({
         type="button"
         className={`floating-chat-btn ${isOpen ? 'active' : ''}`}
         onClick={() => setIsOpen((o) => !o)}
-        title="Team Chat"
+        title="Toggle Team Chat"
       >
-        <span className="chat-btn-icon">Chat</span>
+        <span className="chat-btn-icon">💬</span>
         {totalUnread > 0 && !isOpen ? (
           <span className="chat-btn-unread-badge">{totalUnread > 99 ? '99+' : totalUnread}</span>
         ) : null}

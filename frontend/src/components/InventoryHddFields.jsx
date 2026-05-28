@@ -25,7 +25,8 @@ const SELECT_OPTIONS = {
   form_factor: ['3.5" HDD', '2.5" HDD', '1.8" HDD'],
 };
 
-const MANUFACTURING_COUNTRIES = ['Thailand', 'China', 'Malaysia', 'Philippines'];
+const DEFAULT_MANUFACTURING_COUNTRIES = ['Thailand', 'China', 'Malaysia', 'Philippines'];
+
 
 /**
  * Dynamic fields for Add Stock — driven by Settings → Field Config per category (pcb, ssd, wd_35, …).
@@ -37,6 +38,12 @@ export default function InventoryHddFields({
   customFieldValues,
   setCustomFieldValues,
 }) {
+  const [caseSettings, setCaseSettings] = React.useState(null);
+  React.useEffect(() => {
+    fieldConfigApi.getCaseSettings()
+      .then(s => setCaseSettings(s || null))
+      .catch(() => {});
+  }, []);
   const [schema, setSchema] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -98,7 +105,10 @@ export default function InventoryHddFields({
           const label = BUILTIN_LABELS[field.field_key] || field.field_label;
           const isMandatory = field.status === 'mandatory';
           const val = form[field.field_key] ?? '';
-          const selectOpts = SELECT_OPTIONS[field.field_key];
+          let selectOpts = SELECT_OPTIONS[field.field_key];
+          if (field.field_key === 'interface') {
+            selectOpts = caseSettings?.interfaces || selectOpts;
+          }
 
           if (selectOpts) {
             return (
@@ -124,7 +134,7 @@ export default function InventoryHddFields({
                   onChange={e => handleFieldChange(field.field_key, e.target.value)}
                 >
                   <option value="">Select Manufacturing Country...</option>
-                  {MANUFACTURING_COUNTRIES.map((c) => (
+                  {(caseSettings?.manufacture_countries || DEFAULT_MANUFACTURING_COUNTRIES).map((c) => (
                     <option key={c} value={c}>{c}</option>
                   ))}
                 </select>

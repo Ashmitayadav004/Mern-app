@@ -365,6 +365,8 @@ const CASE_SETTINGS_DEFAULTS = {
   symptoms: ['not_detected','clicking','slow','dead','beeping','grinding','pcb_burnt','corrupted','bad_sectors','head_crash','water_damage','not_spinning','read_errors'],
   failure_types: ['logical','firmware','electrical','mechanical','head_crash','pcb_damage','motor_failure','bad_sectors','water_damage','fire_damage','unknown'],
   brands: ['Western Digital','Seagate','Toshiba','Samsung','Hitachi (HGST)','Fujitsu','IBM','Maxtor','Apple','Sony','OnePlus','Xiaomi','Other'],
+  manufacture_countries: ['Thailand','China','Malaysia','Philippines'],
+  interfaces: ['SATA','NVMe','SAS','IDE','USB','PCIe','M.2','eSATA'],
   capacities: ['160GB','250GB','320GB','500GB','750GB','1TB','1.5TB','2TB','3TB','4TB','6TB','8TB','10TB','12TB','14TB','16TB','18TB','20TB'],
   payment_methods: ['Cash','UPI','Card (Debit/Credit)','Bank Transfer','NEFT','RTGS','IMPS','Cheque','Online (Razorpay)','PayPal'],
   hdd_types: [],
@@ -377,6 +379,8 @@ function loadCaseSettingsFromLocalStorage() {
       symptoms: JSON.parse(localStorage.getItem('custom_symptoms')) || CASE_SETTINGS_DEFAULTS.symptoms,
       failure_types: JSON.parse(localStorage.getItem('custom_failure_types')) || CASE_SETTINGS_DEFAULTS.failure_types,
       brands: JSON.parse(localStorage.getItem('custom_brands')) || CASE_SETTINGS_DEFAULTS.brands,
+      manufacture_countries: JSON.parse(localStorage.getItem('custom_manufacture_countries')) || CASE_SETTINGS_DEFAULTS.manufacture_countries,
+      interfaces: JSON.parse(localStorage.getItem('custom_interfaces')) || CASE_SETTINGS_DEFAULTS.interfaces,
       capacities: JSON.parse(localStorage.getItem('custom_capacities')) || CASE_SETTINGS_DEFAULTS.capacities,
       payment_methods: JSON.parse(localStorage.getItem('custom_payment_methods')) || CASE_SETTINGS_DEFAULTS.payment_methods,
       hdd_types: JSON.parse(localStorage.getItem('custom_hdd_types')) || CASE_SETTINGS_DEFAULTS.hdd_types,
@@ -392,6 +396,8 @@ function persistCaseSettingsToLocalStorage(settings) {
   if (Array.isArray(settings.symptoms)) localStorage.setItem('custom_symptoms', JSON.stringify(settings.symptoms));
   if (Array.isArray(settings.failure_types)) localStorage.setItem('custom_failure_types', JSON.stringify(settings.failure_types));
   if (Array.isArray(settings.brands)) localStorage.setItem('custom_brands', JSON.stringify(settings.brands));
+  if (Array.isArray(settings.manufacture_countries)) localStorage.setItem('custom_manufacture_countries', JSON.stringify(settings.manufacture_countries));
+  if (Array.isArray(settings.interfaces)) localStorage.setItem('custom_interfaces', JSON.stringify(settings.interfaces));
   if (Array.isArray(settings.capacities)) localStorage.setItem('custom_capacities', JSON.stringify(settings.capacities));
   if (Array.isArray(settings.payment_methods)) localStorage.setItem('custom_payment_methods', JSON.stringify(settings.payment_methods));
   if (Array.isArray(settings.hdd_types)) localStorage.setItem('custom_hdd_types', JSON.stringify(settings.hdd_types));
@@ -518,6 +524,87 @@ function BrandsManager({ items: initialItems, onChange }) {
       <div style={{ display:'flex',gap:10 }}>
         <input className="form-input" value={newItem} onChange={e=>setNewItem(e.target.value)} placeholder="e.g. LaCie, Buffalo, Transcend" style={{ flex:1 }} onKeyDown={e=>{ if(e.key==='Enter'&&newItem.trim()){ save([...items, newItem.trim()]); setNewItem(''); } }} />
         <button className="btn btn-primary" onClick={()=>{ if(newItem.trim()){ save([...items, newItem.trim()]); setNewItem(''); } }}>+ Add Brand</button>
+      </div>
+    </div>
+  );
+}
+
+function ManufactureCountriesManager({ items: initialItems, onChange }) {
+  const [items, setItems] = useState(initialItems || []);
+  const [newItem, setNewItem] = useState('');
+
+  useEffect(() => { setItems(initialItems || []); }, [initialItems]);
+  const save = (s) => { setItems(s); onChange(s); };
+
+  return (
+    <div>
+      <div className="form-label" style={{ marginBottom:8 }}>Case Manufacturing Countries</div>
+      <p style={{fontSize:'0.75rem',color:'var(--text-muted)',marginBottom:16}}>These values appear in the Manufacturing Country dropdown when creating a new case.</p>
+      <div style={{ display:'flex',flexWrap:'wrap',gap:8,marginBottom:12 }}>
+        {items.map((s,i) => (
+          <div key={i} style={{ display:'flex',alignItems:'center',gap:4,background:'var(--bg-elevated)',padding:'5px 12px',borderRadius:999,border:'1px solid var(--border-default)' }}>
+            <input className="form-input" value={s} onChange={e=>{ const n=[...items]; n[i]=e.target.value; save(n); }} style={{ background:'transparent',border:'none',padding:0,width:Math.max(80,s.length*8),fontSize:'0.78rem',color:'var(--text-primary)' }} />
+            <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.78rem',padding:0 }} onClick={()=>save(items.filter((_,j)=>j!==i))}>✕</button>
+          </div>
+        ))}
+      </div>
+      <div style={{ display:'flex',gap:10 }}>
+        <input className="form-input" value={newItem} onChange={e=>setNewItem(e.target.value)} placeholder="e.g. Thailand, Japan, USA" style={{ flex:1 }} onKeyDown={e=>{ if(e.key==='Enter'&&newItem.trim()){ save([...items, newItem.trim()]); setNewItem(''); } }} />
+        <button className="btn btn-primary" onClick={()=>{ if(newItem.trim()){ save([...items, newItem.trim()]); setNewItem(''); } }}>+ Add Country</button>
+      </div>
+    </div>
+  );
+}
+
+function InterfacesManager({ items: initialItems, onChange }) {
+  const [items, setItems] = useState(initialItems || []);
+  const [newItem, setNewItem] = useState('');
+
+  useEffect(() => { setItems(initialItems || []); }, [initialItems]);
+  const save = (s) => { setItems(s); onChange(s); };
+
+  return (
+    <div>
+      <div className="form-label" style={{ marginBottom:8 }}>Device Interfaces</div>
+      <p style={{fontSize:'0.75rem',color:'var(--text-muted)',marginBottom:16}}>These values appear in the Interface dropdown when creating a case.</p>
+      <div style={{ display:'flex',flexWrap:'wrap',gap:8,marginBottom:12 }}>
+        {items.map((s,i) => (
+          <div key={i} style={{ display:'flex',alignItems:'center',gap:4,background:'var(--bg-elevated)',padding:'5px 12px',borderRadius:999,border:'1px solid var(--border-default)' }}>
+            <input className="form-input" value={s} onChange={e=>{ const n=[...items]; n[i]=e.target.value; save(n); }} style={{ background:'transparent',border:'none',padding:0,width:Math.max(80,s.length*8),fontSize:'0.78rem',color:'var(--text-primary)' }} />
+            <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.78rem',padding:0 }} onClick={()=>save(items.filter((_,j)=>j!==i))}>✕</button>
+          </div>
+        ))}
+      </div>
+      <div style={{ display:'flex',gap:10 }}>
+        <input className="form-input" value={newItem} onChange={e=>setNewItem(e.target.value)} placeholder="e.g. SATA, NVMe, PCIe" style={{ flex:1 }} onKeyDown={e=>{ if(e.key==='Enter'&&newItem.trim()){ save([...items, newItem.trim()]); setNewItem(''); } }} />
+        <button className="btn btn-primary" onClick={()=>{ if(newItem.trim()){ save([...items, newItem.trim()]); setNewItem(''); } }}>+ Add Interface</button>
+      </div>
+    </div>
+  );
+}
+
+function HddTypesManager({ items: initialItems, onChange }) {
+  const [items, setItems] = useState(initialItems || []);
+  const [newItem, setNewItem] = useState('');
+
+  useEffect(() => { setItems(initialItems || []); }, [initialItems]);
+  const save = (s) => { setItems(s); onChange(s); };
+
+  return (
+    <div>
+      <div className="form-label" style={{ marginBottom:8 }}>HDD / Device Types</div>
+      <p style={{fontSize:'0.75rem',color:'var(--text-muted)',marginBottom:16}}>These values are used when selecting a device type in the case form.</p>
+      <div style={{ display:'flex',flexWrap:'wrap',gap:8,marginBottom:12 }}>
+        {items.map((s,i) => (
+          <div key={i} style={{ display:'flex',alignItems:'center',gap:4,background:'var(--bg-elevated)',padding:'5px 12px',borderRadius:999,border:'1px solid var(--border-default)' }}>
+            <input className="form-input" value={s} onChange={e=>{ const n=[...items]; n[i]=e.target.value; save(n); }} style={{ background:'transparent',border:'none',padding:0,width:Math.max(80,s.length*8),fontSize:'0.78rem',color:'var(--text-primary)' }} />
+            <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.78rem',padding:0 }} onClick={()=>save(items.filter((_,j)=>j!==i))}>✕</button>
+          </div>
+        ))}
+      </div>
+      <div style={{ display:'flex',gap:10 }}>
+        <input className="form-input" value={newItem} onChange={e=>setNewItem(e.target.value)} placeholder="e.g. WD 2.5, Seagate 3.5" style={{ flex:1 }} onKeyDown={e=>{ if(e.key==='Enter'&&newItem.trim()){ save([...items, newItem.trim()]); setNewItem(''); } }} />
+        <button className="btn btn-primary" onClick={()=>{ if(newItem.trim()){ save([...items, newItem.trim()]); setNewItem(''); } }}>+ Add Type</button>
       </div>
     </div>
   );
@@ -982,6 +1069,7 @@ export default function SettingsPage() {
     const next = { ...caseSettings, ...patch };
     setCaseSettings(next);
     persistCaseSettingsToLocalStorage(next);
+    window.dispatchEvent(new CustomEvent('caseSettingsUpdated', { detail: next }));
     try {
       setSettingsSyncing(true);
       await fieldConfigApi.saveCaseSettings(patch);
@@ -1128,6 +1216,8 @@ export default function SettingsPage() {
         { key: 'symptoms',   label: 'Symptoms' },
         { key: 'failures',   label: 'Failure' },
         { key: 'brands',     label: 'Device Brands' },
+        { key: 'manufacture_countries', label: 'Manufacturing Countries' },
+        { key: 'interfaces', label: 'Interfaces' },
         { key: 'hdd_types',  label: 'HDD Types' },
         { key: 'capacities', label: 'HDD Capacity' },
         { key: 'field_config', label: 'Field Config' },
@@ -2019,6 +2109,36 @@ export default function SettingsPage() {
               <BrandsManager
                 items={caseSettings.brands}
                 onChange={(brands) => saveCaseSettings({ brands })}
+              />
+            </div>
+          )}
+
+          {activeTab === 'manufacture_countries' && (
+            <div className="card">
+              <div className="card-title" style={{ marginBottom:16 }}>🌍 Manufacturing Countries</div>
+              <ManufactureCountriesManager
+                items={caseSettings.manufacture_countries}
+                onChange={(manufacture_countries) => saveCaseSettings({ manufacture_countries })}
+              />
+            </div>
+          )}
+
+          {activeTab === 'interfaces' && (
+            <div className="card">
+              <div className="card-title" style={{ marginBottom:16 }}>🔌 Interfaces</div>
+              <InterfacesManager
+                items={caseSettings.interfaces}
+                onChange={(interfaces) => saveCaseSettings({ interfaces })}
+              />
+            </div>
+          )}
+
+          {activeTab === 'hdd_types' && (
+            <div className="card">
+              <div className="card-title" style={{ marginBottom:16 }}>🧩 HDD / Device Types</div>
+              <HddTypesManager
+                items={caseSettings.hdd_types}
+                onChange={(hdd_types) => saveCaseSettings({ hdd_types })}
               />
             </div>
           )}

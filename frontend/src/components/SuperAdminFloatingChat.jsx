@@ -566,9 +566,11 @@ export default function SuperAdminFloatingChat() {
 
       {/* ── 2. Floating Action Button (FAB) ── */}
       <button
+        type="button"
         className={`floating-chat-btn sa-floating-chat-btn ${isOpen ? 'active' : ''}`}
         onClick={() => setIsOpen(!isOpen)}
         title="Toggle Team Chat"
+        aria-label="Toggle Super Admin Chat"
       >
         <span className="chat-btn-icon">💬</span>
         {totalUnread > 0 && !isOpen && (

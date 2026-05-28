@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { casesApi } from '../services/api';
-import fieldConfigApi from '../services/fieldConfigApi';
+import { fieldConfigApi } from '../services/fieldConfigApi';
 import { useAuth } from '../store/AuthContext';
 import NewCaseModal from '../components/NewCaseModal';
 
