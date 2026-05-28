@@ -1200,11 +1200,11 @@ export default function SettingsPage() {
         { key: 'security', label: 'Security' },
       ]
     },
-    { id: 'about_group', label: 'ℹ️ About', icon: 'ℹ️', standalone: true,
+    { id: 'about_group', label: 'About', icon: '', standalone: true,
       children: [{ key: 'about', label: 'About' }]
     },
   ] : [
-    { id: 'profile_settings', label: '👤 My Profile Settings', icon: '👤',
+    { id: 'profile_settings', label: ' My Profile Settings', icon: '',
       children: [
         { key: 'profile',  label: 'My Profile' },
         { key: 'security', label: 'Security' },
@@ -1214,20 +1214,17 @@ export default function SettingsPage() {
       ]
     },
     ...(canAccess('admin') ? [{
-      id: 'case_settings', label: '📋 Case Settings', icon: '📋',
+      id: 'case_settings', label: ' Case Settings', icon: '',
       children: [
-        { key: 'symptoms',   label: 'Symptoms' },
-        { key: 'failures',   label: 'Failure' },
-        { key: 'brands',     label: 'Device Brands' },
-        { key: 'manufacture_countries', label: 'Manufacturing Countries' },
-        { key: 'interfaces', label: 'Interfaces' },
-        { key: 'hdd_types',  label: 'HDD Types' },
-        { key: 'capacities', label: 'HDD Capacity' },
-        { key: 'field_config', label: 'Field Config' },
+        { key: 'case_settings_client',    label: 'Client / Case' },
+        { key: 'case_settings_device',    label: 'Device' },
+        { key: 'case_settings_hdd_fields', label: 'HDD Fields' },
+        { key: 'case_settings_problem',   label: 'Problem' },
+        { key: 'case_settings_commercial', label: 'Commercial' },
       ]
     }] : []),
     ...(canAccess('admin') ? [{
-      id: 'inventory_settings', label: '📦 Inventory Settings', icon: '📦',
+      id: 'inventory_settings', label: ' Inventory Settings', icon: '',
       children: [
         { key: 'inv_hdd',   label: 'HDD' },
         { key: 'inv_ssd',   label: 'SSD' },
@@ -1236,7 +1233,7 @@ export default function SettingsPage() {
       ]
     }] : []),
     ...(canAccess('admin') ? [{
-      id: 'config_settings', label: '⚙️ Config Settings', icon: '⚙️',
+      id: 'config_settings', label: ' Config Settings', icon: '',
       children: [
         { key: 'whatsapp',   label: 'WhatsApp' },
         { key: 'smtp',       label: 'Email' },
@@ -1247,7 +1244,7 @@ export default function SettingsPage() {
       ]
     }] : []),
     ...(canAccess('admin') ? [{
-      id: 'homepage_settings', label: '🌐 Homepage Settings', icon: '🌐',
+      id: 'homepage_settings', label: ' Homepage Settings', icon: '',
       children: [
         { key: 'homepage_cms',  label: 'Homepage CMS' },
         { key: 'seo_settings',  label: 'SEO Settings' },
@@ -1255,10 +1252,10 @@ export default function SettingsPage() {
       ]
     }] : []),
     ...(canAccess('admin') ? [{
-      id: 'activity_group', label: '📊 Activity Logs', icon: '📊', standalone: true,
+      id: 'activity_group', label: ' Activity Logs', icon: '', standalone: true,
       children: [{ key: 'activity', label: 'Activity Logs' }]
     }] : []),
-    { id: 'about_group', label: 'ℹ️ About', icon: 'ℹ️', standalone: true,
+    { id: 'about_group', label: 'ℹ About', icon: 'ℹ', standalone: true,
       children: [{ key: 'about', label: 'About' }]
     },
   ];
@@ -2069,11 +2066,12 @@ export default function SettingsPage() {
             </div>
           )}
 
-          {/* STAGE CATEGORIES */}
-          {activeTab === 'stages' && (
+          {activeTab === 'case_settings_client' && (
             <div className="card">
-              <div className="card-title" style={{ marginBottom:16 }}>⚡ Stage Categories</div>
-              <p style={{ fontSize:'0.82rem',color:'var(--text-muted)',marginBottom:20 }}>Customize case stages. Default stages are protected. You can add/remove/rename custom stages. Changes take effect for new cases.</p>
+              <div className="card-title" style={{ marginBottom:16 }}>👤 Client & Case Workflow</div>
+              <p style={{ fontSize:'0.82rem',color:'var(--text-muted)',marginBottom:20 }}>
+                Settings used by the initial case creation step and case workflow. Customize how new cases are staged and managed.
+              </p>
               <StageCategoriesManager
                 stages={caseSettings.stages}
                 onChange={(stages) => saveCaseSettings({ stages })}
@@ -2081,23 +2079,57 @@ export default function SettingsPage() {
             </div>
           )}
 
-          {/* SYMPTOM CATEGORIES */}
-          {activeTab === 'symptoms' && (
+          {activeTab === 'case_settings_device' && (
             <div className="card">
-              <div className="card-header">
-                <div className="card-title">🩺 Symptom Categories</div>
+              <div className="card-title" style={{ marginBottom:16 }}>💾 Device</div>
+              <p style={{ fontSize:'0.82rem',color:'var(--text-muted)',marginBottom:20 }}>
+                Device step settings for new case creation. These values appear when selecting device type, interface, brand, capacity and manufacturer.
+              </p>
+              <div style={{ display:'grid', gap:18 }}>
+                <BrandsManager
+                  items={caseSettings.brands}
+                  onChange={(brands) => saveCaseSettings({ brands })}
+                />
+                <ManufactureCountriesManager
+                  items={caseSettings.manufacture_countries}
+                  onChange={(manufacture_countries) => saveCaseSettings({ manufacture_countries })}
+                />
+                <InterfacesManager
+                  items={caseSettings.interfaces}
+                  onChange={(interfaces) => saveCaseSettings({ interfaces })}
+                />
+                <CapacitiesManager
+                  capacities={caseSettings.capacities}
+                  onChange={(capacities) => saveCaseSettings({ capacities })}
+                />
+                <HddTypesManager
+                  items={caseSettings.hdd_types}
+                  onChange={(hdd_types) => saveCaseSettings({ hdd_types })}
+                />
               </div>
+            </div>
+          )}
+
+          {activeTab === 'case_settings_hdd_fields' && (
+            <div className="card">
+              <div className="card-title" style={{ marginBottom:16 }}>🔧 HDD Fields</div>
+              <p style={{ fontSize:'0.82rem',color:'var(--text-muted)',marginBottom:20 }}>
+                Fields used in the HDD fields step. Manage which dynamic fields are required for each HDD/device type.
+              </p>
+              <HddFieldConfigManager />
+            </div>
+          )}
+
+          {activeTab === 'case_settings_problem' && (
+            <div className="card">
+              <div className="card-title" style={{ marginBottom:16 }}>📸 Problem</div>
+              <p style={{ fontSize:'0.82rem',color:'var(--text-muted)',marginBottom:20 }}>
+                Problem step settings for symptom and failure type selection during new case creation.
+              </p>
               <SymptomCategoriesManager
                 symptoms={caseSettings.symptoms}
                 onChange={(symptoms) => saveCaseSettings({ symptoms })}
               />
-            </div>
-          )}
-
-          {/* FAILURE TYPES */}
-          {activeTab === 'failures' && (
-            <div className="card">
-              <div className="card-title" style={{ marginBottom:16 }}>🔧 Failure / Problem Types</div>
               <FailureTypesManager
                 items={caseSettings.failure_types}
                 onChange={(failure_types) => saveCaseSettings({ failure_types })}
@@ -2105,51 +2137,12 @@ export default function SettingsPage() {
             </div>
           )}
 
-          {/* DEVICE BRANDS */}
-          {activeTab === 'brands' && (
+          {activeTab === 'case_settings_commercial' && (
             <div className="card">
-              <div className="card-title" style={{ marginBottom:16 }}>🏷️ Device Brands Manager</div>
-              <BrandsManager
-                items={caseSettings.brands}
-                onChange={(brands) => saveCaseSettings({ brands })}
-              />
-            </div>
-          )}
-
-          {activeTab === 'manufacture_countries' && (
-            <div className="card">
-              <div className="card-title" style={{ marginBottom:16 }}>🌍 Manufacturing Countries</div>
-              <ManufactureCountriesManager
-                items={caseSettings.manufacture_countries}
-                onChange={(manufacture_countries) => saveCaseSettings({ manufacture_countries })}
-              />
-            </div>
-          )}
-
-          {activeTab === 'interfaces' && (
-            <div className="card">
-              <div className="card-title" style={{ marginBottom:16 }}>🔌 Interfaces</div>
-              <InterfacesManager
-                items={caseSettings.interfaces}
-                onChange={(interfaces) => saveCaseSettings({ interfaces })}
-              />
-            </div>
-          )}
-
-          {activeTab === 'hdd_types' && (
-            <div className="card">
-              <div className="card-title" style={{ marginBottom:16 }}>🧩 HDD / Device Types</div>
-              <HddTypesManager
-                items={caseSettings.hdd_types}
-                onChange={(hdd_types) => saveCaseSettings({ hdd_types })}
-              />
-            </div>
-          )}
-
-          {/* PAYMENT METHODS */}
-          {activeTab === 'payments_cfg' && (
-            <div className="card">
-              <div className="card-title" style={{ marginBottom:16 }}>💳 Payment Methods Manager</div>
+              <div className="card-title" style={{ marginBottom:16 }}>💰 Commercial</div>
+              <p style={{ fontSize:'0.82rem',color:'var(--text-muted)',marginBottom:20 }}>
+                Commercial step settings for payment method options and billing defaults used in new case creation.
+              </p>
               <PaymentMethodsManager
                 items={caseSettings.payment_methods}
                 onChange={(payment_methods) => saveCaseSettings({ payment_methods })}

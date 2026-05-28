@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { casesApi, paymentsApi, accountingApi } from '../services/api';
+import { fieldConfigApi } from '../services/fieldConfigApi';
 import { useAuth } from '../store/AuthContext';
 import { printInwardForm } from '../components/NewCaseModal';
 import { useInventoryConfig } from '../hooks/useInventoryConfig';
@@ -25,6 +26,20 @@ const ALL_STAGES = [
   'approved', 'rejected', 'recovery_in_progress', 'imaging',
   'data_extraction', 'verification', 'completed', 'delivered', 'failed'
 ];
+
+const getLocalList = (key, fallback) => {
+  try {
+    const value = JSON.parse(localStorage.getItem(key));
+    return Array.isArray(value) && value.length ? value : fallback;
+  } catch {
+    return fallback;
+  }
+};
+
+const renderStageLabel = (stage) => {
+  const icon = STAGE_ICONS[stage] || '➡️';
+  return `${icon} ${stage.replace(/_/g,' ').toUpperCase()}`;
+};
 
 const VALID_NEXT = {
   received: ALL_STAGES, inspection: ALL_STAGES,
@@ -878,6 +893,7 @@ export default function CaseDetail() {
   const [showPayment, setShowPayment] = useState(false);
   const [viewPdf, setViewPdf] = useState(null);
   const [showEditCase, setShowEditCase] = useState(false);
+  const [customStages, setCustomStages] = useState(ALL_STAGES);
   const [timelineNote, setTimelineNote] = useState('');
   const [savingNote, setSavingNote] = useState(false);
   const [caseInvoices, setCaseInvoices] = useState([]);
@@ -890,6 +906,42 @@ export default function CaseDetail() {
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
 
   const companyData = (() => { try { return JSON.parse(localStorage.getItem('crm_company')) || {}; } catch { return {}; }})();
+
+  useEffect(() => {
+    fieldConfigApi.loadCaseSettingsToLocalStorage()
+      .then((settings) => {
+        const nextStages = Array.isArray(settings?.stages) && settings.stages.length ? settings.stages : ALL_STAGES;
+        setCustomStages(nextStages);
+      })
+      .catch(() => {
+        setCustomStages(getLocalList('custom_stages', ALL_STAGES));
+      });
+  }, []);
+
+  useEffect(() => {
+    const refreshStages = () => setCustomStages(getLocalList('custom_stages', ALL_STAGES));
+
+    const onCaseSettingsUpdated = (event) => {
+      if (event?.detail?.stages && Array.isArray(event.detail.stages) && event.detail.stages.length) {
+        setCustomStages(event.detail.stages);
+      } else {
+        refreshStages();
+      }
+    };
+
+    const onStorage = (event) => {
+      if (event?.key === 'custom_stages') {
+        refreshStages();
+      }
+    };
+
+    window.addEventListener('caseSettingsUpdated', onCaseSettingsUpdated);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      window.removeEventListener('caseSettingsUpdated', onCaseSettingsUpdated);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, []);
 
   const generatePaymentLink = async (invoice) => {
     const amount = parseFloat(invoice.total||0) * (companyData?.gst_enabled ? (1 + (companyData.gst_rate||18)/100) : 1);
@@ -1347,7 +1399,8 @@ export default function CaseDetail() {
   if (loading) return <div style={{display:'flex',justifyContent:'center',paddingTop:80}}><div className="spinner" style={{width:32,height:32,borderWidth:3}}/></div>;
   if (!caseData) return null;
 
-  const allowedNext = VALID_NEXT[caseData.stage] || [];
+  const availableStages = Array.isArray(customStages) && customStages.length ? customStages : ALL_STAGES;
+  const allowedNext = availableStages.filter(s => s !== caseData.stage);
   const isSolved = ['completed', 'delivered'].includes(caseData.stage);
 
   const TABS = [
@@ -1371,7 +1424,7 @@ export default function CaseDetail() {
             <button className="btn btn-ghost btn-sm" onClick={() => navigate('/cases')}>← Back</button>
             <span className="font-mono text-accent" style={{fontSize:'1.1rem',fontWeight:700}}>{caseData.case_number}</span>
             <span className={`badge badge-${caseData.stage}`} style={{fontSize:'0.75rem'}}>
-              {STAGE_ICONS[caseData.stage]} {caseData.stage?.replace(/_/g,' ')}
+              {STAGE_ICONS[caseData.stage] || '➡️'} {caseData.stage?.replace(/_/g,' ')}
             </span>
             {caseData.ai_risk_level && <span className={`badge badge-risk-${caseData.ai_risk_level}`}>{caseData.ai_risk_level?.toUpperCase()} RISK</span>}
             {isSolved && <span style={{fontSize:'0.68rem',padding:'3px 8px',background:'rgba(16,185,129,0.15)',borderRadius:999,color:'var(--status-success)',fontWeight:700,fontFamily:'var(--font-mono)'}}>✓ SOLVED</span>}
@@ -1715,14 +1768,14 @@ export default function CaseDetail() {
             <div className="modal-body">
               <div style={{marginBottom:16,padding:'10px 14px',background:'rgba(0,212,255,0.05)',borderRadius:'var(--radius-md)',border:'1px solid var(--border-accent)'}}>
                 <span className="text-xs text-muted">Current: </span>
-                <span style={{fontFamily:'var(--font-mono)',fontWeight:700,color:'var(--text-primary)'}}>{caseData.stage}</span>
+                <span style={{fontFamily:'var(--font-mono)',fontWeight:700,color:'var(--text-primary)'}}>{renderStageLabel(caseData.stage)}</span>
               </div>
 
               <div className="form-group">
                 <label className="form-label required">Next Stage</label>
                 <select className="form-select" value={transitionForm.stage} onChange={e => setTransitionForm({...transitionForm, stage: e.target.value})}>
                   <option value="">Select next stage...</option>
-                  {allowedNext.map(s => <option key={s} value={s}>{STAGE_ICONS[s]} {s.replace(/_/g,' ').toUpperCase()}</option>)}
+                  {allowedNext.map(s => <option key={s} value={s}>{renderStageLabel(s)}</option>)}
                 </select>
               </div>
 
