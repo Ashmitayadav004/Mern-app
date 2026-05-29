@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { analyticsApi } from '../services/api';
 import { useAuth } from '../store/AuthContext';
 import NewCaseModal from '../components/NewCaseModal';
+import { StageDistributionChart } from '../components/Charts';
 
 const STAGE_COLORS = {
   received:'#64748b',inspection:'#3b82f6',diagnosis:'#6366f1',quotation:'#f59e0b',
@@ -18,14 +19,13 @@ const SIZE_MODES = [
   { key: 'spacious', label: '▩ Spacious',  statCols: 'repeat(3,1fr)', cardPad: 28 },
 ];
 
-function StatCard({ icon, label, value, color, bg, onClick, size }) {
+function StatCard({ label, value, color, bg, onClick, size }) {
   const sz = size || 'normal';
   const pad = sz === 'compact' ? '14px 16px' : sz === 'spacious' ? '28px 24px' : '20px';
   const fnt = sz === 'compact' ? '1.2rem' : sz === 'spacious' ? '2rem' : '1.6rem';
   return (
     <div className="stat-card" style={{ '--stat-color': color, '--stat-bg': bg, cursor: onClick ? 'pointer' : 'default', padding: pad }}
       onClick={onClick}>
-      <div className="stat-icon" style={{ fontSize: sz === 'compact' ? '1.3rem' : '1.6rem' }}>{icon}</div>
       <div className="stat-value" style={{ fontSize: fnt }}>{value ?? '—'}</div>
       <div className="stat-label" style={{ fontSize: sz === 'compact' ? '0.65rem' : '0.75rem' }}>{label}</div>
       {onClick && <div style={{ position: 'absolute', bottom: 8, right: 12, fontSize: '0.6rem', color, opacity: 0.6 }}>Click to view →</div>}
@@ -92,8 +92,8 @@ export default function Dashboard() {
         </div>
         <div style={{ display:'flex',alignItems:'center',gap:12 }}>
           {canAccess('staff') && hasPermission('cases', 'create') && (
-            <button className="btn btn-primary" onClick={() => setShowNewCase(true)} style={{ padding:'6px 14px',fontSize:'0.78rem',display:'flex',alignItems:'center',gap:6 }}>
-              ✨ Create New Case
+            <button className="btn btn-primary" onClick={() => setShowNewCase(true)} style={{ padding:'6px 14px',fontSize:'0.78rem' }}>
+              Create New Case
             </button>
           )}
           <div style={{ display:'flex',gap:6,background:'var(--bg-elevated)',padding:'4px 6px',borderRadius:'var(--radius-md)',border:'1px solid var(--border-subtle)' }}>
@@ -113,16 +113,16 @@ export default function Dashboard() {
       <div style={{ display:'grid', gridTemplateColumns: mode.statCols, gap:12, marginBottom:24, padding: `${mode.cardPad}px` }}>
         {hasPermission('cases', 'view') && (
           <>
-            <StatCard icon="📂" label="Active Cases"       value={c.active}   color="#00d4ff" bg="rgba(0,212,255,0.1)"  size={size} onClick={() => navigate('/cases?status=active')} />
-            <StatCard icon="🔴" label="Critical Priority"  value={c.critical} color="#dc2626" bg="rgba(220,38,38,0.12)" size={size} onClick={() => navigate('/cases?priority=1')} />
-            <StatCard icon="✅" label="Completed (Lifetime)" value={c.completed} color="#10b981" bg="rgba(16,185,129,0.1)" size={size} onClick={() => navigate('/cases?stage=completed')} />
-            <StatCard icon="📅" label="Cases This Month"   value={c.this_month} color="#7c3aed" bg="rgba(124,58,237,0.1)" size={size} onClick={() => navigate('/cases')} />
+            <StatCard label="Active Cases"       value={c.active}   color="#00d4ff" bg="rgba(0,212,255,0.1)"  size={size} onClick={() => navigate('/cases?status=active')} />
+            <StatCard label="Critical Priority"  value={c.critical} color="#dc2626" bg="rgba(220,38,38,0.12)" size={size} onClick={() => navigate('/cases?priority=1')} />
+            <StatCard label="Completed (Lifetime)" value={c.completed} color="#10b981" bg="rgba(16,185,129,0.1)" size={size} onClick={() => navigate('/cases?stage=completed')} />
+            <StatCard label="Cases This Month"   value={c.this_month} color="#7c3aed" bg="rgba(124,58,237,0.1)" size={size} onClick={() => navigate('/cases')} />
           </>
         )}
         {hasPermission('accounting', 'view') && (
           <>
-            <StatCard icon="💰" label="Revenue (Month)"    value={`₹${parseFloat(r.revenue_month||0).toLocaleString('en-IN')}`} color="#f59e0b" bg="rgba(245,158,11,0.1)" size={size} onClick={() => navigate('/reports')} />
-            <StatCard icon="⏳" label="Pending Payment"    value={`₹${parseFloat(r.pending_revenue||0).toLocaleString('en-IN')}`} color="#ef4444" bg="rgba(239,68,68,0.1)" size={size} onClick={() => navigate('/accounting')} />
+            <StatCard label="Revenue (Month)"    value={`₹${parseFloat(r.revenue_month||0).toLocaleString('en-IN')}`} color="#f59e0b" bg="rgba(245,158,11,0.1)" size={size} onClick={() => navigate('/reports')} />
+            <StatCard label="Pending Payment"    value={`₹${parseFloat(r.pending_revenue||0).toLocaleString('en-IN')}`} color="#ef4444" bg="rgba(239,68,68,0.1)" size={size} onClick={() => navigate('/accounting')} />
           </>
         )}
       </div>
@@ -138,25 +138,30 @@ export default function Dashboard() {
 
       {hasPermission('cases', 'view') && (
         <div style={{ marginBottom: 24 }}>
-          {/* Stage Distribution — clickable stages */}
+          {/* Stage Distribution — Interactive Doughnut Chart */}
           <div className="card">
             <div className="card-header">
-              <div className="card-title">📊 Stage Distribution</div>
+              <div className="card-title">Stage Distribution</div>
               <button className="btn btn-ghost btn-sm" onClick={() => navigate('/cases')}>View All →</button>
             </div>
-            <div style={{ display:'flex',flexDirection:'column',gap:8 }}>
-              {(data?.stageDistribution||[]).map(s => (
-                <div key={s.stage} style={{ display:'flex',alignItems:'center',gap:10,cursor:'pointer' }}
-                  onClick={() => navigate(`/cases?stage=${s.stage}`)}>
-                  <span className={`badge badge-${s.stage}`} style={{ minWidth:140 }}>{s.stage?.replace(/_/g,' ')}</span>
-                  <div style={{ flex:1,height:6,background:'var(--border-subtle)',borderRadius:999,overflow:'hidden' }}>
-                    <div style={{ height:'100%',width:`${Math.min(100,(s.count/Math.max(...(data?.stageDistribution||[]).map(x=>x.count)))*100)}%`,background:STAGE_COLORS[s.stage]||'var(--accent-primary)',borderRadius:999,transition:'width 0.8s ease' }} />
-                  </div>
-                  <span className="text-xs font-mono text-muted">{s.count}</span>
-                </div>
-              ))}
-              {!data?.stageDistribution?.length && <div className="empty-state" style={{ padding:30 }}><div className="empty-desc">No cases yet</div></div>}
+            <div style={{ position: 'relative', height: 220, padding: '0 12px' }}>
+              <StageDistributionChart data={data?.stageDistribution || []} />
             </div>
+            {(data?.stageDistribution||[]).length > 0 && (
+              <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--border-subtle)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 12 }}>
+                {(data?.stageDistribution||[]).map(s => {
+                  const total = (data?.stageDistribution||[]).reduce((sum, x) => sum + parseInt(x.count), 0);
+                  const pct = total > 0 ? ((parseInt(s.count) / total) * 100).toFixed(1) : 0;
+                  return (
+                    <div key={s.stage} onClick={() => navigate(`/cases?stage=${s.stage}`)} style={{ cursor: 'pointer', padding: 10, borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)', textAlign: 'center', transition: 'all 0.2s', ':hover': { borderColor: 'var(--accent-primary)' } }} onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent-primary)'} onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-subtle)'}>
+                      <div style={{ fontWeight: 700, fontSize: '1rem', color: STAGE_COLORS[s.stage] }}>{s.count}</div>
+                      <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: 2, textTransform: 'uppercase' }}>{s.stage?.replace(/_/g, ' ')}</div>
+                      <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-primary)', marginTop: 4 }}>{pct}%</div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -165,7 +170,7 @@ export default function Dashboard() {
       {hasPermission('cases', 'view') && (
         <div className="table-container">
           <div className="table-header">
-            <div className="card-title">🕐 Recent Cases</div>
+            <div className="card-title">Recent Cases</div>
             <button className="btn btn-primary btn-sm" onClick={() => navigate('/cases')}>All Cases →</button>
           </div>
           <div style={{ overflowX:'auto' }}>
@@ -184,7 +189,7 @@ export default function Dashboard() {
       {hasPermission('cases', 'view') && data?.failureAnalytics?.length > 0 && (
         <div className="card" style={{ marginTop:24 }}>
           <div className="card-header">
-            <div className="card-title">🔬 Top Failure Patterns (Last 90 Days)</div>
+            <div className="card-title">Top Failure Patterns (Last 90 Days)</div>
             <button className="btn btn-ghost btn-sm" onClick={() => navigate('/reports')}>View Reports →</button>
           </div>
           <div style={{ display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:12 }}>

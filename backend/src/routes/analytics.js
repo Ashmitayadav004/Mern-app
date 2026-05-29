@@ -1,7 +1,7 @@
 const express = require('express');
 const { query } = require('../config/database');
 const { authenticate, requireMinRole } = require('../middleware/auth');
-const { isSuperAdmin, tenantCaseCondition, tenantUserCondition } = require('../utils/tenantAccess');
+const { isSuperAdmin, tenantCaseCondition, tenantUserCondition, tenantAdminId } = require('../utils/tenantAccess');
 
 const router = express.Router();
 router.use(authenticate);
@@ -21,7 +21,7 @@ router.get('/dashboard', async (req, res) => {
           ? engineerTenantCase.params
           : [];
 
-    const [casesStats, revenueStats, engineerStats, failureStats, recentCases, stageCounts] = await Promise.all([
+    const [casesStats, revenueStats, engineerStats, failureStats, recentCases, stageCounts, expenseStats] = await Promise.all([
       // Cases overview
       query(`SELECT
         COUNT(*) as total,
@@ -31,7 +31,7 @@ router.get('/dashboard', async (req, res) => {
         COUNT(*) FILTER (WHERE priority = 1) as critical,
         COUNT(*) FILTER (WHERE received_at >= NOW() - INTERVAL '7 days') as this_week,
         COUNT(*) FILTER (WHERE received_at >= NOW() - INTERVAL '30 days') as this_month
-        FROM cases${tenantCase ? ` WHERE ${tenantCase.clause}` : ''}`,
+        FROM cases c${tenantCase ? ` WHERE ${tenantCase.clause}` : ''}`,
         tenantCaseParams),
 
       // Revenue this month
@@ -61,11 +61,12 @@ router.get('/dashboard', async (req, res) => {
       // Top failure types
       query(`SELECT failure_type, device_brand,
         COUNT(*) as count,
-        ROUND(AVG(EXTRACT(EPOCH FROM (completed_at - received_at))/3600) FILTER (WHERE completed_at IS NOT NULL), 1) as avg_recovery_hours
-        FROM cases
-        ${tenantCase ? `WHERE received_at >= NOW() - INTERVAL '90 days' AND ${tenantCase.clause}` : `WHERE received_at >= NOW() - INTERVAL '90 days'`}
+        ROUND(AVG(EXTRACT(EPOCH FROM (completed_at - c.received_at))/3600) FILTER (WHERE completed_at IS NOT NULL), 1) as avg_recovery_hours
+        FROM cases c
+        ${tenantCase ? `WHERE c.received_at >= NOW() - INTERVAL '90 days' AND ${tenantCase.clause}` : `WHERE c.received_at >= NOW() - INTERVAL '90 days'`}
         GROUP BY failure_type, device_brand
         ORDER BY count DESC LIMIT 10`,
+
         tenantCaseParams),
 
       // Recent cases
@@ -81,13 +82,23 @@ router.get('/dashboard', async (req, res) => {
         tenantCaseParams),
 
       // Stage distribution
-      query(`SELECT stage, COUNT(*) as count FROM cases ${tenantCase ? `WHERE ${tenantCase.clause}` : ''} GROUP BY stage ORDER BY count DESC`,
+      query(`SELECT stage, COUNT(*) as count FROM cases c ${tenantCase ? `WHERE ${tenantCase.clause}` : ''} GROUP BY stage ORDER BY count DESC`,
         tenantCaseParams),
+
+      // Expenses this month (for profit calculation)
+      query(`SELECT
+        COALESCE(SUM(total) FILTER (WHERE date >= NOW()::date - INTERVAL '30 days'), 0) as expenses_month,
+        COALESCE(SUM(total), 0) as total_expenses
+        FROM accounting_expenses${!isSuperAdmin(req.user) ? ` WHERE tenant_id = $1` : ''}`,
+        !isSuperAdmin(req.user) ? [tenantAdminId(req.user)] : []),
     ]);
 
     res.json({
       cases: casesStats.rows[0],
-      revenue: revenueStats.rows[0],
+      revenue: {
+        ...revenueStats.rows[0],
+        profit_month: parseFloat(revenueStats.rows[0].revenue_month) - parseFloat(expenseStats.rows[0].expenses_month),
+      },
       engineers: engineerStats.rows,
       failureAnalytics: failureStats.rows,
       recentCases: recentCases.rows,
@@ -107,15 +118,16 @@ router.get('/failure-trends', async (req, res) => {
     const tenantCaseParams = tenantCase ? tenantCase.params : [];
     const result = await query(
       `SELECT
-        DATE_TRUNC('day', received_at) as date,
+        DATE_TRUNC('day', c.received_at) as date,
         failure_type,
         device_brand,
         COUNT(*) as count
-       FROM cases
-       WHERE received_at >= NOW() - ($1 || ' days')::INTERVAL
+       FROM cases c
+       WHERE c.received_at >= NOW() - ($1 || ' days')::INTERVAL
        ${tenantCase ? `AND ${tenantCase.clause}` : ''}
-       GROUP BY DATE_TRUNC('day', received_at), failure_type, device_brand
+       GROUP BY DATE_TRUNC('day', c.received_at), failure_type, device_brand
        ORDER BY date DESC`,
+
       [parsedDays, ...tenantCaseParams]
     );
     res.json(result.rows);
