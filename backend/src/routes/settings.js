@@ -150,12 +150,12 @@ router.post('/smtp/test', authenticate, requireMinRole('admin'), auditLog('test_
         html: `<div><h3 style="color:#1e40af">SMTP is working ✅</h3><p>Your RecoverLab CRM is correctly configured to send emails via <b>${smtp_host}:${portNumber}</b>.</p></div>`,
         text: `SMTP is working. Your CRM is configured to send emails via ${smtp_host}:${portNumber}.`,
       });
+      console.log(`Test email successfully sent to ${testTo}`);
+      res.json({ ok: true, message: `✅ SMTP connected successfully — test email sent to ${testTo}.` });
     } catch (sendErr) {
-      console.warn('SMTP verify succeeded but send failed', sendErr.message);
-      return res.status(200).json({ ok: true, message: `SMTP connected successfully but sending test email failed: ${sendErr.message}` });
+      console.error('SMTP send failed', sendErr.message, { host: smtp_host, port: portNumber, user: smtp_user, to: testTo });
+      return res.status(400).json({ ok: false, error: `Failed to send test email: ${sendErr.message}. Check SMTP credentials and ensure your email provider allows this connection.` });
     }
-
-    res.json({ ok: true, message: `SMTP connected successfully — test email sent to ${testTo}.` });
   } catch (err) {
     console.error('SMTP test failed', err.message);
     res.status(500).json({ error: `SMTP test failed: ${err.message}` });

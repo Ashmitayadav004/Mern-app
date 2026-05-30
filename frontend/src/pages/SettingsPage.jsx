@@ -988,6 +988,7 @@ export default function SettingsPage() {
   const [companySaved, setCompanySaved] = useState(false);
   const [smtpTesting, setSmtpTesting] = useState(false);
   const [smtpResult, setSmtpResult] = useState(null);
+  const [smtpTestTo, setSmtpTestTo] = useState('');
   // Theme & Layout system
   const [allThemes] = useState({
     cyber_cyan:   { id:'cyber_cyan',   name:'Cyber Cyan',      bg:'linear-gradient(135deg,#060a12,#0a1628)',  accent:'#00d4ff', accent2:'#7c3aed', dark:true  },
@@ -1097,8 +1098,17 @@ export default function SettingsPage() {
 
   const handleTestSmtp = async () => {
     setSmtpTesting(true); setSmtpResult(null);
-    try { const r = await companyApi.testSmtp(company); setSmtpResult({ ok: true, msg: r.message }); }
-    catch (e) { setSmtpResult({ ok: false, msg: e.message }); } finally { setSmtpTesting(false); }
+    try { 
+      const testConfig = { ...company, test_to: smtpTestTo };
+      const r = await companyApi.testSmtp(testConfig);
+      if (r.ok === false || r.error) {
+        setSmtpResult({ ok: false, msg: r.error || 'Unknown error occurred' });
+      } else {
+        setSmtpResult({ ok: true, msg: r.message || 'Test email sent successfully!' });
+      }
+    }
+    catch (e) { setSmtpResult({ ok: false, msg: e.message || 'Failed to send test email' }); } 
+    finally { setSmtpTesting(false); }
   };
 
   const handlePasswordChange = async (e) => {
@@ -1677,7 +1687,11 @@ export default function SettingsPage() {
                   <div className="form-group"><label className="form-label">SMTP Username</label><input className="form-input" value={company.smtp_user || ''} onChange={e => setCompany(c => ({ ...c, smtp_user: e.target.value }))} /></div>
                   <div className="form-group"><label className="form-label">SMTP Password</label><input type="password" className="form-input" value={company.smtp_password || ''} onChange={e => setCompany(c => ({ ...c, smtp_password: e.target.value }))} /></div>
                 </div>
-                <div className="form-group"><label className="form-label">From Name</label><input className="form-input" value={company.smtp_from_name || ''} onChange={e => setCompany(c => ({ ...c, smtp_from_name: e.target.value }))} /></div>
+                <div className="form-row form-row-2">
+                  <div className="form-group"><label className="form-label">From Name</label><input className="form-input" value={company.smtp_from_name || ''} onChange={e => setCompany(c => ({ ...c, smtp_from_name: e.target.value }))} /></div>
+                  <div className="form-group"><label className="form-label">From Email</label><input className="form-input" type="email" value={company.smtp_from_email || ''} onChange={e => setCompany(c => ({ ...c, smtp_from_email: e.target.value }))} placeholder="noreply@example.com" /></div>
+                </div>
+                <div className="form-group"><label className="form-label">Send test to (optional)</label><input className="form-input" type="email" value={smtpTestTo} onChange={e => setSmtpTestTo(e.target.value)} placeholder="recipient@example.com" /></div>
               </div>
             </div>
           )}

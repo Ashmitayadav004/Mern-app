@@ -30,6 +30,7 @@ const marketingRoutes  = require('./routes/marketing');
 const suggestionsRoutes = require('./routes/suggestions');
 const solutionsRoutes  = require('./routes/solutions');
 const mediaRecycleRoutes = require('./routes/mediaRecycle');
+const settingsRoutes = require('./routes/settings');
 // New Chat routes
 const chatRoutes = require('./routes/chat');
 
@@ -114,6 +115,7 @@ app.use('/api/marketing',   marketingRoutes);
 app.use('/api/suggestions', suggestionsRoutes);
 app.use('/api/solutions',   solutionsRoutes);
 app.use('/api/media-recycle-bin', mediaRecycleRoutes);
+app.use('/api/settings',    settingsRoutes);
 app.use('/api/chat',        chatRoutes);
 
 // Health check
