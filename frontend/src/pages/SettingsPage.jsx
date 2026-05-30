@@ -6,7 +6,33 @@ import HddFieldConfigManager from '../components/settings/HddFieldConfigManager'
 import InventoryStockConfigManager from '../components/settings/InventoryStockConfigManager';
 import { INV_DEFAULTS, loadInventoryFields } from '../utils/inventoryFieldSettings';
 
+<<<<<<< HEAD
 //  Per-family Inventory field/dropdown manager 
+=======
+// ── Confirmation Modal ────────────────────────────────────────────
+function ConfirmDeleteModal({ title, message, itemName, onConfirm, onCancel }) {
+  return (
+    <div className="modal-overlay" onClick={onCancel}>
+      <div className="modal" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <h3 className="modal-title">⚠️ {title}</h3>
+          <button className="btn btn-ghost btn-icon" onClick={onCancel}>✕</button>
+        </div>
+        <div className="modal-body">
+          <p style={{ marginBottom: 16 }}>{message}</p>
+          {itemName && <div style={{ padding: '8px 12px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 6, fontSize: '0.85rem', color: '#ef4444', fontFamily: 'var(--font-mono)' }}>{itemName}</div>}
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-secondary" onClick={onCancel}>Cancel</button>
+          <button className="btn btn-danger" onClick={onConfirm}>Delete</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Per-family Inventory field/dropdown manager ────────────────────────────────
+>>>>>>> fb6fda3176ae028cc5828fa16b678f994c696746
 const stripDecorativeIcon = (label = '') => String(label).replace(/^[\p{Extended_Pictographic}\uFE0F]+\s*/gu, '').trim();
 
 function InvCategorySettings({ deviceFamily }) {
@@ -16,6 +42,7 @@ function InvCategorySettings({ deviceFamily }) {
   const [newOptVal, setNewOptVal]   = useState('');
   const [newFieldLabel, setNewFieldLabel] = useState('');
   const [saved, setSaved] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   const persist = (next) => {
     setFields(next);
@@ -34,10 +61,13 @@ function InvCategorySettings({ deviceFamily }) {
   };
 
   const removeOption = (fieldKey, optIdx) => {
-    const next = fields.map(f =>
-      f.key === fieldKey ? { ...f, options: f.options.filter((_, i) => i !== optIdx) } : f
-    );
-    persist(next);
+    const optionValue = fields.find(f => f.key === fieldKey)?.options?.[optIdx];
+    setConfirmDelete({
+      type: 'option',
+      fieldKey,
+      optIdx,
+      itemName: optionValue,
+    });
   };
 
   const addCustomField = () => {
@@ -49,13 +79,33 @@ function InvCategorySettings({ deviceFamily }) {
   };
 
   const removeField = (fieldKey) => {
-    if (!window.confirm('Remove this field?')) return;
-    persist(fields.filter(f => f.key !== fieldKey));
+    const field = fields.find(f => f.key === fieldKey);
+    setConfirmDelete({
+      type: 'field',
+      fieldKey,
+      itemName: `${field.label} (${field.key})`,
+    });
   };
 
   const resetDefaults = () => {
-    if (!window.confirm('Reset to default fields? Custom fields will be lost.')) return;
-    persist([...(INV_DEFAULTS[deviceFamily] || [])]);
+    setConfirmDelete({
+      type: 'reset',
+      itemName: `All custom fields for ${deviceFamily}`,
+    });
+  };
+
+  const handleConfirmDelete = () => {
+    if (confirmDelete.type === 'option') {
+      const { fieldKey, optIdx } = confirmDelete;
+      persist(fields.map(f =>
+        f.key === fieldKey ? { ...f, options: f.options.filter((_, i) => i !== optIdx) } : f
+      ));
+    } else if (confirmDelete.type === 'field') {
+      persist(fields.filter(f => f.key !== confirmDelete.fieldKey));
+    } else if (confirmDelete.type === 'reset') {
+      persist([...(INV_DEFAULTS[deviceFamily] || [])]);
+    }
+    setConfirmDelete(null);
   };
 
   return (
@@ -127,6 +177,16 @@ function InvCategorySettings({ deviceFamily }) {
       <div style={{ textAlign: 'right' }}>
         <button type="button" className="btn btn-secondary btn-sm" onClick={resetDefaults}> Reset Defaults</button>
       </div>
+
+      {confirmDelete && (
+        <ConfirmDeleteModal
+          title={confirmDelete.type === 'option' ? 'Delete Option?' : confirmDelete.type === 'field' ? 'Delete Field?' : 'Reset to Defaults?'}
+          message={confirmDelete.type === 'option' ? 'This option will be removed from the dropdown.' : confirmDelete.type === 'field' ? 'This field and all its data will be removed.' : 'All custom fields will be lost. Only default fields will remain.'}
+          itemName={confirmDelete.itemName}
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setConfirmDelete(null)}
+        />
+      )}
     </div>
   );
 }
@@ -236,10 +296,18 @@ function UserRolesManager() {
   const [roles, setRoles] = useState(() => {
     try { const r = JSON.parse(localStorage.getItem('crm_roles')); return r && r.length ? r : DEFAULT_ROLES; } catch { return DEFAULT_ROLES; }
   });
+  const [confirmDelete, setConfirmDelete] = useState(null);
   const save = (r) => { setRoles(r); localStorage.setItem('crm_roles', JSON.stringify(r)); };
   
   const addRole = () => save([...roles, {id:'new_role',name:'New Role',level:1, permissions: []}]);
-  const removeRole = (idx) => { if(confirm('Remove this role?')) save(roles.filter((_,i)=>i!==idx)); };
+  const removeRole = (idx) => {
+    setConfirmDelete({ idx, itemName: `${roles[idx].name} (${roles[idx].id})` });
+  };
+
+  const handleConfirmDelete = () => {
+    save(roles.filter((_,i) => i !== confirmDelete.idx));
+    setConfirmDelete(null);
+  };
 
   const togglePermission = (i, p) => {
     const n = [...roles];
@@ -288,6 +356,15 @@ function UserRolesManager() {
         ))}
       </div>
       <button className="btn btn-primary" style={{marginTop:16}} onClick={addRole}>+ Add Role</button>
+      {confirmDelete && (
+        <ConfirmDeleteModal
+          title="Delete Role?"
+          message="This role will be removed from the system. Users with this role will need to be reassigned."
+          itemName={confirmDelete.itemName}
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setConfirmDelete(null)}
+        />
+      )}
     </div>
   );
 }
@@ -367,12 +444,22 @@ const DEFAULT_STAGES = ['received','inspection','diagnosis','quotation','approve
 function StageCategoriesManager({ stages, onChange }) {
   const [items, setItems] = useState(stages);
   const [newStage, setNewStage] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   useEffect(() => { setItems(stages); }, [stages]);
 
   const save = (s) => { setItems(s); onChange(s); };
   const moveUp = (idx) => { if(idx===0) return; const n=[...items]; [n[idx-1],n[idx]]=[n[idx],n[idx-1]]; save(n); };
   const moveDown = (idx) => { if(idx===items.length-1) return; const n=[...items]; [n[idx+1],n[idx]]=[n[idx],n[idx+1]]; save(n); };
+
+  const handleDelete = (idx) => {
+    setConfirmDelete({ idx, itemName: items[idx] });
+  };
+
+  const handleConfirmDelete = () => {
+    save(items.filter((_,j) => j !== confirmDelete.idx));
+    setConfirmDelete(null);
+  };
 
   return (
     <div>
@@ -386,7 +473,11 @@ function StageCategoriesManager({ stages, onChange }) {
               <input className="form-input" value={s} onChange={e=>{ const n=[...items]; n[i]=e.target.value; save(n); }} style={{ flex:1 }} />
               <button className="btn btn-secondary btn-sm" onClick={()=>moveUp(i)}>↑</button>
               <button className="btn btn-secondary btn-sm" onClick={()=>moveDown(i)}>↓</button>
+<<<<<<< HEAD
               <button className="btn btn-danger btn-sm" onClick={()=>save(items.filter((_,j)=>j!==i))}></button>
+=======
+              <button className="btn btn-danger btn-sm" onClick={()=>handleDelete(i)}>✕</button>
+>>>>>>> fb6fda3176ae028cc5828fa16b678f994c696746
             </div>
           ))}
         </div>
@@ -395,6 +486,15 @@ function StageCategoriesManager({ stages, onChange }) {
         <input className="form-input" value={newStage} onChange={e=>setNewStage(e.target.value)} placeholder="New stage name (e.g. pcb_repair)" style={{ flex:1 }} />
         <button className="btn btn-primary" onClick={()=>{ if(newStage.trim()){ save([...stages, newStage.trim().toLowerCase().replace(/\s+/g,'_')]); setNewStage(''); } }}>+ Add Stage</button>
       </div>
+      {confirmDelete && (
+        <ConfirmDeleteModal
+          title="Delete Stage?"
+          message="This stage will be removed from the workflow."
+          itemName={confirmDelete.itemName}
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setConfirmDelete(null)}
+        />
+      )}
     </div>
   );
 }
@@ -404,9 +504,15 @@ const DEFAULT_SYMPTOMS = ['not_detected', 'clicking', 'slow', 'dead', 'beeping',
 function SymptomCategoriesManager({ symptoms, onChange }) {
   const [items, setItems] = useState(symptoms);
   const [newSymptom, setNewSymptom] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   useEffect(() => { setItems(symptoms); }, [symptoms]);
   const save = (s) => { setItems(s); onChange(s); };
+
+  const handleConfirmDelete = () => {
+    save(items.filter((_,j) => j !== confirmDelete.idx));
+    setConfirmDelete(null);
+  };
 
   return (
     <div>
@@ -417,7 +523,11 @@ function SymptomCategoriesManager({ symptoms, onChange }) {
           {items.map((s,i) => (
             <div key={i} style={{ display:'flex',alignItems:'center',gap:4,background:'var(--bg-elevated)',padding:'4px 10px',borderRadius:999,border:'1px solid var(--border-subtle)' }}>
               <input className="form-input" value={s} onChange={e=>{ const n=[...items]; n[i]=e.target.value; save(n); }} style={{ background:'transparent',border:'none',padding:0,width:Math.max(80,s.length*8),fontSize:'0.75rem',fontFamily:'var(--font-mono)',color:'var(--text-primary)' }} />
+<<<<<<< HEAD
               <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.75rem',padding:0,lineHeight:1 }} onClick={()=>save(items.filter((_,j)=>j!==i))}></button>
+=======
+              <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.75rem',padding:0,lineHeight:1 }} onClick={()=>setConfirmDelete({idx:i, itemName:s})}>✕</button>
+>>>>>>> fb6fda3176ae028cc5828fa16b678f994c696746
             </div>
           ))}
         </div>
@@ -426,6 +536,15 @@ function SymptomCategoriesManager({ symptoms, onChange }) {
         <input className="form-input" value={newSymptom} onChange={e=>setNewSymptom(e.target.value)} placeholder="New symptom (e.g. water_damage)" style={{ flex:1 }} onKeyDown={e=>{ if(e.key==='Enter'&&newSymptom.trim()){ save([...symptoms, newSymptom.trim().toLowerCase().replace(/\s+/g,'_')]); setNewSymptom(''); } }} />
         <button className="btn btn-primary" onClick={()=>{ if(newSymptom.trim()){ save([...symptoms, newSymptom.trim().toLowerCase().replace(/\s+/g,'_')]); setNewSymptom(''); } }}>+ Add Symptom</button>
       </div>
+      {confirmDelete && (
+        <ConfirmDeleteModal
+          title="Delete Symptom?"
+          message="This symptom will be removed from the case creation form."
+          itemName={confirmDelete.itemName}
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setConfirmDelete(null)}
+        />
+      )}
     </div>
   );
 }
@@ -435,9 +554,15 @@ const DEFAULT_FAILURE_TYPES_LIST = ['logical','firmware','electrical','mechanica
 function FailureTypesManager({ items: initialItems, onChange }) {
   const [items, setItems] = useState(initialItems);
   const [newItem, setNewItem] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   useEffect(() => { setItems(initialItems); }, [initialItems]);
   const save = (s) => { setItems(s); onChange(s); };
+
+  const handleConfirmDelete = () => {
+    save(items.filter((_,j) => j !== confirmDelete.idx));
+    setConfirmDelete(null);
+  };
 
   return (
     <div>
@@ -447,7 +572,11 @@ function FailureTypesManager({ items: initialItems, onChange }) {
         {items.map((s,i) => (
           <div key={i} style={{ display:'flex',alignItems:'center',gap:4,background:'var(--bg-elevated)',padding:'5px 12px',borderRadius:999,border:'1px solid var(--border-default)' }}>
             <input className="form-input" value={s} onChange={e=>{ const n=[...items]; n[i]=e.target.value; save(n); }} style={{ background:'transparent',border:'none',padding:0,width:Math.max(80,s.length*8),fontSize:'0.78rem',fontFamily:'var(--font-mono)',color:'var(--text-primary)' }} />
+<<<<<<< HEAD
             <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.78rem',padding:0,lineHeight:1 }} onClick={()=>save(items.filter((_,j)=>j!==i))}></button>
+=======
+            <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.78rem',padding:0,lineHeight:1 }} onClick={()=>setConfirmDelete({idx:i, itemName:s})}>✕</button>
+>>>>>>> fb6fda3176ae028cc5828fa16b678f994c696746
           </div>
         ))}
       </div>
@@ -455,6 +584,15 @@ function FailureTypesManager({ items: initialItems, onChange }) {
         <input className="form-input" value={newItem} onChange={e=>setNewItem(e.target.value)} placeholder="e.g. water_damage, fire_damage" style={{ flex:1 }} onKeyDown={e=>{ if(e.key==='Enter'&&newItem.trim()){ save([...items, newItem.trim().toLowerCase().replace(/\s+/g,'_')]); setNewItem(''); } }} />
         <button className="btn btn-primary" onClick={()=>{ if(newItem.trim()){ save([...items, newItem.trim().toLowerCase().replace(/\s+/g,'_')]); setNewItem(''); } }}>+ Add Type</button>
       </div>
+      {confirmDelete && (
+        <ConfirmDeleteModal
+          title="Delete Failure Type?"
+          message="This failure type will be removed from case creation."
+          itemName={confirmDelete.itemName}
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setConfirmDelete(null)}
+        />
+      )}
     </div>
   );
 }
@@ -464,9 +602,15 @@ const DEFAULT_BRANDS = ['Western Digital','Seagate','Toshiba','Samsung','Hitachi
 function BrandsManager({ items: initialItems, onChange }) {
   const [items, setItems] = useState(initialItems);
   const [newItem, setNewItem] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   useEffect(() => { setItems(initialItems); }, [initialItems]);
   const save = (s) => { setItems(s); onChange(s); };
+
+  const handleConfirmDelete = () => {
+    save(items.filter((_,j) => j !== confirmDelete.idx));
+    setConfirmDelete(null);
+  };
 
   return (
     <div>
@@ -476,7 +620,11 @@ function BrandsManager({ items: initialItems, onChange }) {
         {items.map((s,i) => (
           <div key={i} style={{ display:'flex',alignItems:'center',gap:4,background:'var(--bg-elevated)',padding:'5px 12px',borderRadius:999,border:'1px solid var(--border-default)' }}>
             <input className="form-input" value={s} onChange={e=>{ const n=[...items]; n[i]=e.target.value; save(n); }} style={{ background:'transparent',border:'none',padding:0,width:Math.max(80,s.length*8),fontSize:'0.78rem',color:'var(--text-primary)' }} />
+<<<<<<< HEAD
             <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.78rem',padding:0 }} onClick={()=>save(items.filter((_,j)=>j!==i))}></button>
+=======
+            <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.78rem',padding:0 }} onClick={()=>setConfirmDelete({idx:i, itemName:s})}>✕</button>
+>>>>>>> fb6fda3176ae028cc5828fa16b678f994c696746
           </div>
         ))}
       </div>
@@ -484,6 +632,15 @@ function BrandsManager({ items: initialItems, onChange }) {
         <input className="form-input" value={newItem} onChange={e=>setNewItem(e.target.value)} placeholder="e.g. LaCie, Buffalo, Transcend" style={{ flex:1 }} onKeyDown={e=>{ if(e.key==='Enter'&&newItem.trim()){ save([...items, newItem.trim()]); setNewItem(''); } }} />
         <button className="btn btn-primary" onClick={()=>{ if(newItem.trim()){ save([...items, newItem.trim()]); setNewItem(''); } }}>+ Add Brand</button>
       </div>
+      {confirmDelete && (
+        <ConfirmDeleteModal
+          title="Delete Brand?"
+          message="This brand will be removed from the brands list."
+          itemName={confirmDelete.itemName}
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setConfirmDelete(null)}
+        />
+      )}
     </div>
   );
 }
@@ -491,9 +648,15 @@ function BrandsManager({ items: initialItems, onChange }) {
 function ManufactureCountriesManager({ items: initialItems, onChange }) {
   const [items, setItems] = useState(initialItems || []);
   const [newItem, setNewItem] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   useEffect(() => { setItems(initialItems || []); }, [initialItems]);
   const save = (s) => { setItems(s); onChange(s); };
+
+  const handleConfirmDelete = () => {
+    save(items.filter((_,j) => j !== confirmDelete.idx));
+    setConfirmDelete(null);
+  };
 
   return (
     <div>
@@ -503,7 +666,11 @@ function ManufactureCountriesManager({ items: initialItems, onChange }) {
         {items.map((s,i) => (
           <div key={i} style={{ display:'flex',alignItems:'center',gap:4,background:'var(--bg-elevated)',padding:'5px 12px',borderRadius:999,border:'1px solid var(--border-default)' }}>
             <input className="form-input" value={s} onChange={e=>{ const n=[...items]; n[i]=e.target.value; save(n); }} style={{ background:'transparent',border:'none',padding:0,width:Math.max(80,s.length*8),fontSize:'0.78rem',color:'var(--text-primary)' }} />
+<<<<<<< HEAD
             <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.78rem',padding:0 }} onClick={()=>save(items.filter((_,j)=>j!==i))}></button>
+=======
+            <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.78rem',padding:0 }} onClick={()=>setConfirmDelete({idx:i, itemName:s})}>✕</button>
+>>>>>>> fb6fda3176ae028cc5828fa16b678f994c696746
           </div>
         ))}
       </div>
@@ -511,6 +678,15 @@ function ManufactureCountriesManager({ items: initialItems, onChange }) {
         <input className="form-input" value={newItem} onChange={e=>setNewItem(e.target.value)} placeholder="e.g. Thailand, Japan, USA" style={{ flex:1 }} onKeyDown={e=>{ if(e.key==='Enter'&&newItem.trim()){ save([...items, newItem.trim()]); setNewItem(''); } }} />
         <button className="btn btn-primary" onClick={()=>{ if(newItem.trim()){ save([...items, newItem.trim()]); setNewItem(''); } }}>+ Add Country</button>
       </div>
+      {confirmDelete && (
+        <ConfirmDeleteModal
+          title="Delete Country?"
+          message="This country will be removed from the manufacturing countries list."
+          itemName={confirmDelete.itemName}
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setConfirmDelete(null)}
+        />
+      )}
     </div>
   );
 }
@@ -518,9 +694,15 @@ function ManufactureCountriesManager({ items: initialItems, onChange }) {
 function InterfacesManager({ items: initialItems, onChange }) {
   const [items, setItems] = useState(initialItems || []);
   const [newItem, setNewItem] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   useEffect(() => { setItems(initialItems || []); }, [initialItems]);
   const save = (s) => { setItems(s); onChange(s); };
+
+  const handleConfirmDelete = () => {
+    save(items.filter((_,j) => j !== confirmDelete.idx));
+    setConfirmDelete(null);
+  };
 
   return (
     <div>
@@ -530,7 +712,11 @@ function InterfacesManager({ items: initialItems, onChange }) {
         {items.map((s,i) => (
           <div key={i} style={{ display:'flex',alignItems:'center',gap:4,background:'var(--bg-elevated)',padding:'5px 12px',borderRadius:999,border:'1px solid var(--border-default)' }}>
             <input className="form-input" value={s} onChange={e=>{ const n=[...items]; n[i]=e.target.value; save(n); }} style={{ background:'transparent',border:'none',padding:0,width:Math.max(80,s.length*8),fontSize:'0.78rem',color:'var(--text-primary)' }} />
+<<<<<<< HEAD
             <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.78rem',padding:0 }} onClick={()=>save(items.filter((_,j)=>j!==i))}></button>
+=======
+            <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.78rem',padding:0 }} onClick={()=>setConfirmDelete({idx:i, itemName:s})}>✕</button>
+>>>>>>> fb6fda3176ae028cc5828fa16b678f994c696746
           </div>
         ))}
       </div>
@@ -538,6 +724,15 @@ function InterfacesManager({ items: initialItems, onChange }) {
         <input className="form-input" value={newItem} onChange={e=>setNewItem(e.target.value)} placeholder="e.g. SATA, NVMe, PCIe" style={{ flex:1 }} onKeyDown={e=>{ if(e.key==='Enter'&&newItem.trim()){ save([...items, newItem.trim()]); setNewItem(''); } }} />
         <button className="btn btn-primary" onClick={()=>{ if(newItem.trim()){ save([...items, newItem.trim()]); setNewItem(''); } }}>+ Add Interface</button>
       </div>
+      {confirmDelete && (
+        <ConfirmDeleteModal
+          title="Delete Interface?"
+          message="This interface will be removed from the interfaces list."
+          itemName={confirmDelete.itemName}
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setConfirmDelete(null)}
+        />
+      )}
     </div>
   );
 }
@@ -545,9 +740,15 @@ function InterfacesManager({ items: initialItems, onChange }) {
 function HddTypesManager({ items: initialItems, onChange }) {
   const [items, setItems] = useState(initialItems || []);
   const [newItem, setNewItem] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   useEffect(() => { setItems(initialItems || []); }, [initialItems]);
   const save = (s) => { setItems(s); onChange(s); };
+
+  const handleConfirmDelete = () => {
+    save(items.filter((_,j) => j !== confirmDelete.idx));
+    setConfirmDelete(null);
+  };
 
   return (
     <div>
@@ -557,7 +758,11 @@ function HddTypesManager({ items: initialItems, onChange }) {
         {items.map((s,i) => (
           <div key={i} style={{ display:'flex',alignItems:'center',gap:4,background:'var(--bg-elevated)',padding:'5px 12px',borderRadius:999,border:'1px solid var(--border-default)' }}>
             <input className="form-input" value={s} onChange={e=>{ const n=[...items]; n[i]=e.target.value; save(n); }} style={{ background:'transparent',border:'none',padding:0,width:Math.max(80,s.length*8),fontSize:'0.78rem',color:'var(--text-primary)' }} />
+<<<<<<< HEAD
             <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.78rem',padding:0 }} onClick={()=>save(items.filter((_,j)=>j!==i))}></button>
+=======
+            <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.78rem',padding:0 }} onClick={()=>setConfirmDelete({idx:i, itemName:s})}>✕</button>
+>>>>>>> fb6fda3176ae028cc5828fa16b678f994c696746
           </div>
         ))}
       </div>
@@ -565,6 +770,15 @@ function HddTypesManager({ items: initialItems, onChange }) {
         <input className="form-input" value={newItem} onChange={e=>setNewItem(e.target.value)} placeholder="e.g. WD 2.5, Seagate 3.5" style={{ flex:1 }} onKeyDown={e=>{ if(e.key==='Enter'&&newItem.trim()){ save([...items, newItem.trim()]); setNewItem(''); } }} />
         <button className="btn btn-primary" onClick={()=>{ if(newItem.trim()){ save([...items, newItem.trim()]); setNewItem(''); } }}>+ Add Type</button>
       </div>
+      {confirmDelete && (
+        <ConfirmDeleteModal
+          title="Delete HDD Type?"
+          message="This HDD/device type will be removed from the types list."
+          itemName={confirmDelete.itemName}
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setConfirmDelete(null)}
+        />
+      )}
     </div>
   );
 }
@@ -574,9 +788,15 @@ const DEFAULT_PAYMENT_METHODS = ['Cash','UPI','Card (Debit/Credit)','Bank Transf
 function PaymentMethodsManager({ items: initialItems, onChange }) {
   const [items, setItems] = useState(initialItems);
   const [newItem, setNewItem] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   useEffect(() => { setItems(initialItems); }, [initialItems]);
   const save = (s) => { setItems(s); onChange(s); };
+
+  const handleConfirmDelete = () => {
+    save(items.filter((_,j) => j !== confirmDelete.idx));
+    setConfirmDelete(null);
+  };
 
   return (
     <div>
@@ -586,7 +806,11 @@ function PaymentMethodsManager({ items: initialItems, onChange }) {
         {items.map((s,i) => (
           <div key={i} style={{ display:'flex',alignItems:'center',gap:4,background:'var(--bg-elevated)',padding:'5px 12px',borderRadius:999,border:'1px solid var(--border-default)' }}>
             <input className="form-input" value={s} onChange={e=>{ const n=[...items]; n[i]=e.target.value; save(n); }} style={{ background:'transparent',border:'none',padding:0,width:Math.max(80,s.length*8),fontSize:'0.78rem',color:'var(--text-primary)' }} />
+<<<<<<< HEAD
             <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.78rem',padding:0 }} onClick={()=>save(items.filter((_,j)=>j!==i))}></button>
+=======
+            <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.78rem',padding:0 }} onClick={()=>setConfirmDelete({idx:i, itemName:s})}>✕</button>
+>>>>>>> fb6fda3176ae028cc5828fa16b678f994c696746
           </div>
         ))}
       </div>
@@ -594,6 +818,15 @@ function PaymentMethodsManager({ items: initialItems, onChange }) {
         <input className="form-input" value={newItem} onChange={e=>setNewItem(e.target.value)} placeholder="e.g. Crypto, Store Credit" style={{ flex:1 }} onKeyDown={e=>{ if(e.key==='Enter'&&newItem.trim()){ save([...items, newItem.trim()]); setNewItem(''); } }} />
         <button className="btn btn-primary" onClick={()=>{ if(newItem.trim()){ save([...items, newItem.trim()]); setNewItem(''); } }}>+ Add Method</button>
       </div>
+      {confirmDelete && (
+        <ConfirmDeleteModal
+          title="Delete Payment Method?"
+          message="This payment method will be removed from the payment options."
+          itemName={confirmDelete.itemName}
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setConfirmDelete(null)}
+        />
+      )}
     </div>
   );
 }

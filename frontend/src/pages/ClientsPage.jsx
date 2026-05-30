@@ -101,57 +101,6 @@ function NewClientModal({ onClose, onCreated }) {
   );
 }
 
-function CollectModal({ client, onClose, onCollected }) {
-  const [amount, setAmount] = useState(client ? String(parseFloat(client.pending_amount || 0)) : '');
-  const [notes, setNotes] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => { setAmount(client ? String(parseFloat(client.pending_amount || 0)) : ''); setNotes(''); }, [client]);
-
-  const handleSubmit = async (e) => {
-    e && e.preventDefault();
-    const amt = parseFloat(amount || '0');
-    const pending = parseFloat(client?.pending_amount || 0);
-    if (isNaN(amt) || amt <= 0) return alert('Enter a valid amount');
-    if (amt > pending) return alert('Amount exceeds pending amount');
-    setLoading(true);
-    try {
-      await clientsApi.collectPending(client.id, { amount: amt, notes });
-      onCollected && onCollected();
-      onClose && onClose();
-      alert(`✅ Collected ₹${amt.toLocaleString('en-IN')} from ${client.first_name} ${client.last_name}.`);
-    } catch (err) {
-      alert(err.message || 'Failed to collect pending amount');
-    } finally { setLoading(false); }
-  };
-
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h3 className="modal-title">Collect Payment</h3>
-          <button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button>
-        </div>
-        <div className="modal-body">
-          <div style={{marginBottom:8}}>Collecting from <strong>{client.first_name} {client.last_name}</strong></div>
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label className="form-label required">Amount (₹)</label>
-              <input className="form-input" value={amount} onChange={e=>setAmount(e.target.value)} />
-            </div>
-          </form>
-        </div>
-        <div className="modal-footer">
-          <button className="btn btn-secondary" onClick={onClose} disabled={loading}>Cancel</button>
-          <button className="btn btn-primary" onClick={handleSubmit} disabled={loading}>
-            {loading ? 'Processing...' : 'Collect'}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function ClientsPage() {
   const navigate = useNavigate();
   const { canAccess } = useAuth();
