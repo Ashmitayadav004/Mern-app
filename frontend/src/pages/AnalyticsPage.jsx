@@ -30,10 +30,10 @@ export default function AnalyticsPage() {
   const r = dashboard?.revenue || {};
 
   const kpis = [
-    { label: 'Total Active', value: c.active || 0, color: 'var(--accent-primary)', bg: 'rgba(0,212,255,0.1)' },
-    { label: 'Completed All-Time', value: c.completed || 0, color: 'var(--status-success)', bg: 'rgba(16,185,129,0.1)' },
+    { label: 'Total Active Cases', value: c.active || 0, color: 'var(--accent-primary)', bg: 'rgba(0,212,255,0.1)' },
+    { label: 'Completed cases', value: c.completed || 0, color: 'var(--status-success)', bg: 'rgba(16,185,129,0.1)' },
     { label: 'Failed Cases', value: c.failed || 0, color: 'var(--status-danger)', bg: 'rgba(239,68,68,0.1)' },
-    { label: 'This Month', value: c.this_month || 0, color: 'var(--accent-secondary)', bg: 'rgba(124,58,237,0.1)' },
+    { label: 'This Month Cases', value: c.this_month || 0, color: 'var(--accent-secondary)', bg: 'rgba(124,58,237,0.1)' },
     { label: 'Revenue (Month)', value: `₹${parseFloat(r.revenue_month || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`, color: 'var(--status-warning)', bg: 'rgba(245,158,11,0.1)' },
     { label: 'Total Revenue', value: `₹${parseFloat(r.total_revenue || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`, color: 'var(--status-success)', bg: 'rgba(16,185,129,0.1)' },
   ];
@@ -67,7 +67,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* KPI Cards */}
-      <div className="stats-grid" style={{ marginBottom: 28 }}>
+      <div className="stats-grid analytics-kpi-grid" style={{ marginBottom: 28 }}>
         {kpis.map(k => (
           <div key={k.label} className="stat-card" style={{ '--stat-color': k.color, '--stat-bg': k.bg }}>
             <div className="stat-value" style={{ fontSize: '1.4rem' }}>{k.value}</div>
@@ -145,13 +145,13 @@ export default function AnalyticsPage() {
         {/* Revenue Trend */}
         <div className="card">
           <div className="card-header">
-            <div className="card-title">Revenue Trend (12 Months)</div>
+            <div className="card-title">Revenue Trend (Last 30 Days)</div>
           </div>
           <RevenueTrendChart data={revenueTrend} />
           {revenueTrend.length > 0 && (
             <div style={{ marginTop: 12, padding: '8px 0', borderTop: '1px solid var(--border-subtle)', display: 'flex', gap: 20, fontSize: '0.75rem' }}>
               <span className="text-muted">Total: <strong style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>₹{revenueTrend.reduce((s, d) => s + parseFloat(d.revenue || 0), 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</strong></span>
-              <span className="text-muted">Avg/month: <strong style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>₹{(revenueTrend.reduce((s, d) => s + parseFloat(d.revenue || 0), 0) / revenueTrend.length).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</strong></span>
+              <span className="text-muted">Avg/day: <strong style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>₹{(revenueTrend.reduce((s, d) => s + parseFloat(d.revenue || 0), 0) / revenueTrend.length).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</strong></span>
             </div>
           )}
         </div>

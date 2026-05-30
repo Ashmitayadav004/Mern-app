@@ -13,33 +13,64 @@ const STAGE_COLORS_HEX = {
 
 const chartOptions = {
   responsive: true,
-  maintainAspectRatio: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: true,
+      position: 'bottom',
+      labels: {
+        font: { size: 11, family: 'var(--font-mono)' },
+        padding: 12,
+        usePointStyle: true,
+      },
+    },
+    tooltip: {
+      titleFont: { size: 12 },
+      bodyFont: { size: 11 },
+      padding: 10,
+      borderRadius: 6,
+      cornerRadius: 4,
+    },
+  },
+};
+
+function createChartOptions(theme, extra = {}) {
+  const themeIsDark = theme !== 'light';
+  return {
+    ...chartOptions,
+    ...extra,
     plugins: {
+      ...chartOptions.plugins,
+      ...extra.plugins,
       legend: {
-        display: true,
-        position: 'bottom',
+        ...chartOptions.plugins.legend,
+        ...extra.plugins?.legend,
         labels: {
-          font: { size: 11, family: 'var(--font-mono)' },
-          // scriptable: choose color based on document theme
-          color: (ctx) => (document.documentElement.getAttribute('data-theme') === 'dark' ? '#f8fafc' : '#0f172a'),
-          padding: 12,
-          usePointStyle: true,
+          ...chartOptions.plugins.legend.labels,
+          ...extra.plugins?.legend?.labels,
+          color: themeIsDark ? '#f8fafc' : '#0f172a',
         },
       },
       tooltip: {
-        // scriptable tooltip colors for theme contrast
-        backgroundColor: (ctx) => (document.documentElement.getAttribute('data-theme') === 'dark' ? 'rgba(0,0,0,0.8)' : '#ffffff'),
-        titleColor: (ctx) => (document.documentElement.getAttribute('data-theme') === 'dark' ? '#f8fafc' : '#0f172a'),
-        bodyColor: (ctx) => (document.documentElement.getAttribute('data-theme') === 'dark' ? '#f8fafc' : '#0f172a'),
-        borderColor: (ctx) => (document.documentElement.getAttribute('data-theme') === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(15,23,42,0.06)'),
-        titleFont: { size: 12 },
-        bodyFont: { size: 11 },
-        padding: 10,
-        borderRadius: 6,
-        cornerRadius: 4,
+        ...chartOptions.plugins.tooltip,
+        ...extra.plugins?.tooltip,
+        backgroundColor: themeIsDark ? 'rgba(0,0,0,0.8)' : '#ffffff',
+        titleColor: themeIsDark ? '#f8fafc' : '#0f172a',
+        bodyColor: themeIsDark ? '#f8fafc' : '#0f172a',
+        borderColor: themeIsDark ? 'rgba(255,255,255,0.06)' : 'rgba(15,23,42,0.06)',
       },
     },
-};
+  };
+}
+
+function useChartRefresh(chartRef, deps) {
+  useEffect(() => {
+    const chart = chartRef.current;
+    if (!chart) return;
+    if (typeof chart.resize === 'function') chart.resize();
+    if (typeof chart.update === 'function') chart.update();
+  }, deps);
+}
 
 export function StageDistributionChart({ data = [] }) {
   if (!data.length) return <div style={{ padding: 30, textAlign: 'center', color: 'var(--text-muted)' }}>No stage data available</div>;
@@ -59,27 +90,21 @@ export function StageDistributionChart({ data = [] }) {
 
   const { theme } = useTheme();
   const chartRef = useRef(null);
-  const options = useMemo(() => {
-    const themeIsDark = theme !== 'light';
-    const base = JSON.parse(JSON.stringify(chartOptions));
-    if (base.plugins?.legend?.labels) base.plugins.legend.labels.color = themeIsDark ? '#f8fafc' : '#0f172a';
-    if (base.plugins?.tooltip) {
-      base.plugins.tooltip.backgroundColor = themeIsDark ? 'rgba(0,0,0,0.8)' : '#ffffff';
-      base.plugins.tooltip.titleColor = themeIsDark ? '#f8fafc' : '#0f172a';
-      base.plugins.tooltip.bodyColor = themeIsDark ? '#f8fafc' : '#0f172a';
-      base.plugins.tooltip.borderColor = themeIsDark ? 'rgba(255,255,255,0.06)' : 'rgba(15,23,42,0.06)';
-    }
-    base.plugins = { ...base.plugins, tooltip: { ...base.plugins.tooltip, callbacks: { label: (context) => {
-      const count = context.parsed;
-      const pct = ((count / total) * 100).toFixed(1);
-      return `${count} cases (${pct}%)`;
-    } } } };
-    return base;
-  }, [theme, total]);
+  const options = useMemo(() => createChartOptions(theme, {
+    plugins: {
+      tooltip: {
+        callbacks: {
+          label: (context) => {
+            const count = context.parsed;
+            const pct = ((count / total) * 100).toFixed(1);
+            return `${count} cases (${pct}%)`;
+          },
+        },
+      },
+    },
+  }), [theme, total]);
 
-  useEffect(() => {
-    if (chartRef.current && chartRef.current.update) chartRef.current.update();
-  }, [theme]);
+  useChartRefresh(chartRef, [theme, total]);
 
   return (
     <div style={{ position: 'relative', height: 220 }}>
@@ -91,8 +116,19 @@ export function StageDistributionChart({ data = [] }) {
 export function RevenueTrendChart({ data = [] }) {
   if (!data.length) return <div style={{ padding: 30, textAlign: 'center', color: 'var(--text-muted)' }}>No revenue data</div>;
 
+  const { theme } = useTheme();
+  const chartRef = useRef(null);
+  const formatDate = (value) => {
+    const dateValue = value?.date ?? value?.month ?? value;
+    const parsed = new Date(dateValue);
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+    }
+    return String(dateValue || 'Unknown');
+  };
+
   const chartData = {
-    labels: data.map(d => new Date(d.month).toLocaleDateString('en-IN', { month: 'short', year: '2-digit' })),
+    labels: data.map(d => formatDate(d)),
     datasets: [{
       label: 'Revenue (₹)',
       data: data.map(d => parseFloat(d.revenue || 0)),
@@ -109,26 +145,18 @@ export function RevenueTrendChart({ data = [] }) {
     }],
   };
 
-  const { theme } = useTheme();
-  const chartRef = useRef(null);
-  const options = useMemo(() => {
-    const themeIsDark = theme !== 'light';
-    const base = JSON.parse(JSON.stringify(chartOptions));
-    if (base.plugins?.legend?.labels) base.plugins.legend.labels.color = themeIsDark ? '#f8fafc' : '#0f172a';
-    if (base.plugins?.tooltip) {
-      base.plugins.tooltip.backgroundColor = themeIsDark ? 'rgba(0,0,0,0.8)' : '#ffffff';
-      base.plugins.tooltip.titleColor = themeIsDark ? '#f8fafc' : '#0f172a';
-      base.plugins.tooltip.bodyColor = themeIsDark ? '#f8fafc' : '#0f172a';
-      base.plugins.tooltip.borderColor = themeIsDark ? 'rgba(255,255,255,0.06)' : 'rgba(15,23,42,0.06)';
-    }
-    base.scales = { y: { beginAtZero: true, ticks: { callback: (v) => `₹${(v / 1000).toFixed(0)}k` } } };
-    base.plugins = { ...base.plugins, tooltip: { ...base.plugins.tooltip, callbacks: { label: (context) => `₹${parseFloat(context.parsed.y).toLocaleString('en-IN', { maximumFractionDigits: 0 })}` } } };
-    return base;
-  }, [theme]);
+  const options = useMemo(() => createChartOptions(theme, {
+    scales: { y: { beginAtZero: true, ticks: { callback: (v) => `₹${(v / 1000).toFixed(0)}k` } } },
+    plugins: {
+      tooltip: {
+        callbacks: {
+          label: (context) => `₹${parseFloat(context.parsed.y).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`,
+        },
+      },
+    },
+  }), [theme]);
 
-  useEffect(() => {
-    if (chartRef.current && chartRef.current.update) chartRef.current.update();
-  }, [theme]);
+  useChartRefresh(chartRef, [theme, data.length]);
 
   return (
     <div style={{ position: 'relative', height: 220 }}>
@@ -154,15 +182,18 @@ export function FailureTypeChart({ data = [] }) {
     }],
   };
 
-  const options = {
-    ...chartOptions,
+  const { theme } = useTheme();
+  const chartRef = useRef(null);
+  const options = useMemo(() => createChartOptions(theme, {
     indexAxis: 'y',
     scales: { x: { beginAtZero: true } },
-  };
+  }), [theme]);
+
+  useChartRefresh(chartRef, [theme, data.length]);
 
   return (
     <div style={{ position: 'relative', height: Math.max(180, data.length * 32) }}>
-      <Bar data={chartData} options={options} />
+      <Bar ref={chartRef} data={chartData} options={options} />
     </div>
   );
 }
@@ -170,6 +201,8 @@ export function FailureTypeChart({ data = [] }) {
 export function BrandDistributionChart({ data = [] }) {
   if (!data.length) return <div style={{ padding: 30, textAlign: 'center', color: 'var(--text-muted)' }}>No brand data</div>;
 
+  const { theme } = useTheme();
+  const chartRef = useRef(null);
   const colors = ['#00d4ff', '#7c3aed', '#f59e0b', '#10b981', '#ef4444', '#3b82f6', '#ec4899', '#fbbf24'];
   const chartData = {
     labels: data.map(d => d.label),
@@ -183,19 +216,22 @@ export function BrandDistributionChart({ data = [] }) {
     }],
   };
 
-  const options = {
-    ...chartOptions,
+  const options = useMemo(() => createChartOptions(theme, {
     scales: { y: { beginAtZero: true } },
-  };
+  }), [theme]);
+
+  useChartRefresh(chartRef, [theme, data.length]);
 
   return (
     <div style={{ position: 'relative', height: 220 }}>
-      <Bar data={chartData} options={options} />
+      <Bar ref={chartRef} data={chartData} options={options} />
     </div>
   );
 }
 
 export function CaseStatusChart({ total = 0, active = 0, completed = 0, failed = 0 }) {
+  const { theme } = useTheme();
+  const chartRef = useRef(null);
   const chartData = {
     labels: ['Active', 'Completed', 'Failed'],
     datasets: [{
@@ -208,12 +244,9 @@ export function CaseStatusChart({ total = 0, active = 0, completed = 0, failed =
     }],
   };
 
-  const options = {
-    ...chartOptions,
+  const options = useMemo(() => createChartOptions(theme, {
     plugins: {
-      ...chartOptions.plugins,
       tooltip: {
-        ...chartOptions.plugins.tooltip,
         callbacks: {
           label: (context) => {
             const count = context.parsed;
@@ -223,11 +256,13 @@ export function CaseStatusChart({ total = 0, active = 0, completed = 0, failed =
         },
       },
     },
-  };
+  }), [theme, total]);
+
+  useChartRefresh(chartRef, [theme, active, completed, failed, total]);
 
   return (
     <div style={{ position: 'relative', height: 220 }}>
-      <Pie data={chartData} options={options} />
+      <Pie ref={chartRef} data={chartData} options={options} />
     </div>
   );
 }
@@ -235,6 +270,8 @@ export function CaseStatusChart({ total = 0, active = 0, completed = 0, failed =
 export function PendingPaymentChart({ data = [] }) {
   if (!data.length) return <div style={{ padding: 30, textAlign: 'center', color: 'var(--text-muted)' }}>💰 No pending data</div>;
 
+  const { theme } = useTheme();
+  const chartRef = useRef(null);
   const chartData = {
     labels: data.map(d => d.label),
     datasets: [{
@@ -247,15 +284,16 @@ export function PendingPaymentChart({ data = [] }) {
     }],
   };
 
-  const options = {
-    ...chartOptions,
+  const options = useMemo(() => createChartOptions(theme, {
     indexAxis: 'y',
     scales: { x: { beginAtZero: true, ticks: { callback: (v) => `₹${(v / 1000).toFixed(0)}k` } } },
-  };
+  }), [theme]);
+
+  useChartRefresh(chartRef, [theme, data.length]);
 
   return (
     <div style={{ position: 'relative', height: Math.max(200, data.length * 40) }}>
-      <Bar data={chartData} options={options} />
+      <Bar ref={chartRef} data={chartData} options={options} />
     </div>
   );
 }

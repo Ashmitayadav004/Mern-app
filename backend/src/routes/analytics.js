@@ -165,14 +165,14 @@ router.get('/revenue-trend', async (req, res) => {
     const tenantCase = !isSuperAdmin(req.user) ? tenantCaseCondition(req.user, 'c', 1) : null;
     const tenantCaseParams = tenantCase ? tenantCase.params : [];
     const result = await query(
-      `SELECT DATE_TRUNC('month', paid_at) as month,
+      `SELECT DATE_TRUNC('day', paid_at) as date,
         COALESCE(SUM(amount),0) as revenue,
         COUNT(*) as payment_count
        FROM payments p
        JOIN cases c ON p.case_id = c.id
-       WHERE status = 'paid' AND paid_at >= NOW() - INTERVAL '12 months'
+       WHERE status = 'paid' AND paid_at >= NOW() - INTERVAL '30 days'
        ${tenantCase ? `AND ${tenantCase.clause}` : ''}
-       GROUP BY DATE_TRUNC('month', paid_at) ORDER BY month`,
+       GROUP BY DATE_TRUNC('day', paid_at) ORDER BY date`,
       tenantCaseParams
     );
     res.json(result.rows);

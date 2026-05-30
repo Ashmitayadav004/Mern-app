@@ -607,6 +607,16 @@ code, kbd, pre { font-family: var(--font-mono); }
   margin-bottom: 28px;
 }
 
+.analytics-kpi-grid {
+  grid-template-columns: repeat(6, minmax(150px, 1fr));
+}
+
+@media (max-width: 1200px) {
+  .analytics-kpi-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+}
+
 .stat-card {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
@@ -2165,6 +2175,28 @@ html[data-font-size="large"]   { font-size: 16px; }
   .stats-grid { grid-template-columns: 1fr !important; }
   .page-content { padding: 12px; }
   .stat-value { font-size: 1.4rem; }
+}
+
+/* Hide all non-chat icon elements globally, preserve chat and theme toggle */
+[class*="icon"] {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+[class*="icon"] * {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+.chat-btn-icon,
+.chat-header-icon,
+.chat-empty-icon,
+.chat-search-icon,
+.chat-live-dot,
+.chat-item-unread-badge,
+.chat-role-badge {
+  display: inline-flex !important;
+  visibility: visible !important;
 }
 
 /* ══════════════════════════════════════════════════════════════
