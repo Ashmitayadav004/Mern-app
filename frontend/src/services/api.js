@@ -172,7 +172,7 @@ export const clientsApi = {
   create: (data) => api.post('/clients', data),
   update: (id, data) => api.put(`/clients/${id}`, data),
   addComm: (id, data) => api.post(`/clients/${id}/communications`, data),
-  collectPending: (id) => api.post(`/clients/${id}/collect-pending`, {}),
+  collectPending: (id, data) => api.post(`/clients/${id}/collect-pending`, data),
 };
 
 // Storage Models
