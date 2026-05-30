@@ -183,9 +183,7 @@ function DonorsPage() {
             className="donors-search"
           />
         </div>
-        <button className="donors-back-btn" onClick={() => navigate('/inventory')}>
-          📦 Back to Stock
-        </button>
+        
       </header>
 
       {/* Brand Stat Cards */}
