@@ -93,7 +93,7 @@
   --bg-card-hover: #f1f5f9;
   --bg-input: #ffffff;
   --bg-overlay: rgba(15, 23, 42, 0.45);
-  --sidebar-bg: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  --sidebar-bg: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
 
   --accent-primary: #4f46e5;
   --accent-secondary: #0d9488;
@@ -134,18 +134,18 @@
 /* ── Light mode: sidebar stays dark navy (premium SaaS pattern) ─ */
 [data-theme="light"] .sidebar {
   background: var(--sidebar-bg);
-  border-right: 1px solid rgba(15, 23, 42, 0.2);
-  box-shadow: 4px 0 24px rgba(15, 23, 42, 0.08);
+  border-right: 1px solid rgba(15, 23, 42, 0.1);
+  box-shadow: 4px 0 12px rgba(15, 23, 42, 0.06);
 }
-[data-theme="light"] .sidebar .logo-title { color: #f8fafc; }
-[data-theme="light"] .sidebar .logo-subtitle { color: #94a3b8; }
-[data-theme="light"] .sidebar .nav-section-label { color: #64748b; }
-[data-theme="light"] .sidebar .nav-item { color: #cbd5e1; }
-[data-theme="light"] .sidebar .nav-item:hover { color: #e2e8f0; background: rgba(255,255,255,0.06); }
-[data-theme="light"] .sidebar .nav-item.active { color: #c7d2fe; background: rgba(99,102,241,0.2); }
-[data-theme="light"] .sidebar .user-card { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); }
-[data-theme="light"] .sidebar .user-card .user-name { color: #f1f5f9; }
-[data-theme="light"] .sidebar .user-card .user-role { color: #94a3b8; }
+[data-theme="light"] .sidebar .logo-title { color: #0f172a; }
+[data-theme="light"] .sidebar .logo-subtitle { color: #64748b; }
+[data-theme="light"] .sidebar .nav-section-label { color: #94a3b8; }
+[data-theme="light"] .sidebar .nav-item { color: #475569; }
+[data-theme="light"] .sidebar .nav-item:hover { color: #0284c7; background: rgba(2,132,199,0.08); }
+[data-theme="light"] .sidebar .nav-item.active { color: #0284c7; background: rgba(2,132,199,0.12); }
+[data-theme="light"] .sidebar .user-card { background: rgba(2,132,199,0.06); border: 1px solid rgba(2,132,199,0.14); }
+[data-theme="light"] .sidebar .user-card .user-name { color: #0f172a; }
+[data-theme="light"] .sidebar .user-card .user-role { color: #64748b; }
 
 [data-theme="light"] .app-header {
   background: rgba(255, 255, 255, 0.92);

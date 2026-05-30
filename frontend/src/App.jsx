@@ -82,7 +82,7 @@ function Sidebar({ open, onClose }) {
     : [
         ...(isOwner ? [{ icon: '', label: 'Subscription', to: '/subscription' }] : []),
         ...(isAdmin ? [{ icon: '', label: 'Security & Backup', to: '/security' }] : []),
-        { icon: '', label: 'Team', to: '/chat' },
+        ...(isAdmin ? [{ icon: '', label: 'Team', to: '/users' }] : []),
         ...(hasPermission('recycle_bin', 'view') || isAdmin ? [{ icon: '', label: 'Recycle Bin', to: '/recycle-bin' }] : []),
         ...(hasPermission('webhooks', 'view') || isAdmin ? [{ icon: '', label: 'Webhooks', to: '/webhooks' }] : []),
         ...(hasPermission('settings', 'view') || isAdmin ? [{ icon: '', label: 'Settings', to: '/settings' }] : []),
@@ -113,7 +113,7 @@ function Sidebar({ open, onClose }) {
       ]},
       { group: 'Access', items: [
         { icon: '', label: 'Users', to: '/users' },
-        { icon: '', label: 'Team', to: '/chat' },
+        { icon: '', label: 'Team', to: '/users' },
         { icon: '', label: 'Security & Backup', to: '/security' },
         { icon: '', label: 'Settings',           to: '/settings' },
       ]},
@@ -187,14 +187,14 @@ function Sidebar({ open, onClose }) {
           <button
             onClick={e => { e.stopPropagation(); handleLogout(); }}
             style={{
-              width:'100%', marginTop:6, padding:'8px 0', display:'flex', alignItems:'center', justifyContent:'center', gap:8,
+              width:'100%', marginTop:6, padding:'8px 0', display:'flex', alignItems:'center', justifyContent:'center', gap:4,
               background:'rgba(239,68,68,0.08)', border:'1px solid rgba(239,68,68,0.25)', borderRadius:'var(--radius-md)',
               color:'#ef4444', cursor:'pointer', fontSize:'0.78rem', fontWeight:700, transition:'all 0.15s',
             }}
             onMouseEnter={e => { e.currentTarget.style.background='rgba(239,68,68,0.18)'; }}
             onMouseLeave={e => { e.currentTarget.style.background='rgba(239,68,68,0.08)'; }}
+            title="Sign out of your account"
           >
-            Logout
           </button>
         </div>
       </nav>
@@ -213,7 +213,7 @@ function Header() {
     '/inventory': 'Inventory & Donors', '/donors': 'HDD Donor Drive Matching', '/accounting': 'Accounting', '/solutions': 'Knowledge Base',
     '/reports': 'Reports & Export', '/analytics': 'Analytics', '/subscription': 'Subscription & Plans',
     '/recycle-bin': 'Recycle Bin', '/settings': 'Settings', '/security': 'Security & Backup',
-    '/super-admin': 'Platform Command Center', '/users': 'Users & Roles', '/chat': 'Team Chat',
+    '/super-admin': 'Platform Command Center', '/users': 'Team Members & Roles', '/chat': 'Team Chat',
   };
   const match = Object.keys(titles).sort((a,b) => b.length - a.length)
     .find(k => location.pathname.startsWith(k) && (location.pathname.length === k.length || location.pathname[k.length] === '/'));
@@ -323,7 +323,7 @@ function AppLayout() {
               <Route path="/settings"          element={<SettingsPage />} />
               <Route path="/super-admin"       element={<SuperAdminRoute><SuperAdminPage /></SuperAdminRoute>} />
               <Route path="/marketing"         element={<AdminRoute><MarketingPage /></AdminRoute>} />
-              <Route path="/users"             element={<SuperAdminRoute><UserManagementPage /></SuperAdminRoute>} />
+              <Route path="/users"             element={<AdminRoute><UserManagementPage /></AdminRoute>} />
               <Route path="*"                  element={<Navigate to="/" replace />} />
             </Routes>
           </React.Suspense>

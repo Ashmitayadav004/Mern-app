@@ -14,7 +14,10 @@ const chartOptions = {
   responsive: true,
   maintainAspectRatio: true,
   plugins: {
-    legend: { display: true, position: 'bottom', labels: { font: { size: 11, family: 'var(--font-mono)' }, color: 'var(--text-primary)', padding: 12, usePointStyle: true } },
+    legend: { display: true, position: 'bottom', labels: { font: { size: 11, family: 'var(--font-mono)' }, color: () => {
+      const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+      return theme === 'dark' ? '#f8fafc' : '#0f172a';
+    }, padding: 12, usePointStyle: true } },
     tooltip: { backgroundColor: 'rgba(0,0,0,0.8)', titleFont: { size: 12 }, bodyFont: { size: 11 }, padding: 10, borderRadius: 6, cornerRadius: 4 },
   },
 };

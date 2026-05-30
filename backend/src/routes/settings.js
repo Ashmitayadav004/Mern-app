@@ -162,4 +162,154 @@ router.post('/smtp/test', authenticate, requireMinRole('admin'), auditLog('test_
   }
 });
 
+// ── Admin Role Management (Tenant-scoped) ──────────────────────────────────
+const { isSuperAdmin, tenantAdminId } = require('../utils/tenantAccess');
+
+async function getTenantRoles(tenantId) {
+  const result = await query(
+    `SELECT value FROM platform_settings WHERE key = $1`,
+    [`tenant_roles_${tenantId}`]
+  );
+  return result.rows.length ? (result.rows[0].value || []) : [];
+}
+
+async function saveTenantRoles(tenantId, roles, userId) {
+  await query(
+    `INSERT INTO platform_settings (key, value, updated_by, updated_at)
+     VALUES ($1, $2, $3, NOW())
+     ON CONFLICT (key) DO UPDATE SET value = $2, updated_by = $3, updated_at = NOW()`,
+    [`tenant_roles_${tenantId}`, JSON.stringify(roles), userId]
+  );
+}
+
+// GET /settings/roles — List roles for current admin's tenant (or all if super admin)
+router.get('/roles', authenticate, requireMinRole('admin'), async (req, res) => {
+  try {
+    let roles = [];
+    if (isSuperAdmin(req.user)) {
+      // Super admin can see platform roles
+      const result = await query(`SELECT value FROM platform_settings WHERE key = $1`, ['settings_roles']);
+      roles = result.rows.length ? (result.rows[0].value || []) : [];
+    } else {
+      // Regular admin sees their tenant's roles
+      const adminTenantId = tenantAdminId(req.user);
+      roles = await getTenantRoles(adminTenantId);
+    }
+    res.json(roles);
+  } catch (err) {
+    console.error('Failed to fetch roles', err.message);
+    res.status(500).json({ error: 'Failed to fetch roles' });
+  }
+});
+
+// POST /settings/roles — Create a new role
+router.post('/roles', authenticate, requireMinRole('admin'), auditLog('create_role', 'settings'), async (req, res) => {
+  try {
+    const { name, key, description, color, permissions } = req.body;
+    if (!name || !key) return res.status(422).json({ error: 'Role name and key are required' });
+
+    const id = require('crypto').randomUUID();
+    const newRole = { id, name, key, description: description || '', color: color || '#6366f1', permissions: permissions || {} };
+
+    let roles = [];
+    let tenantId;
+    if (isSuperAdmin(req.user)) {
+      const result = await query(`SELECT value FROM platform_settings WHERE key = $1`, ['settings_roles']);
+      roles = result.rows.length ? (result.rows[0].value || []) : [];
+      // Super admin saves to platform settings
+      roles.push(newRole);
+      await query(
+        `INSERT INTO platform_settings (key, value, updated_by, updated_at)
+         VALUES ($1, $2, $3, NOW())
+         ON CONFLICT (key) DO UPDATE SET value = $2, updated_by = $3, updated_at = NOW()`,
+        ['settings_roles', JSON.stringify(roles), req.user.id]
+      );
+    } else {
+      tenantId = tenantAdminId(req.user);
+      roles = await getTenantRoles(tenantId);
+      roles.push(newRole);
+      await saveTenantRoles(tenantId, roles, req.user.id);
+    }
+
+    res.status(201).json(newRole);
+  } catch (err) {
+    console.error('Failed to create role', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH /settings/roles/:id — Update a role
+router.patch('/roles/:id', authenticate, requireMinRole('admin'), auditLog('update_role', 'settings'), async (req, res) => {
+  try {
+    const { name, description, color, permissions } = req.body;
+    const roleId = req.params.id;
+
+    let roles = [];
+    let tenantId;
+    if (isSuperAdmin(req.user)) {
+      const result = await query(`SELECT value FROM platform_settings WHERE key = $1`, ['settings_roles']);
+      roles = result.rows.length ? (result.rows[0].value || []) : [];
+    } else {
+      tenantId = tenantAdminId(req.user);
+      roles = await getTenantRoles(tenantId);
+    }
+
+    const roleIdx = roles.findIndex(r => r.id === roleId);
+    if (roleIdx === -1) return res.status(404).json({ error: 'Role not found' });
+
+    roles[roleIdx] = { ...roles[roleIdx], name: name || roles[roleIdx].name, description: description !== undefined ? description : roles[roleIdx].description, color: color || roles[roleIdx].color, permissions: permissions || roles[roleIdx].permissions };
+
+    if (isSuperAdmin(req.user)) {
+      await query(
+        `INSERT INTO platform_settings (key, value, updated_by, updated_at)
+         VALUES ($1, $2, $3, NOW())
+         ON CONFLICT (key) DO UPDATE SET value = $2, updated_by = $3, updated_at = NOW()`,
+        ['settings_roles', JSON.stringify(roles), req.user.id]
+      );
+    } else {
+      await saveTenantRoles(tenantId, roles, req.user.id);
+    }
+
+    res.json(roles[roleIdx]);
+  } catch (err) {
+    console.error('Failed to update role', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE /settings/roles/:id — Delete a role
+router.delete('/roles/:id', authenticate, requireMinRole('admin'), auditLog('delete_role', 'settings'), async (req, res) => {
+  try {
+    const roleId = req.params.id;
+
+    let roles = [];
+    let tenantId;
+    if (isSuperAdmin(req.user)) {
+      const result = await query(`SELECT value FROM platform_settings WHERE key = $1`, ['settings_roles']);
+      roles = result.rows.length ? (result.rows[0].value || []) : [];
+    } else {
+      tenantId = tenantAdminId(req.user);
+      roles = await getTenantRoles(tenantId);
+    }
+
+    roles = roles.filter(r => r.id !== roleId);
+
+    if (isSuperAdmin(req.user)) {
+      await query(
+        `INSERT INTO platform_settings (key, value, updated_by, updated_at)
+         VALUES ($1, $2, $3, NOW())
+         ON CONFLICT (key) DO UPDATE SET value = $2, updated_by = $3, updated_at = NOW()`,
+        ['settings_roles', JSON.stringify(roles), req.user.id]
+      );
+    } else {
+      await saveTenantRoles(tenantId, roles, req.user.id);
+    }
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Failed to delete role', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
