@@ -252,6 +252,12 @@ router.post('/:id/collect-pending', requireMinRole('staff'), auditLog('collect_c
       return res.status(404).json({ error: 'Client not found' });
     }
 
+    const amountRequested = parseFloat(req.body.amount || 0);
+    const notes = req.body.notes || 'Collected from Clients page';
+    if (isNaN(amountRequested) || amountRequested <= 0) {
+      return res.status(400).json({ error: 'Invalid amount' });
+    }
+
     const pendingCases = await query(
       `SELECT
          c.id AS case_id,
@@ -273,39 +279,48 @@ router.post('/:id/collect-pending', requireMinRole('staff'), auditLog('collect_c
          FROM payments p
          WHERE p.case_id = c.id
        ) paid ON TRUE
-       WHERE c.client_id = $1`,
+       WHERE c.client_id = $1
+       ORDER BY c.created_at ASC`,
       [req.params.id]
     );
 
     const toCollect = pendingCases.rows.filter((row) => parseFloat(row.pending_amount || 0) > 0);
     if (!toCollect.length) {
-      return res.json({
-        ok: true,
-        message: 'No pending amount to collect.',
-        collected_amount: 0,
-        updated_cases: 0,
-      });
+      return res.json({ ok: true, message: 'No pending amount to collect.', collected_amount: 0, updated_cases: 0 });
     }
 
-    let collectedAmount = 0;
-    for (const row of toCollect) {
-      const amount = parseFloat(row.pending_amount || 0);
-      await query(
-        `INSERT INTO payments (case_id, quotation_id, amount, status, method, notes, paid_at, recorded_by)
-         VALUES ($1, $2, $3, 'paid', 'Client Collect', $4, NOW(), $5)`,
-        [row.case_id, row.quotation_id || null, amount, 'Collected from Clients page', req.user.id]
-      );
-      collectedAmount += amount;
+    const totalPending = toCollect.reduce((s, r) => s + parseFloat(r.pending_amount || 0), 0);
+    if (amountRequested > totalPending) {
+      return res.status(400).json({ error: 'Amount exceeds total pending amount', total_pending: totalPending });
     }
 
-    await query('UPDATE clients SET total_paid = total_paid + $1, updated_at = NOW() WHERE id = $2', [collectedAmount, req.params.id]);
+    // Run inserts/updates inside a transaction
+    const result = await require('../config/database').transaction(async (client) => {
+      let remaining = amountRequested;
+      let updatedCases = 0;
+      for (const row of toCollect) {
+        if (remaining <= 0) break;
+        const pendingAmt = parseFloat(row.pending_amount || 0);
+        if (pendingAmt <= 0) continue;
+        const pay = Math.min(pendingAmt, remaining);
+        await client.query(
+          `INSERT INTO payments (case_id, quotation_id, amount, status, method, notes, paid_at, recorded_by)
+           VALUES ($1, $2, $3, 'paid', 'Client Collect', $4, NOW(), $5)`,
+          [row.case_id, row.quotation_id || null, pay, notes, req.user.id]
+        );
+        remaining -= pay;
+        updatedCases += 1;
+      }
 
-    res.json({
-      ok: true,
-      message: `Collected ₹${collectedAmount.toLocaleString('en-IN')} successfully.`,
-      collected_amount: collectedAmount,
-      updated_cases: toCollect.length,
+      const collected = amountRequested - remaining;
+      if (collected > 0) {
+        await client.query('UPDATE clients SET total_paid = COALESCE(total_paid,0) + $1, updated_at = NOW() WHERE id = $2', [collected, req.params.id]);
+      }
+
+      return { collected, updatedCases };
     });
+
+    res.json({ ok: true, message: `Collected ₹${result.collected.toLocaleString('en-IN')} successfully.`, collected_amount: result.collected, updated_cases: result.updatedCases });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
