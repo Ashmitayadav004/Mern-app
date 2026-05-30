@@ -19,7 +19,7 @@ const usersApi = {
   },
 };
 
-// ── Permission Matrix Editor ─────────────────────────────────────────────
+//  Permission Matrix Editor 
 function PermissionMatrix({ permissions, onChange, readonly = false }) {
   const toggleAll = (module, val) => {
     const updated = { ...permissions };
@@ -58,7 +58,7 @@ function PermissionMatrix({ permissions, onChange, readonly = false }) {
             )}
             {readonly && (
               <span style={{ fontSize: '0.65rem', color: isModuleAllOn(mod.key) ? '#10b981' : 'var(--text-muted)', fontWeight: 700 }}>
-                {isModuleAllOn(mod.key) ? '✓ Full Access' : 'Partial'}
+                {isModuleAllOn(mod.key) ? ' Full Access' : 'Partial'}
               </span>
             )}
           </div>
@@ -87,7 +87,7 @@ function PermissionMatrix({ permissions, onChange, readonly = false }) {
   );
 }
 
-// ── Role Modal ───────────────────────────────────────────────────────────
+//  Role Modal 
 function RoleModal({ role, restrictedPerms, onClose, onDone }) {
   const isNew = !role?.id;
   const [form, setForm] = useState({
@@ -137,8 +137,8 @@ function RoleModal({ role, restrictedPerms, onClose, onDone }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal modal-xl" onClick={e => e.stopPropagation()} style={{ maxWidth: 780 }}>
         <div className="modal-header">
-          <h3 className="modal-title">{isNew ? '+ Create New Role' : `✏️ Edit Role — ${role.name}`}</h3>
-          <button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button>
+          <h3 className="modal-title">{isNew ? '+ Create New Role' : ` Edit Role — ${role.name}`}</h3>
+          <button className="btn btn-ghost btn-icon" onClick={onClose}></button>
         </div>
         <div className="modal-body" style={{ display: 'grid', gridTemplateColumns: '240px 1fr', gap: 20 }}>
           {/* Left — Role Meta */}
@@ -168,10 +168,10 @@ function RoleModal({ role, restrictedPerms, onClose, onDone }) {
               <label className="form-label">Quick Preset</label>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                 {[
-                  { label: '🔧 Senior Engineer', perms: { cases: { view: true, create: true, edit: true, delete: false, advance_stage: true }, clients: { view: true, create: false, edit: false, delete: false }, inventory: { view: true, create: false, edit: false, delete: false }, accounting: { view: false }, reports: { view: true, export: false }, analytics: { view: true }, knowledge_base: { view: true, create: true, delete: false }, recycle_bin: { view: false }, settings: { view: false }, users: { view: false }, webhooks: { view: false } } },
-                  { label: '🛠 Junior Engineer', perms: { cases: { view: true, create: false, edit: false, delete: false, advance_stage: false }, clients: { view: true, create: false, edit: false, delete: false }, inventory: { view: true }, reports: { view: false }, knowledge_base: { view: true } } },
-                  { label: '📞 Receptionist', perms: { cases: { view: true, create: true, edit: true, delete: false }, clients: { view: true, create: true, edit: true, delete: false }, inventory: { view: false }, accounting: { view: false }, reports: { view: false } } },
-                  { label: '💼 Accountant', perms: { cases: { view: true, create: false, edit: false, delete: false }, clients: { view: true }, accounting: { view: true, create_invoice: true, create_quote: true, record_payment: true, create_expense: true }, reports: { view: true, export: true } } },
+                  { label: ' Senior Engineer', perms: { cases: { view: true, create: true, edit: true, delete: false, advance_stage: true }, clients: { view: true, create: false, edit: false, delete: false }, inventory: { view: true, create: false, edit: false, delete: false }, accounting: { view: false }, reports: { view: true, export: false }, analytics: { view: true }, knowledge_base: { view: true, create: true, delete: false }, recycle_bin: { view: false }, settings: { view: false }, users: { view: false }, webhooks: { view: false } } },
+                  { label: ' Junior Engineer', perms: { cases: { view: true, create: false, edit: false, delete: false, advance_stage: false }, clients: { view: true, create: false, edit: false, delete: false }, inventory: { view: true }, reports: { view: false }, knowledge_base: { view: true } } },
+                  { label: ' Receptionist', perms: { cases: { view: true, create: true, edit: true, delete: false }, clients: { view: true, create: true, edit: true, delete: false }, inventory: { view: false }, accounting: { view: false }, reports: { view: false } } },
+                  { label: ' Accountant', perms: { cases: { view: true, create: false, edit: false, delete: false }, clients: { view: true }, accounting: { view: true, create_invoice: true, create_quote: true, record_payment: true, create_expense: true }, reports: { view: true, export: true } } },
                 ].map(preset => (
                   <button key={preset.label} onClick={() => setForm(f => ({ ...f, permissions: { ...buildEmptyPermissions(), ...preset.perms } }))}
                     style={{ padding: '5px 8px', borderRadius: 6, background: 'var(--bg-elevated)', border: '1px solid var(--border-default)', cursor: 'pointer', fontSize: '0.72rem', color: 'var(--text-secondary)', textAlign: 'left' }}>
@@ -198,7 +198,7 @@ function RoleModal({ role, restrictedPerms, onClose, onDone }) {
         <div className="modal-footer">
           <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
           <button className="btn btn-primary" disabled={loading || !form.name} onClick={handle}>
-            {loading ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Saving...</> : (isNew ? '+ Create Role' : '💾 Save Role')}
+            {loading ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Saving...</> : (isNew ? '+ Create Role' : ' Save Role')}
           </button>
         </div>
       </div>
@@ -206,7 +206,7 @@ function RoleModal({ role, restrictedPerms, onClose, onDone }) {
   );
 }
 
-// ── User Modal ───────────────────────────────────────────────────────────
+//  User Modal 
 function UserModal({ editUser, roles, adminUsers, maxUsers, currentCount, onClose, onDone }) {
   const isNew = !editUser?.id;
   const [form, setForm] = useState({
@@ -232,7 +232,7 @@ function UserModal({ editUser, roles, adminUsers, maxUsers, currentCount, onClos
       alert('Full name, username and password are required'); return;
     }
     if (isNew && !canCreateMore) {
-      alert(`⚠️ Team user limit reached (${maxUsers}). Contact support to upgrade your plan.`); return;
+      alert(` Team user limit reached (${maxUsers}). Contact support to upgrade your plan.`); return;
     }
     setLoading(true);
     try {
@@ -255,8 +255,8 @@ function UserModal({ editUser, roles, adminUsers, maxUsers, currentCount, onClos
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal modal-xl" onClick={e => e.stopPropagation()} style={{ maxWidth: 800 }}>
         <div className="modal-header">
-          <h3 className="modal-title">{isNew ? '+ Add Team Member' : `✏️ Edit — ${editUser.full_name}`}</h3>
-          <button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button>
+          <h3 className="modal-title">{isNew ? '+ Add Team Member' : ` Edit — ${editUser.full_name}`}</h3>
+          <button className="btn btn-ghost btn-icon" onClick={onClose}></button>
         </div>
         <div className="modal-body" style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 24 }}>
           {/* Left — User Info */}
@@ -324,14 +324,14 @@ function UserModal({ editUser, roles, adminUsers, maxUsers, currentCount, onClos
             )}
             {isNew && (
               <div className="alert" style={{ fontSize: '0.72rem', padding: 10, background: currentCount >= maxUsers ? 'rgba(239,68,68,0.08)' : 'rgba(16,185,129,0.06)', border: '1px solid', borderColor: currentCount >= maxUsers ? 'rgba(239,68,68,0.2)' : 'rgba(16,185,129,0.2)', borderRadius: 6 }}>
-                <span>{currentCount >= maxUsers ? '⚠️ User limit reached!' : `✓ ${currentCount}/${maxUsers} team users used`}</span>
+                <span>{currentCount >= maxUsers ? ' User limit reached!' : ` ${currentCount}/${maxUsers} team users used`}</span>
               </div>
             )}
           </div>
           {/* Right — Permissions */}
           <div>
             <div style={{ fontWeight: 700, fontSize: '0.85rem', marginBottom: 10 }}>
-              {form.useCustomPerms ? '🔒 Custom Permissions (overrides role)' : `🎭 Permissions from role: ${selRole?.name || '—'}`}
+              {form.useCustomPerms ? ' Custom Permissions (overrides role)' : ` Permissions from role: ${selRole?.name || '—'}`}
             </div>
             <div style={{ maxHeight: 460, overflowY: 'auto', paddingRight: 4 }}>
               {form.useCustomPerms ? (
@@ -354,7 +354,7 @@ function UserModal({ editUser, roles, adminUsers, maxUsers, currentCount, onClos
         <div className="modal-footer">
           <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
           <button className="btn btn-primary" disabled={loading || (isNew && !canCreateMore)} onClick={handle}>
-            {loading ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Saving...</> : (isNew ? '+ Add User' : '💾 Save Changes')}
+            {loading ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Saving...</> : (isNew ? '+ Add User' : ' Save Changes')}
           </button>
         </div>
       </div>
@@ -362,13 +362,13 @@ function UserModal({ editUser, roles, adminUsers, maxUsers, currentCount, onClos
   );
 }
 
-// ── My Permissions Viewer ────────────────────────────────────────────────
+//  My Permissions Viewer 
 function MyPermissionsView({ user }) {
   const perms = user.permissions || null;
   if (!perms) {
     return (
       <div className="card">
-        <div className="card-title" style={{ marginBottom: 12 }}>🔒 Your Permissions</div>
+        <div className="card-title" style={{ marginBottom: 12 }}> Your Permissions</div>
         <div style={{ padding: '20px 0', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.82rem' }}>
           Your permissions are inherited from your assigned role: <strong>{user.role?.replace(/_/g, ' ')}</strong>
         </div>
@@ -379,7 +379,7 @@ function MyPermissionsView({ user }) {
                 <span>{mod.icon}</span>
                 <span style={{ fontSize: '0.78rem', fontWeight: 700 }}>{mod.label}</span>
               </div>
-              <div style={{ fontSize: '0.65rem', color: '#10b981' }}>✓ Role-based access</div>
+              <div style={{ fontSize: '0.65rem', color: '#10b981' }}> Role-based access</div>
             </div>
           ))}
         </div>
@@ -389,7 +389,7 @@ function MyPermissionsView({ user }) {
 
   return (
     <div className="card">
-      <div className="card-title" style={{ marginBottom: 12 }}>🔒 Your Permissions</div>
+      <div className="card-title" style={{ marginBottom: 12 }}> Your Permissions</div>
       <div style={{ marginBottom: 12, padding: '8px 12px', background: 'rgba(0,212,255,0.06)', borderRadius: 6, fontSize: '0.78rem', color: 'var(--text-muted)' }}>
         Your account has custom permissions set by your administrator. Below is what you can access:
       </div>
@@ -398,7 +398,7 @@ function MyPermissionsView({ user }) {
   );
 }
 
-// ── Main Page ────────────────────────────────────────────────────────────
+//  Main Page 
 export default function UserManagementPage() {
   const { user, isAdmin, hasPermission } = useAuth();
   const [users, setUsers] = useState([]);
@@ -437,14 +437,14 @@ export default function UserManagementPage() {
   const visibleUsers = teamUsers.filter(u => !assignedAdminFilter || u.assigned_admin_id === assignedAdminFilter);
 
   const TABS = isAdmin
-    ? [{ key: 'users', label: '👥 Team Users' }, { key: 'roles', label: '🎭 Roles & Permissions' }, { key: 'my_perms', label: '🔒 My Permissions' }]
-    : [{ key: 'my_perms', label: '🔒 My Permissions' }];
+    ? [{ key: 'users', label: ' Team Users' }, { key: 'roles', label: ' Roles & Permissions' }, { key: 'my_perms', label: ' My Permissions' }]
+    : [{ key: 'my_perms', label: ' My Permissions' }];
 
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
-          <h2 style={{ marginBottom: 4 }}>👥 User Management</h2>
+          <h2 style={{ marginBottom: 4 }}> User Management</h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>
             {isAdmin ? `Manage your team (${teamUsers.length}/${maxUsers} users)` : 'View your account permissions and access level'}
           </p>
@@ -517,7 +517,7 @@ export default function UserManagementPage() {
                             {role.name}
                           </span>
                         )}
-                        {u.permissions && <span style={{ fontSize: '0.62rem', color: '#6366f1', fontWeight: 700 }}>🔒 Custom Perms</span>}
+                        {u.permissions && <span style={{ fontSize: '0.62rem', color: '#6366f1', fontWeight: 700 }}> Custom Perms</span>}
                         {u.email && <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{u.email}</span>}
                         {u.assigned_admin_id && (
                           <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', border: '1px solid var(--border-subtle)', padding: '3px 8px', borderRadius: 999 }}>
@@ -527,13 +527,13 @@ export default function UserManagementPage() {
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: 6 }}>
-                      <button className="btn btn-sm btn-secondary" onClick={() => setViewPermissions(u)} title="View permissions">🔒 Permissions</button>
+                      <button className="btn btn-sm btn-secondary" onClick={() => setViewPermissions(u)} title="View permissions"> Permissions</button>
                       {hasPermission('users', 'edit') && (
-                        <button className="btn btn-sm btn-secondary" onClick={() => { setEditUser(u); setShowUserModal(true); }}>✏️ Edit</button>
+                        <button className="btn btn-sm btn-secondary" onClick={() => { setEditUser(u); setShowUserModal(true); }}> Edit</button>
                       )}
                       {hasPermission('users', 'deactivate') && u.role !== 'admin' && (
                         <button className="btn btn-sm" style={{ background: 'rgba(239,68,68,0.08)', color: '#ef4444', borderColor: 'rgba(239,68,68,0.2)', fontSize: '0.72rem' }} onClick={() => handleDeactivate(u)}>
-                          {u.is_active === false ? '▶ Activate' : '⏸ Deactivate'}
+                          {u.is_active === false ? ' Activate' : ' Deactivate'}
                         </button>
                       )}
                     </div>
@@ -542,7 +542,7 @@ export default function UserManagementPage() {
               }) : null}
               {!visibleUsers.length && (
                 <div className="empty-state">
-                  <div className="empty-icon">👥</div>
+                  <div className="empty-icon"></div>
                   <div className="empty-title">No matching team users</div>
                   <div className="empty-desc">Try clearing the assigned admin filter or add a new team member.</div>
                   <button className="btn btn-primary" style={{ marginTop: 12 }} onClick={() => setShowUserModal(true)}>+ Add Team Member</button>
@@ -558,7 +558,7 @@ export default function UserManagementPage() {
         <div style={{ display: 'grid', gap: 12 }}>
           {/* Built-in roles info */}
           <div className="alert alert-info" style={{ marginBottom: 4 }}>
-            <span className="alert-icon">ℹ️</span>
+            <span className="alert-icon">ℹ</span>
             <div><strong>Admin</strong> and <strong>Super Admin</strong> are system roles with full access that cannot be edited. Create custom roles for your team members.</div>
           </div>
           {roles.map(role => (
@@ -574,17 +574,17 @@ export default function UserManagementPage() {
                 {role.description && <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{role.description}</div>}
               </div>
               <div style={{ display: 'flex', gap: 6 }}>
-                <button className="btn btn-sm btn-secondary" onClick={() => { setEditRole(role); setShowRoleModal(true); }}>✏️ Edit</button>
+                <button className="btn btn-sm btn-secondary" onClick={() => { setEditRole(role); setShowRoleModal(true); }}> Edit</button>
                 <button className="btn btn-sm" style={{ background: 'rgba(239,68,68,0.08)', color: '#ef4444', borderColor: 'rgba(239,68,68,0.2)', fontSize: '0.72rem' }}
                   onClick={async () => { if (!confirm(`Delete role "${role.name}"?`)) return; await usersApi.roles.delete(role.id); loadUsers(); }}>
-                  🗑 Delete
+                   Delete
                 </button>
               </div>
             </div>
           ))}
           {!roles.length && !loading && (
             <div className="empty-state">
-              <div className="empty-icon">🎭</div>
+              <div className="empty-icon"></div>
               <div className="empty-title">No custom roles yet</div>
               <div className="empty-desc">Create roles like "Senior Engineer", "Receptionist", or "Accountant" with specific permission sets</div>
               <button className="btn btn-primary" style={{ marginTop: 12 }} onClick={() => setShowRoleModal(true)}>+ Create First Role</button>
@@ -620,8 +620,8 @@ export default function UserManagementPage() {
         <div className="modal-overlay" onClick={() => setViewPermissions(null)}>
           <div className="modal modal-xl" onClick={e => e.stopPropagation()} style={{ maxWidth: 680 }}>
             <div className="modal-header">
-              <h3 className="modal-title">🔒 Permissions — {viewPermissions.full_name}</h3>
-              <button className="btn btn-ghost btn-icon" onClick={() => setViewPermissions(null)}>✕</button>
+              <h3 className="modal-title"> Permissions — {viewPermissions.full_name}</h3>
+              <button className="btn btn-ghost btn-icon" onClick={() => setViewPermissions(null)}></button>
             </div>
             <div className="modal-body" style={{ maxHeight: 500, overflowY: 'auto' }}>
               <PermissionMatrix permissions={viewPermissions.permissions || roles.find(r => r.key === viewPermissions.role)?.permissions || buildEmptyPermissions()} readonly />

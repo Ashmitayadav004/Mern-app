@@ -239,20 +239,20 @@ export default function HddFieldConfigManager({ deviceTypes = [] }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      {error && <div className="alert alert-warning"><span className="alert-icon">⚠</span> {error}</div>}
+      {error && <div className="alert alert-warning"><span className="alert-icon"></span> {error}</div>}
       {loading && <div className="text-muted text-sm">Loading…</div>}
 
       <div className="alert alert-info" style={{ marginBottom: 0 }}>
-        <span className="alert-icon">💡</span>
+        <span className="alert-icon"></span>
         Map fields per <strong>device type</strong> (same options as Case Settings → Devices → HDD / Device Types).
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <div style={{ fontWeight: 700, fontSize: '0.88rem' }}>⚙️ Section Visibility (New Case form)</div>
+        <div style={{ fontWeight: 700, fontSize: '0.88rem' }}> Section Visibility (New Case form)</div>
         {[
-          ['image_upload', '📷 Image Upload'],
-          ['diagnosis', '🔍 Diagnosis'],
-          ['quotation', '💰 Quotation'],
+          ['image_upload', ' Image Upload'],
+          ['diagnosis', ' Diagnosis'],
+          ['quotation', ' Quotation'],
         ].map(([k, label]) => (
           <div key={k} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: 'var(--bg-elevated)', borderRadius: 8, border: '1px solid var(--border-subtle)' }}>
             <span style={{ fontWeight: 600, fontSize: '0.82rem' }}>{label}</span>
@@ -265,7 +265,7 @@ export default function HddFieldConfigManager({ deviceTypes = [] }) {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <div style={{ fontWeight: 700, fontSize: '0.88rem' }}>📂 Field mapping per device type</div>
+        <div style={{ fontWeight: 700, fontSize: '0.88rem' }}> Field mapping per device type</div>
 
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           {(resolvedDeviceTypes || []).map((type) => (
@@ -319,7 +319,7 @@ export default function HddFieldConfigManager({ deviceTypes = [] }) {
                       transition: 'opacity 0.2s'
                     }}
                     title="Delete field from this category">
-                    🗑️
+                    
                   </button>
                 </div>
               </div>
@@ -332,12 +332,12 @@ export default function HddFieldConfigManager({ deviceTypes = [] }) {
 
         <div style={{ background: 'var(--bg-elevated)', borderRadius: 8, border: '1px solid var(--border-subtle)', padding: 14 }}>
           <div style={{ fontWeight: 700, fontSize: '0.8rem', marginBottom: 10 }}>
-            ➕ Custom fields for {activeDeviceTypeLabel}
+             Custom fields for {activeDeviceTypeLabel}
           </div>
           {customFields(activeConfigKey).map(cf => (
             <div key={cf.id || cf.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 12px', background: 'rgba(99,102,241,0.08)', borderRadius: 6, marginBottom: 6 }}>
-              <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--accent-secondary)' }}>✦ {cf.label}</span>
-              <button type="button" onClick={() => removeCustomField(activeConfigKey, cf)} style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', fontSize: 11 }}>✕</button>
+              <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--accent-secondary)' }}> {cf.label}</span>
+              <button type="button" onClick={() => removeCustomField(activeConfigKey, cf)} style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', fontSize: 11 }}></button>
             </div>
           ))}
           <div style={{ display: 'flex', gap: 8 }}>
@@ -350,7 +350,7 @@ export default function HddFieldConfigManager({ deviceTypes = [] }) {
 
       {savedMsg && (
         <div style={{ position: 'fixed', bottom: 24, right: 24, background: '#22c55e', color: '#fff', padding: '10px 18px', borderRadius: 8, fontWeight: 700, zIndex: 9999 }}>
-          ✓ Saved for {activeDeviceTypeLabel}
+           Saved for {activeDeviceTypeLabel}
         </div>
       )}
     </div>

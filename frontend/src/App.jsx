@@ -226,7 +226,7 @@ function Header() {
 
   return (
     <>
-      {/* ── Session expiry warning banner ── */}
+      {/*  Session expiry warning banner  */}
       {sessionWarning && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999,
@@ -234,7 +234,7 @@ function Header() {
           padding: '10px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           fontSize: '0.82rem', fontWeight: 600, boxShadow: '0 2px 12px rgba(0,0,0,0.3)',
         }}>
-          <span>⚠️ Your session will expire in ~5 minutes due to inactivity.</span>
+          <span> Your session will expire in ~5 minutes due to inactivity.</span>
           <div style={{ display: 'flex', gap: 8 }}>
             <button onClick={resetActivity} style={{ background: 'rgba(255,255,255,0.25)', border: '1px solid rgba(255,255,255,0.5)', color: '#fff', padding: '4px 14px', borderRadius: 6, cursor: 'pointer', fontWeight: 700, fontSize: '0.78rem' }}>
               Stay Logged In
@@ -266,7 +266,7 @@ function Header() {
             onMouseEnter={e=>{e.currentTarget.style.borderColor='var(--accent-primary)';e.currentTarget.style.color='var(--accent-primary)';}}
             onMouseLeave={e=>{e.currentTarget.style.borderColor='var(--border-default)';e.currentTarget.style.color='var(--text-secondary)';}}
           >
-            {theme==='dark'?'☀️':'🌙'}
+            {theme==='dark'?'':''}
           </button>
           <div style={{fontSize:'0.72rem',color:'var(--text-muted)',fontFamily:'var(--font-mono)'}}>
             {new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}
@@ -295,7 +295,7 @@ function AppLayout() {
           </button>
         </div>
       )}
-      <button className="hamburger-btn" onClick={() => setSidebarOpen(o => !o)}>☰</button>
+      <button className="hamburger-btn" onClick={() => setSidebarOpen(o => !o)}></button>
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="main-content">
         <Header />

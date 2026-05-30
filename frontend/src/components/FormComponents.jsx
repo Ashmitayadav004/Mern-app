@@ -26,7 +26,7 @@ export function FormField({
       </div>
       {touched && error && (
         <div className="form-field-error">
-          <span className="error-icon">⚠</span>
+          <span className="error-icon"></span>
           <span className="error-text">{error}</span>
         </div>
       )}

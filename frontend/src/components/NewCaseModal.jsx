@@ -70,7 +70,7 @@ const fetchDiagnosisSuggestions = async (searchText, limit = 8, problemCategory 
   });
 };
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+//  Helpers 
 function gs(key, def) {
   try {
     const v = JSON.parse(localStorage.getItem(key));
@@ -125,7 +125,7 @@ function customFieldsFor(cfg, typeKey) {
   return cfg?.custom_fields?.[typeKey] || [];
 }
 
-// ── HDD Type Definitions ─────────────────────────────────────────────────────
+//  HDD Type Definitions 
 const HDD_TYPES = [
   { key: "wd_2.5", label: 'WD 2.5"', brand: "Western Digital" },
   { key: "wd_3.5", label: 'WD 3.5"', brand: "Western Digital" },
@@ -294,11 +294,11 @@ const CAPACITY_OPTIONS = [
   "20TB",
 ];
 const PRIORITIES = {
-  1: "⚡ Critical",
-  2: "🔴 High",
-  3: "🟡 Medium",
-  4: "🟢 Low",
-  5: "⬛ Minimal",
+  1: " Critical",
+  2: " High",
+  3: " Medium",
+  4: " Low",
+  5: " Minimal",
 };
 const FAILURE_TYPES = [
   "logical",
@@ -318,7 +318,7 @@ const FAILURE_TYPES = [
   "unknown",
 ];
 
-// ── Inward Print (exported so CasesPage can use too) ────────────────────────
+//  Inward Print (exported so CasesPage can use too) 
 export function printInwardForm(caseData, template = "standard") {
   const co = (() => {
     try {
@@ -419,7 +419,7 @@ export function printInwardForm(caseData, template = "standard") {
 </style></head>
 <body>
 <div class="controls">
-  <strong>🖨 Inward Form</strong>
+  <strong> Inward Form</strong>
   <label>Paper:<select id="sz" onchange="upd()">
     <option value="A4">A4</option><option value="A3">A3</option>
     <option value="A5">A5</option><option value="letter">Letter</option>
@@ -427,12 +427,12 @@ export function printInwardForm(caseData, template = "standard") {
   <label>Orientation:<select id="or" onchange="upd()">
     <option value="portrait">Portrait</option><option value="landscape">Landscape</option>
   </select></label>
-  <label class="tnc-label" for="tncFile">📎 T&amp;C Image (Page 2)</label>
+  <label class="tnc-label" for="tncFile"> T&amp;C Image (Page 2)</label>
   <input type="file" id="tncFile" accept="image/*" style="display:none" onchange="loadTnc(this)">
-  <span class="tnc-badge" id="tncBadge" style="display:${savedTnc ? "inline" : "none"}">✓ T&amp;C loaded</span>
-  <button class="btn-clear" id="tncClearBtn" style="display:${savedTnc ? "inline" : "none"}" onclick="clearTnc()">✕ Clear</button>
-  <button class="btn-close" onclick="window.close()">✕ Close</button>
-  <button type="button" class="btn-print">🖨 Print</button>
+  <span class="tnc-badge" id="tncBadge" style="display:${savedTnc ? "inline" : "none"}"> T&amp;C loaded</span>
+  <button class="btn-clear" id="tncClearBtn" style="display:${savedTnc ? "inline" : "none"}" onclick="clearTnc()"> Clear</button>
+  <button class="btn-close" onclick="window.close()"> Close</button>
+  <button type="button" class="btn-print"> Print</button>
 </div>
 <div class="page-wrap">
 <div class="page1"><div class="wrap">
@@ -442,7 +442,7 @@ export function printInwardForm(caseData, template = "standard") {
   </div>
   <div class="acc-bar"></div>
   <div class="case-box">
-    <div class="case-num">📋 ${caseData.case_number || "—"}</div>
+    <div class="case-num"> ${caseData.case_number || "—"}</div>
     <div class="case-meta">
       <div>Priority: ${["—", "CRITICAL", "HIGH", "MEDIUM", "LOW", "MINIMAL"][caseData.priority || 3]}</div>
       <div>Deadline: ${caseData.deadline_at ? new Date(caseData.deadline_at).toLocaleDateString("en-IN") : "—"}</div>
@@ -451,7 +451,7 @@ export function printInwardForm(caseData, template = "standard") {
 
   <div class="sections">
     <div class="section">
-      <div class="sec-title">👤 Client Information</div>
+      <div class="sec-title"> Client Information</div>
       <table class="fields">
         <tr><td class="fl">Name</td><td class="fv">${caseData.client_name || [caseData.first_name, caseData.last_name].filter(Boolean).join(" ") || "—"}</td></tr>
         <tr><td class="fl">Phone</td><td class="fv">${caseData.phone || "—"}</td></tr>
@@ -460,7 +460,7 @@ export function printInwardForm(caseData, template = "standard") {
       </table>
     </div>
     <div class="section">
-      <div class="sec-title">💾 Device Information</div>
+      <div class="sec-title"> Device Information</div>
       <table class="fields">
         <tr><td class="fl">Type</td><td class="fv">${caseData.hdd_type ? HDD_TYPES.find((h) => h.key === caseData.hdd_type)?.label || caseData.hdd_type : caseData.device_brand || "—"}</td></tr>
         <tr><td class="fl">Case Number</td><td class="fv">${caseData.case_number || "—"}</td></tr>
@@ -469,9 +469,9 @@ export function printInwardForm(caseData, template = "standard") {
         <tr><td class="fl">S/N</td><td class="fv">${caseData.serial_number || "—"}</td></tr>
       </table>
     </div>
-    ${hddRows ? `<div class="section full"><div class="sec-title">🔧 HDD Technical Details</div><table class="fields">${hddRows}</table></div>` : ""}
+    ${hddRows ? `<div class="section full"><div class="sec-title"> HDD Technical Details</div><table class="fields">${hddRows}</table></div>` : ""}
     <div class="section full">
-      <div class="sec-title">⚠️ Problem & Failure</div>
+      <div class="sec-title"> Problem & Failure</div>
       <table class="fields">
         <tr><td class="fl">Failure Types</td><td class="fv">${(Array.isArray(caseData.failure_types) ? caseData.failure_types : caseData.failure_type ? [caseData.failure_type] : []).map((f) => `<span class="chip">${f.replace(/_/g, " ")}</span>`).join("") || "—"}</td></tr>
         <tr><td class="fl">Symptoms</td><td class="fv">${(caseData.symptoms || []).map((s) => `<span class="chip">${s.replace(/_/g, " ")}</span>`).join("") || "—"}</td></tr>
@@ -487,7 +487,7 @@ export function printInwardForm(caseData, template = "standard") {
   <div class="commercial">
     <div class="comm-box"><div class="comm-label">Quotation Amount</div><div class="comm-val">${total > 0 ? "₹" + total.toLocaleString("en-IN") : "—"}</div></div>
     <div class="comm-box"><div class="comm-label">Advance Received</div><div class="comm-val green">${adv > 0 ? "₹" + adv.toLocaleString("en-IN") : "—"}</div></div>
-    <div class="comm-box"><div class="comm-label">Balance Remaining</div><div class="comm-val ${remaining > 0 ? "red" : "green"}">${remaining > 0 ? "₹" + remaining.toLocaleString("en-IN") : "✓ Paid"}</div></div>
+    <div class="comm-box"><div class="comm-label">Balance Remaining</div><div class="comm-val ${remaining > 0 ? "red" : "green"}">${remaining > 0 ? "₹" + remaining.toLocaleString("en-IN") : " Paid"}</div></div>
   </div>`
       : ""
   }
@@ -506,7 +506,7 @@ export function printInwardForm(caseData, template = "standard") {
   <img id="tncScreenImg" src="${savedTnc}" alt="Terms & Conditions"/>
 </div>
 <div class="no-tnc" id="noTncMsg" style="display:${savedTnc ? "none" : "block"}">
-  📄 Upload a T&amp;C image above → it will print as <strong>Page 2</strong>
+   Upload a T&amp;C image above → it will print as <strong>Page 2</strong>
 </div>
 </div>
 <div class="cut-hint">Page 2 (T&amp;C) prints automatically when image is uploaded</div>
@@ -546,7 +546,7 @@ export function printInwardForm(caseData, template = "standard") {
   openPrintPreviewWindow(html);
 }
 
-// ── Step indicator ─────────────────────────────────────────────────────────
+//  Step indicator 
 function Steps({ current, steps }) {
   return (
     <div
@@ -593,7 +593,7 @@ function Steps({ current, steps }) {
                 transition: "all 0.2s",
               }}
             >
-              {i < current ? "✓" : i + 1}
+              {i < current ? "" : i + 1}
             </div>
             <div
               style={{
@@ -630,7 +630,7 @@ function Steps({ current, steps }) {
   );
 }
 
-// ── Inline image preview ──────────────────────────────────────────────────
+//  Inline image preview 
 function ImageUploadArea({ images, onChange }) {
   const fileRef = useRef();
   const addImages = (files) => {
@@ -681,7 +681,7 @@ function ImageUploadArea({ images, onChange }) {
           addImages(e.dataTransfer.files);
         }}
       >
-        📷 Click or drag JPG/PNG images here
+         Click or drag JPG/PNG images here
         <input
           ref={fileRef}
           type="file"
@@ -732,7 +732,7 @@ function ImageUploadArea({ images, onChange }) {
                   lineHeight: 1,
                 }}
               >
-                ✕
+                
               </button>
             </div>
           ))}
@@ -742,7 +742,7 @@ function ImageUploadArea({ images, onChange }) {
   );
 }
 
-// ── File upload area ──────────────────────────────────────────────────────
+//  File upload area 
 function FileUploadArea({ files, onChange }) {
   const fileRef = useRef();
   const addFiles = (newFiles) => {
@@ -767,7 +767,7 @@ function FileUploadArea({ files, onChange }) {
           fontSize: "0.8rem",
         }}
       >
-        📎 Click to attach files (PDF, ZIP, DOC, etc.)
+         Click to attach files (PDF, ZIP, DOC, etc.)
         <input
           ref={fileRef}
           type="file"
@@ -799,7 +799,7 @@ function FileUploadArea({ files, onChange }) {
               }}
             >
               <span>
-                📎 {f.name}{" "}
+                 {f.name}{" "}
                 <span style={{ color: "var(--text-muted)" }}>
                   ({(f.size / 1024).toFixed(0)}KB)
                 </span>
@@ -814,7 +814,7 @@ function FileUploadArea({ files, onChange }) {
                   fontSize: 12,
                 }}
               >
-                ✕
+                
               </button>
             </div>
           ))}
@@ -824,7 +824,7 @@ function FileUploadArea({ files, onChange }) {
   );
 }
 
-// ── Inline New Client Mini Form ────────────────────────────────────────────
+//  Inline New Client Mini Form 
 function NewClientForm({ onCreated, onCancel }) {
   const [form, setForm] = useState({
     first_name: "",
@@ -880,7 +880,7 @@ function NewClientForm({ onCreated, onCancel }) {
           marginBottom: 10,
         }}
       >
-        ➕ Add New Client
+         Add New Client
       </div>
       <div
         style={{
@@ -903,7 +903,7 @@ function NewClientForm({ onCreated, onCancel }) {
           onClick={handleSave}
           disabled={loading}
         >
-          {loading ? "..." : "✓ Save Client"}
+          {loading ? "..." : " Save Client"}
         </button>
         <button
           type="button"
@@ -917,7 +917,7 @@ function NewClientForm({ onCreated, onCancel }) {
   );
 }
 
-// ── Stable Step Views (defined outside main render to preserve identity) ──
+//  Stable Step Views (defined outside main render to preserve identity) 
 function StepClient({
   form,
   setForm,
@@ -1014,7 +1014,7 @@ function StepClient({
                           marginLeft: 8,
                         }}
                       >
-                        ✓
+                        
                       </span>
                     )}
                   </div>
@@ -1041,7 +1041,7 @@ function StepClient({
               }}
             >
               <span>
-                ✅{" "}
+                {" "}
                 <strong>
                   {selectedClient.first_name} {selectedClient.last_name}
                 </strong>{" "}
@@ -1062,7 +1062,7 @@ function StepClient({
                   setClientSearch("");
                 }}
               >
-                ✕
+                
               </button>
             </div>
           )}
@@ -1072,7 +1072,7 @@ function StepClient({
             style={{ alignSelf: "flex-start" }}
             onClick={() => setShowNewClient(true)}
           >
-            ➕ Client not found? Add New
+             Client not found? Add New
           </button>
         </>
       ) : (
@@ -1336,7 +1336,7 @@ function StepDevice({ form, setForm, capacities, stepErrors, caseSettings, hddTy
             color: "var(--text-muted)",
           }}
         >
-          💡 Select an HDD Type above to load dynamic fields (WD, Seagate, or Others)
+           Select an HDD Type above to load dynamic fields (WD, Seagate, or Others)
         </div>
       )}
     </div>
@@ -1432,7 +1432,7 @@ function StepHddFieldsView({ form, setForm, stepErrors, showStepErrors, hddTypes
       {form.hdd_type ? (
         <>
           <div style={{ marginBottom: 12, padding: "8px 12px", background: "var(--accent-glow)", borderRadius: 6, fontSize: "0.8rem", color: "var(--accent-primary)", fontWeight: 600 }}>
-            🔧 Fields for: {hddTypes.find((h) => h.key === form.hdd_type)?.label}
+             Fields for: {hddTypes.find((h) => h.key === form.hdd_type)?.label}
           </div>
           <HddFieldsImproved
             hddKey={form.hdd_type}
@@ -1445,7 +1445,7 @@ function StepHddFieldsView({ form, setForm, stepErrors, showStepErrors, hddTypes
         </>
       ) : (
         <div style={{ padding: "30px", textAlign: "center", color: "var(--text-muted)", fontSize: "0.85rem" }}>
-          ⚠️ Go back to <strong>Device</strong> step and select an HDD Type first.
+           Go back to <strong>Device</strong> step and select an HDD Type first.
         </div>
       )}
     </div>
@@ -1468,7 +1468,7 @@ function StepProblemView({ form, setForm, toggle, SYMPTOMS, FAILURE_TYPES_LIST, 
             return (
               <label key={ft} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 12px", border: `1px solid ${on ? "var(--accent-primary)" : "var(--border-default)"}`, borderRadius: 8, cursor: "pointer", background: on ? "var(--accent-glow)" : "transparent", fontSize: "0.78rem", fontWeight: on ? 700 : 400, color: on ? "var(--accent-primary)" : "var(--text-secondary)", userSelect: "none" }}>
                 <input type="checkbox" style={{ display: "none" }} checked={on} onChange={() => toggle("failure_types", ft)} />
-                {on ? "✓ " : ""}
+                {on ? " " : ""}
                 {ft.replace(/_/g, " ")}
               </label>
             );
@@ -1534,12 +1534,12 @@ function StepProblemView({ form, setForm, toggle, SYMPTOMS, FAILURE_TYPES_LIST, 
       )}
       {showImages && (
         <div className="form-group" style={{ margin: 0 }}>
-          <label className="form-label">📷 Device Images</label>
+          <label className="form-label"> Device Images</label>
           <ImageUploadArea images={form.images || []} onChange={(imgs) => setForm((p) => ({ ...p, images: imgs }))} />
         </div>
       )}
       <div className="form-group" style={{ margin: 0 }}>
-        <label className="form-label">📎 File Attachments</label>
+        <label className="form-label"> File Attachments</label>
         <FileUploadArea files={form.attachments || []} onChange={(files) => setForm((p) => ({ ...p, attachments: files }))} />
       </div>
     </div>
@@ -1562,7 +1562,7 @@ function StepCommercialView({ form, setForm, printTemplate, setPrintTemplate, re
         <div className="form-group" style={{ margin: 0 }}>
           <label className="form-label">Balance Remaining</label>
           <div style={{ padding: "8px 10px", background: "var(--bg-elevated)", border: "1px solid var(--border-default)", borderRadius: 8, fontSize: "0.9rem", fontWeight: 700, color: remaining > 0 ? "var(--danger)" : "var(--success)" }}>
-            {remaining > 0 ? `₹${remaining.toLocaleString("en-IN")}` : "✓ Fully Paid"}
+            {remaining > 0 ? `₹${remaining.toLocaleString("en-IN")}` : " Fully Paid"}
           </div>
         </div>
       </div>
@@ -1571,9 +1571,9 @@ function StepCommercialView({ form, setForm, printTemplate, setPrintTemplate, re
         <input className="form-input" placeholder="Reference number, courier, etc." value={form.reference || ""} onChange={(e) => set("reference", e.target.value)} style={{ fontSize: "0.82rem", padding: "8px 10px" }} />
       </div>
       <div className="form-group" style={{ margin: 0 }}>
-        <label className="form-label">🖨️ Inward Form Print Template</label>
+        <label className="form-label"> Inward Form Print Template</label>
         <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
-          {[ ["standard", "🎨 Modern (Default)"], ["classic", "📄 Classic (B&W)"], ["minimal", "⬜ Minimal"] ].map(([k, l]) => (
+          {[ ["standard", " Modern (Default)"], ["classic", " Classic (B&W)"], ["minimal", " Minimal"] ].map(([k, l]) => (
             <label key={k} style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", border: `1px solid ${printTemplate === k ? "var(--accent-primary)" : "var(--border-default)"}`, borderRadius: 8, cursor: "pointer", background: printTemplate === k ? "var(--accent-glow)" : "transparent", fontSize: "0.78rem", fontWeight: printTemplate === k ? 700 : 400, color: printTemplate === k ? "var(--accent-primary)" : "var(--text-secondary)", userSelect: "none" }}>
               <input type="radio" name="template" value={k} checked={printTemplate === k} onChange={() => setPrintTemplate(k)} style={{ display: "none" }} />
               {l}
@@ -1585,14 +1585,14 @@ function StepCommercialView({ form, setForm, printTemplate, setPrintTemplate, re
   );
 }
 
-// ── Main Modal ─────────────────────────────────────────────────────────────
+//  Main Modal 
 export default function NewCaseModal({ onClose, onCreated }) {
   const STEPS = [
-    "👤 Client",
-    "💾 Device",
-    "🔧 HDD Fields",
-    "📸 Problem",
-    "💰 Commercial",
+    " Client",
+    " Device",
+    " HDD Fields",
+    " Problem",
+    " Commercial",
   ];
   const [step, setStep] = useState(0);
   const [form, setForm] = useState({
@@ -2024,9 +2024,9 @@ export default function NewCaseModal({ onClose, onCreated }) {
           }}
         >
           <div className="modal-header">
-            <h3 className="modal-title">📂 Create New Case</h3>
+            <h3 className="modal-title"> Create New Case</h3>
             <button className="btn btn-ghost btn-icon" onClick={onClose}>
-              ✕
+              
             </button>
           </div>
 
@@ -2034,7 +2034,7 @@ export default function NewCaseModal({ onClose, onCreated }) {
             <Steps current={step} steps={STEPS} />
             {error && (
               <div className="alert alert-danger" style={{ marginBottom: 12 }}>
-                <span className="alert-icon">⚠</span>
+                <span className="alert-icon"></span>
                 {error}
               </div>
             )}
@@ -2095,7 +2095,7 @@ export default function NewCaseModal({ onClose, onCreated }) {
                       Creating...
                     </>
                   ) : (
-                    "🖨️ Create & Print Inward"
+                    " Create & Print Inward"
                   )}
                 </button>
               )}

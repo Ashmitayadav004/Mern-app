@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 const BASE_URL = '/api';
 
-// ── Client Portal Page ─────────────────────────────────────────────────────
+//  Client Portal Page 
 // Accessible at /client-portal (public, no auth required)
 // Clients enter their case number to check status and send messages
 export default function ClientPortalPage() {
@@ -16,9 +16,9 @@ export default function ClientPortalPage() {
   const [sendingMsg, setSendingMsg] = useState(false);
 
   const STAGE_ICONS = {
-    received: '📥', inspection: '🔍', diagnosis: '🧪', quotation: '💰', approved: '✅',
-    rejected: '❌', recovery_in_progress: '⚙️', imaging: '💿', data_extraction: '📤',
-    verification: '🔬', completed: '🏆', delivered: '📦', failed: '💔',
+    received: '', inspection: '', diagnosis: '', quotation: '', approved: '',
+    rejected: '', recovery_in_progress: '', imaging: '', data_extraction: '',
+    verification: '', completed: '', delivered: '', failed: '',
   };
 
   const STAGE_COLORS = {
@@ -82,7 +82,7 @@ export default function ClientPortalPage() {
 
       {/* Logo / Header */}
       <div style={{ textAlign: 'center', marginBottom: 40 }}>
-        <div style={{ fontSize: '3rem', marginBottom: 8 }}>💾</div>
+        <div style={{ fontSize: '3rem', marginBottom: 8 }}></div>
         <h1 style={{ fontSize: '1.8rem', fontWeight: 900, color: '#fff', margin: '0 0 4px' }}>{company.name || 'RecoverLab'}</h1>
         <p style={{ color: '#94a3b8', fontSize: '0.88rem', margin: 0 }}>Client Case Tracking Portal</p>
       </div>
@@ -90,7 +90,7 @@ export default function ClientPortalPage() {
       {/* Search Card */}
       <div style={{ width: '100%', maxWidth: 520, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: 28, backdropFilter: 'blur(12px)', marginBottom: 24 }}>
         <h2 style={{ fontSize: '1rem', fontWeight: 700, color: '#e2e8f0', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
-          🔍 Track Your Case
+           Track Your Case
         </h2>
         <form onSubmit={handleSearch}>
           <div style={{ marginBottom: 14 }}>
@@ -118,12 +118,12 @@ export default function ClientPortalPage() {
           </div>
           <button type="submit" disabled={loading || !caseNum.trim()}
             style={{ width: '100%', padding: '11px 0', background: loading ? '#1e3a5f' : 'linear-gradient(135deg, #0070f3, #00d4ff)', border: 'none', borderRadius: 8, color: '#fff', fontWeight: 700, fontSize: '0.9rem', cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-            {loading ? <>⏳ Searching...</> : <>🔍 Track Case</>}
+            {loading ? <> Searching...</> : <> Track Case</>}
           </button>
         </form>
         {error && (
           <div style={{ marginTop: 14, padding: '10px 12px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 8, color: '#fca5a5', fontSize: '0.8rem' }}>
-            ⚠️ {error}
+             {error}
           </div>
         )}
       </div>
@@ -140,7 +140,7 @@ export default function ClientPortalPage() {
               </div>
               <div style={{ textAlign: 'right' }}>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 99, background: `${STAGE_COLORS[caseData.stage] || '#64748b'}20`, border: `1px solid ${STAGE_COLORS[caseData.stage] || '#64748b'}40`, color: STAGE_COLORS[caseData.stage] || '#94a3b8', fontWeight: 700, fontSize: '0.82rem' }}>
-                  {STAGE_ICONS[caseData.stage] || '📋'} {caseData.stage?.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
+                  {STAGE_ICONS[caseData.stage] || ''} {caseData.stage?.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
                 </span>
               </div>
             </div>
@@ -176,7 +176,7 @@ export default function ClientPortalPage() {
           {/* Timeline / Status Steps */}
           {caseData.stage && (
             <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: 20, backdropFilter: 'blur(12px)' }}>
-              <div style={{ fontWeight: 700, color: '#e2e8f0', marginBottom: 16, fontSize: '0.88rem' }}>📋 What's Happening</div>
+              <div style={{ fontWeight: 700, color: '#e2e8f0', marginBottom: 16, fontSize: '0.88rem' }}> What's Happening</div>
               {({
                 received: { msg: 'Your device has been received and is in our facility. Our team will begin inspection shortly.', next: 'Inspection & Initial Assessment' },
                 inspection: { msg: 'Our engineers are conducting a thorough physical inspection of your device.', next: 'Deep Diagnosis' },
@@ -187,9 +187,9 @@ export default function ClientPortalPage() {
                 imaging: { msg: 'We are creating a sector-by-sector image of your drive to safely extract data.', next: 'Data Extraction' },
                 data_extraction: { msg: 'Successfully extracted data is being organized and verified.', next: 'Final Verification' },
                 verification: { msg: 'Your recovered data is being verified for integrity and completeness.', next: 'Ready for Delivery' },
-                completed: { msg: '🎉 Recovery is complete! Your data has been successfully recovered.', next: 'Delivery' },
-                delivered: { msg: '✅ Your recovered data has been delivered. Thank you for choosing us!', next: null },
-                failed: { msg: '❌ Unfortunately, data recovery was not possible for your device due to the extent of damage.', next: null },
+                completed: { msg: ' Recovery is complete! Your data has been successfully recovered.', next: 'Delivery' },
+                delivered: { msg: ' Your recovered data has been delivered. Thank you for choosing us!', next: null },
+                failed: { msg: ' Unfortunately, data recovery was not possible for your device due to the extent of damage.', next: null },
               }[caseData.stage] || { msg: 'Processing your case.', next: 'Next Stage' })
                 ? (() => {
                     const s = ({
@@ -202,9 +202,9 @@ export default function ClientPortalPage() {
                       imaging: { msg: 'We are creating a sector-by-sector image of your drive to safely extract data.', next: 'Data Extraction' },
                       data_extraction: { msg: 'Successfully extracted data is being organized and verified.', next: 'Final Verification' },
                       verification: { msg: 'Your recovered data is being verified for integrity and completeness.', next: 'Ready for Delivery' },
-                      completed: { msg: '🎉 Recovery is complete! Your data has been successfully recovered.', next: 'Delivery' },
-                      delivered: { msg: '✅ Your recovered data has been delivered. Thank you for choosing us!', next: null },
-                      failed: { msg: '❌ Unfortunately, data recovery was not possible for your device due to the extent of damage.', next: null },
+                      completed: { msg: ' Recovery is complete! Your data has been successfully recovered.', next: 'Delivery' },
+                      delivered: { msg: ' Your recovered data has been delivered. Thank you for choosing us!', next: null },
+                      failed: { msg: ' Unfortunately, data recovery was not possible for your device due to the extent of damage.', next: null },
                     }[caseData.stage] || { msg: 'Processing your case.', next: null });
                     return (
                       <div>
@@ -220,10 +220,10 @@ export default function ClientPortalPage() {
 
           {/* Send Message */}
           <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: 20, backdropFilter: 'blur(12px)' }}>
-            <div style={{ fontWeight: 700, color: '#e2e8f0', marginBottom: 14, fontSize: '0.88rem' }}>💬 Send a Message to Engineers</div>
+            <div style={{ fontWeight: 700, color: '#e2e8f0', marginBottom: 14, fontSize: '0.88rem' }}> Send a Message to Engineers</div>
             {messageSent && (
               <div style={{ marginBottom: 12, padding: '10px 12px', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.25)', borderRadius: 8, color: '#6ee7b7', fontSize: '0.8rem' }}>
-                ✅ Your message has been sent! Our team will respond soon.
+                 Your message has been sent! Our team will respond soon.
               </div>
             )}
             <textarea
@@ -234,7 +234,7 @@ export default function ClientPortalPage() {
             />
             <button onClick={handleSendMessage} disabled={sendingMsg || !message.trim()}
               style={{ marginTop: 10, padding: '9px 20px', background: message.trim() ? 'linear-gradient(135deg, #6366f1, #8b5cf6)' : 'rgba(255,255,255,0.05)', border: 'none', borderRadius: 8, color: message.trim() ? '#fff' : '#64748b', fontWeight: 700, fontSize: '0.82rem', cursor: message.trim() ? 'pointer' : 'not-allowed' }}>
-              {sendingMsg ? '⏳ Sending...' : '📨 Send Message'}
+              {sendingMsg ? ' Sending...' : ' Send Message'}
             </button>
           </div>
 
@@ -242,8 +242,8 @@ export default function ClientPortalPage() {
           <div style={{ textAlign: 'center', padding: '16px 0', color: '#64748b', fontSize: '0.75rem' }}>
             <div style={{ marginBottom: 6 }}>Need urgent help? Contact us directly:</div>
             <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
-              {company.phone && <span style={{ color: '#94a3b8' }}>📞 {company.phone}</span>}
-              {company.email && <span style={{ color: '#94a3b8' }}>✉️ {company.email}</span>}
+              {company.phone && <span style={{ color: '#94a3b8' }}> {company.phone}</span>}
+              {company.email && <span style={{ color: '#94a3b8' }}> {company.email}</span>}
               {!company.phone && !company.email && <span>Contact your data recovery center</span>}
             </div>
           </div>

@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../store/AuthContext';
 
-// ── Storage helpers ────────────────────────────────────────────────────────────
+//  Storage helpers 
 const ls = {
   get: (k, def) => { try { return JSON.parse(localStorage.getItem(k) || 'null') ?? def; } catch { return def; } },
   set: (k, v) => localStorage.setItem(k, JSON.stringify(v)),
 };
 
-// ── Personalization variables available in templates ──────────────────────────
+//  Personalization variables available in templates 
 const VARS = [
   { key: '{{name}}',              label: 'Client Name' },
   { key: '{{company}}',           label: 'Company' },
@@ -28,7 +28,7 @@ const VARS = [
   { key: '{{support_phone}}',     label: 'Support Phone' },
 ];
 
-// ── Default email templates ────────────────────────────────────────────────────
+//  Default email templates 
 const DEFAULT_EMAIL_TEMPLATES = [
   {
     id: 'tpl_welcome',
@@ -49,7 +49,7 @@ const DEFAULT_EMAIL_TEMPLATES = [
     <p style="color:rgba(255,255,255,0.85);margin:6px 0 0;font-size:14px;">Data Recovery Specialists</p>
   </td></tr>
   <tr><td style="padding:36px 40px;">
-    <h2 style="color:#1e293b;margin:0 0 16px;font-size:22px;">Hi {{name}}, welcome! 👋</h2>
+    <h2 style="color:#1e293b;margin:0 0 16px;font-size:22px;">Hi {{name}}, welcome! </h2>
     <p style="color:#475569;line-height:1.7;margin:0 0 20px;font-size:15px;">
       Your device recovery case has been registered successfully. Our expert team will begin diagnosis shortly.
     </p>
@@ -160,7 +160,7 @@ const DEFAULT_EMAIL_TEMPLATES = [
     id: 'tpl_promo',
     name: 'Promotional Offer',
     category: 'marketing',
-    subject: '🎉 Special Offer for You — {{company_name}}',
+    subject: ' Special Offer for You — {{company_name}}',
     from_name: '{{company_name}} Offers',
     html: `<!DOCTYPE html>
 <html>
@@ -170,7 +170,7 @@ const DEFAULT_EMAIL_TEMPLATES = [
 <tr><td align="center">
 <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;">
   <tr><td style="background:linear-gradient(135deg,#7c3aed,#ec4899);padding:48px 40px;text-align:center;">
-    <div style="font-size:48px;margin-bottom:12px;">🎉</div>
+    <div style="font-size:48px;margin-bottom:12px;"></div>
     <h1 style="color:#fff;margin:0;font-size:28px;font-weight:900;">Special Offer Inside!</h1>
     <p style="color:rgba(255,255,255,0.9);margin:8px 0 0;font-size:16px;">Exclusively for {{name}}</p>
   </td></tr>
@@ -201,17 +201,17 @@ const DEFAULT_EMAIL_TEMPLATES = [
   },
 ];
 
-// ── Default WhatsApp templates ─────────────────────────────────────────────────
+//  Default WhatsApp templates 
 const DEFAULT_WA_TEMPLATES = [
   {
     id: 'wa_welcome',
     name: 'Welcome Message',
     category: 'utility',
-    message: `Hi {{name}}! 👋
+    message: `Hi {{name}}! 
 
 Your device recovery case has been registered with *{{company_name}}*.
 
-📋 *Case Details:*
+ *Case Details:*
 • Case ID: {{case_id}}
 • Device: {{device}}
 • Status: {{case_status}}
@@ -219,7 +219,7 @@ Your device recovery case has been registered with *{{company_name}}*.
 
 Track your case here: {{portal_link}}
 
-For queries, call us at {{support_phone}} ✅`,
+For queries, call us at {{support_phone}} `,
     mediaType: 'none',
     createdAt: new Date().toISOString(),
   },
@@ -227,7 +227,7 @@ For queries, call us at {{support_phone}} ✅`,
     id: 'wa_update',
     name: 'Status Update',
     category: 'utility',
-    message: `Hello {{name}} 👋
+    message: `Hello {{name}} 
 
 *Update on Case {{case_id}}*
 
@@ -235,7 +235,7 @@ Your device status has been updated to: *{{case_status}}*
 
 Our technician {{technician}} will contact you shortly.
 
-Need help? Reply to this message or call {{support_phone}} 📞`,
+Need help? Reply to this message or call {{support_phone}} `,
     mediaType: 'none',
     createdAt: new Date().toISOString(),
   },
@@ -243,13 +243,13 @@ Need help? Reply to this message or call {{support_phone}} 📞`,
     id: 'wa_promo',
     name: 'Promotional Offer',
     category: 'marketing',
-    message: `🎉 *Special Offer for You, {{name}}!*
+    message: ` *Special Offer for You, {{name}}!*
 
 Get *20% OFF* on your next data recovery service at *{{company_name}}*.
 
-✅ Valid till {{expiry_date}}
-✅ For all device types
-✅ Expert technicians
+ Valid till {{expiry_date}}
+ For all device types
+ Expert technicians
 
 Book now: {{portal_link}}
 
@@ -261,7 +261,7 @@ _Reply STOP to unsubscribe_`,
     id: 'wa_invoice',
     name: 'Invoice Notification',
     category: 'utility',
-    message: `💳 *Invoice from {{company_name}}*
+    message: ` *Invoice from {{company_name}}*
 
 Hi {{name}},
 
@@ -269,13 +269,13 @@ Invoice #{{invoice_no}} of *₹{{amount}}* has been generated for your case {{ca
 
 View & download: {{portal_link}}
 
-Questions? Email {{support_email}} 📧`,
+Questions? Email {{support_email}} `,
     mediaType: 'document',
     createdAt: new Date().toISOString(),
   },
 ];
 
-// ── Default SMS templates ──────────────────────────────────────────────────────
+//  Default SMS templates 
 const DEFAULT_SMS_TEMPLATES = [
   {
     id: 'sms_welcome',
@@ -303,7 +303,7 @@ const DEFAULT_SMS_TEMPLATES = [
   },
 ];
 
-// ── Sample audiences from clients ─────────────────────────────────────────────
+//  Sample audiences from clients 
 const getSampleAudience = () => {
   try {
     const clients = JSON.parse(localStorage.getItem('crm_clients') || '[]');
@@ -321,7 +321,7 @@ const getSampleAudience = () => {
   } catch { return []; }
 };
 
-// ── Category badge ─────────────────────────────────────────────────────────────
+//  Category badge 
 const CAT_COLORS = {
   onboarding: '#10b981', transactional: '#3b82f6', billing: '#8b5cf6',
   marketing: '#f59e0b', utility: '#10b981', follow_up: '#06b6d4',
@@ -335,7 +335,7 @@ function CatBadge({ cat }) {
   );
 }
 
-// ── Insert var button ──────────────────────────────────────────────────────────
+//  Insert var button 
 function VarChip({ varKey, onClick }) {
   return (
     <button onClick={() => onClick(varKey)} title={`Insert ${varKey}`}
@@ -346,7 +346,7 @@ function VarChip({ varKey, onClick }) {
   );
 }
 
-// ── HTML Email Editor ──────────────────────────────────────────────────────────
+//  HTML Email Editor 
 function EmailEditor({ template, onSave, onClose }) {
   const fileRef = useRef();
   const textareaRef = useRef();
@@ -432,8 +432,8 @@ function EmailEditor({ template, onSave, onClose }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" style={{ maxWidth: 1100, width: '95vw', height: '90vh', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
         <div className="modal-header" style={{ flexShrink: 0 }}>
-          <h3 className="modal-title">✉️ {template ? 'Edit' : 'Create'} Email Template</h3>
-          <button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button>
+          <h3 className="modal-title"> {template ? 'Edit' : 'Create'} Email Template</h3>
+          <button className="btn btn-ghost btn-icon" onClick={onClose}></button>
         </div>
 
         {/* Meta fields */}
@@ -472,7 +472,7 @@ function EmailEditor({ template, onSave, onClose }) {
 
         {/* Tab switcher */}
         <div style={{ display:'flex', gap:0, borderBottom:'1px solid var(--border-subtle)', flexShrink:0 }}>
-          {[['code', '💻 HTML Code'], ['preview', '👁️ Preview'], ['preview_data', '🧪 Test Data']].map(([t, l]) => (
+          {[['code', ' HTML Code'], ['preview', ' Preview'], ['preview_data', ' Test Data']].map(([t, l]) => (
             <button key={t} onClick={() => setTab(t)} style={{
               padding:'8px 18px', background: tab===t ? 'var(--bg-base)' : 'var(--bg-elevated)',
               border:'none', borderBottom: tab===t ? '2px solid var(--accent-primary)' : '2px solid transparent',
@@ -483,7 +483,7 @@ function EmailEditor({ template, onSave, onClose }) {
           <label style={{ padding:'8px 16px', cursor:'pointer', display:'flex', alignItems:'center', gap:6, fontSize:'0.78rem', color:'var(--text-muted)', borderBottom:'2px solid transparent' }}
             title="Import HTML file">
             <input ref={fileRef} type="file" accept=".html,.htm" style={{ display:'none' }} onChange={handleImport} />
-            📁 Import HTML
+             Import HTML
           </label>
           <button onClick={() => {
             const blob = new Blob([form.html], {type:'text/html'});
@@ -491,7 +491,7 @@ function EmailEditor({ template, onSave, onClose }) {
             const a = document.createElement('a'); a.href=url; a.download=`${form.name||'template'}.html`; a.click();
             URL.revokeObjectURL(url);
           }} style={{ padding:'8px 16px', background:'none', border:'none', cursor:'pointer', fontSize:'0.78rem', color:'var(--text-muted)', borderBottom:'2px solid transparent' }}>
-            ⬇️ Export HTML
+             Export HTML
           </button>
         </div>
 
@@ -539,21 +539,21 @@ function EmailEditor({ template, onSave, onClose }) {
 
         <div className="modal-footer" style={{ flexShrink:0 }}>
           <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
-          <button className="btn btn-primary" onClick={handleSave}>💾 Save Template</button>
+          <button className="btn btn-primary" onClick={handleSave}> Save Template</button>
         </div>
       </div>
     </div>
   );
 }
 
-// ── WhatsApp Template Editor ───────────────────────────────────────────────────
+//  WhatsApp Template Editor 
 function WaEditor({ template, onSave, onClose }) {
   const textareaRef = useRef();
   const [form, setForm] = useState({
     name: template?.name || '',
     category: template?.category || 'utility',
     mediaType: template?.mediaType || 'none',
-    message: template?.message || `Hi {{name}} 👋\n\nMessage here...\n\n_Reply STOP to unsubscribe_`,
+    message: template?.message || `Hi {{name}} \n\nMessage here...\n\n_Reply STOP to unsubscribe_`,
   });
   const [previewData] = useState({
     name: 'Raj Patel', company: 'DataTech Labs', case_id: 'CAS-2024-001',
@@ -587,8 +587,8 @@ function WaEditor({ template, onSave, onClose }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" style={{ maxWidth: 900, width: '95vw' }} onClick={e => e.stopPropagation()}>
         <div className="modal-header">
-          <h3 className="modal-title">💬 {template ? 'Edit' : 'Create'} WhatsApp Template</h3>
-          <button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button>
+          <h3 className="modal-title"> {template ? 'Edit' : 'Create'} WhatsApp Template</h3>
+          <button className="btn btn-ghost btn-icon" onClick={onClose}></button>
         </div>
         <div className="modal-body" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:20 }}>
           {/* Left: editor */}
@@ -640,21 +640,21 @@ function WaEditor({ template, onSave, onClose }) {
 
           {/* Right: preview */}
           <div>
-            <div style={{ fontSize:'0.75rem', fontWeight:700, color:'var(--text-secondary)', marginBottom:10 }}>📱 Preview</div>
+            <div style={{ fontSize:'0.75rem', fontWeight:700, color:'var(--text-secondary)', marginBottom:10 }}> Preview</div>
             <div style={{ background:'#e5ddd5', borderRadius:12, padding:16, minHeight:300 }}>
               {form.mediaType !== 'none' && (
                 <div style={{ background:'rgba(0,0,0,0.1)', borderRadius:8, padding:'20px', textAlign:'center', marginBottom:8, fontSize:'0.75rem', color:'#555' }}>
-                  {form.mediaType === 'image' ? '🖼️ Image attachment' : form.mediaType === 'document' ? '📄 Document attachment' : '🎥 Video attachment'}
+                  {form.mediaType === 'image' ? ' Image attachment' : form.mediaType === 'document' ? ' Document attachment' : ' Video attachment'}
                 </div>
               )}
               <div style={{ background:'#fff', borderRadius:'0 10px 10px 10px', padding:'10px 14px', maxWidth:'85%', boxShadow:'0 1px 3px rgba(0,0,0,0.1)', fontSize:'0.85rem', color:'#111', lineHeight:1.6 }}
                 dangerouslySetInnerHTML={{ __html: renderPreview() }} />
               <div style={{ fontSize:'0.65rem', color:'#555', marginTop:4, marginLeft:4 }}>
-                {new Date().toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'})} ✓✓
+                {new Date().toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'})} 
               </div>
             </div>
             <div style={{ marginTop:14, padding:12, background:'var(--bg-elevated)', borderRadius:8, fontSize:'0.72rem', color:'var(--text-muted)', border:'1px solid var(--border-subtle)' }}>
-              <strong style={{ color:'var(--text-secondary)' }}>💡 WhatsApp Tips:</strong>
+              <strong style={{ color:'var(--text-secondary)' }}> WhatsApp Tips:</strong>
               <ul style={{ margin:'6px 0 0', paddingLeft:16 }}>
                 <li>Always include unsubscribe option (Reply STOP)</li>
                 <li>Use template categories correctly (marketing vs utility)</li>
@@ -669,14 +669,14 @@ function WaEditor({ template, onSave, onClose }) {
           <button className="btn btn-primary" onClick={() => {
             if (!form.name.trim() || !form.message.trim()) { alert('Name and message are required.'); return; }
             onSave({ ...form, id: template?.id || `wa_${Date.now()}`, createdAt: template?.createdAt || new Date().toISOString() });
-          }}>💾 Save Template</button>
+          }}> Save Template</button>
         </div>
       </div>
     </div>
   );
 }
 
-// ── Campaign Wizard ────────────────────────────────────────────────────────────
+//  Campaign Wizard 
 function CampaignWizard({ onClose, onDone }) {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({
@@ -698,7 +698,7 @@ function CampaignWizard({ onClose, onDone }) {
     return true;
   });
 
-  const CHANNEL_ICONS = { email: '✉️', whatsapp: '💬', sms: '📱', multi: '🚀' };
+  const CHANNEL_ICONS = { email: '', whatsapp: '', sms: '', multi: '' };
 
   const handleLaunch = () => {
     if (!form.name.trim()) { alert('Campaign name is required.'); return; }
@@ -732,8 +732,8 @@ function CampaignWizard({ onClose, onDone }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal modal-xl" onClick={e => e.stopPropagation()} style={{ maxWidth:800 }}>
         <div className="modal-header">
-          <h3 className="modal-title">🚀 New Campaign — Step {step} of 4</h3>
-          <button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button>
+          <h3 className="modal-title"> New Campaign — Step {step} of 4</h3>
+          <button className="btn btn-ghost btn-icon" onClick={onClose}></button>
         </div>
 
         {/* Step indicator */}
@@ -743,7 +743,7 @@ function CampaignWizard({ onClose, onDone }) {
               <div style={{ display:'flex', alignItems:'center' }}>
                 {i > 0 && <div style={{ flex:1, height:2, background: step > i ? 'var(--accent-primary)' : 'var(--border-subtle)' }} />}
                 <div style={{ width:28, height:28, borderRadius:'50%', background: step > i+1 ? 'var(--accent-primary)' : step === i+1 ? 'var(--accent-primary)' : 'var(--bg-elevated)', border:`2px solid ${step >= i+1 ? 'var(--accent-primary)' : 'var(--border-subtle)'}`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'0.72rem', fontWeight:800, color: step >= i+1 ? '#fff' : 'var(--text-muted)', flexShrink:0 }}>
-                  {step > i+1 ? '✓' : i+1}
+                  {step > i+1 ? '' : i+1}
                 </div>
                 {i < 3 && <div style={{ flex:1, height:2, background: step > i+1 ? 'var(--accent-primary)' : 'var(--border-subtle)' }} />}
               </div>
@@ -763,7 +763,7 @@ function CampaignWizard({ onClose, onDone }) {
               <div className="form-group">
                 <label className="form-label required">Channel</label>
                 <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:10 }}>
-                  {[['email', '✉️ Email', 'Personalized HTML emails sent via your SMTP server'], ['whatsapp', '💬 WhatsApp', 'Rich messages with media via WhatsApp Business API'], ['sms', '📱 SMS', 'Short SMS alerts via your SMS provider']].map(([val, lbl, desc]) => (
+                  {[['email', ' Email', 'Personalized HTML emails sent via your SMTP server'], ['whatsapp', ' WhatsApp', 'Rich messages with media via WhatsApp Business API'], ['sms', ' SMS', 'Short SMS alerts via your SMS provider']].map(([val, lbl, desc]) => (
                     <div key={val} onClick={() => setForm(f => ({...f, channel: val, template_id: ''}))}
                       style={{ padding:'14px 16px', borderRadius:10, border:`2px solid ${form.channel === val ? 'var(--accent-primary)' : 'var(--border-subtle)'}`, background: form.channel === val ? 'rgba(0,212,255,0.08)' : 'var(--bg-elevated)', cursor:'pointer', transition:'all 0.15s' }}>
                       <div style={{ fontSize:'1.4rem', marginBottom:6 }}>{lbl.split(' ')[0]}</div>
@@ -814,7 +814,7 @@ function CampaignWizard({ onClose, onDone }) {
           {step === 3 && (
             <div>
               <div style={{ display:'flex', gap:10, marginBottom:16 }}>
-                {[['all', '👥 All Clients'], ['email', '✉️ Has Email'], ['phone', '📱 Has Phone']].map(([val, lbl]) => (
+                {[['all', ' All Clients'], ['email', ' Has Email'], ['phone', ' Has Phone']].map(([val, lbl]) => (
                   <button key={val} onClick={() => setForm(f => ({...f, audience_filter: val}))}
                     style={{ padding:'8px 16px', borderRadius:8, border:`2px solid ${form.audience_filter === val ? 'var(--accent-primary)' : 'var(--border-subtle)'}`, background: form.audience_filter === val ? 'rgba(0,212,255,0.1)' : 'var(--bg-elevated)', color: form.audience_filter === val ? 'var(--accent-primary)' : 'var(--text-secondary)', cursor:'pointer', fontWeight: form.audience_filter === val ? 700 : 400, fontSize:'0.82rem' }}>
                     {lbl}
@@ -870,7 +870,7 @@ function CampaignWizard({ onClose, onDone }) {
                   ['Template', selectedTpl?.name || '—'],
                   ['Recipients', filteredAudience.length],
                   ['Schedule', form.scheduled_at ? new Date(form.scheduled_at).toLocaleString('en-IN') : 'Send Immediately'],
-                  ['Personalization', form.personalize ? '✅ Enabled' : '❌ Disabled'],
+                  ['Personalization', form.personalize ? ' Enabled' : ' Disabled'],
                 ].map(([label, val]) => (
                   <div key={label} style={{ padding:'12px 14px', background:'var(--bg-elevated)', borderRadius:8, border:'1px solid var(--border-subtle)' }}>
                     <div style={{ fontSize:'0.68rem', color:'var(--text-muted)', marginBottom:4, fontWeight:700 }}>{label.toUpperCase()}</div>
@@ -880,20 +880,20 @@ function CampaignWizard({ onClose, onDone }) {
               </div>
               {form.channel === 'email' && (
                 <div style={{ padding:'12px 14px', background:'rgba(16,185,129,0.06)', borderRadius:8, border:'1px solid rgba(16,185,129,0.2)', marginBottom:12 }}>
-                  <div style={{ fontSize:'0.78rem', fontWeight:700, color:'#10b981', marginBottom:6 }}>✉️ Email Delivery Checklist</div>
+                  <div style={{ fontSize:'0.78rem', fontWeight:700, color:'#10b981', marginBottom:6 }}> Email Delivery Checklist</div>
                   {['Unsubscribe link included in template', 'From name is set', 'Subject line has no spam words', 'SMTP server configured in Super Admin → Email Deliverability', 'SPF & DKIM DNS records set up on your domain'].map(item => (
                     <div key={item} style={{ fontSize:'0.72rem', color:'var(--text-muted)', display:'flex', gap:6, marginBottom:3 }}>
-                      <span style={{ color:'#10b981' }}>✓</span>{item}
+                      <span style={{ color:'#10b981' }}></span>{item}
                     </div>
                   ))}
                 </div>
               )}
               {form.channel === 'whatsapp' && (
                 <div style={{ padding:'12px 14px', background:'rgba(16,185,129,0.06)', borderRadius:8, border:'1px solid rgba(16,185,129,0.2)', marginBottom:12 }}>
-                  <div style={{ fontSize:'0.78rem', fontWeight:700, color:'#10b981', marginBottom:6 }}>💬 WhatsApp Delivery Checklist</div>
+                  <div style={{ fontSize:'0.78rem', fontWeight:700, color:'#10b981', marginBottom:6 }}> WhatsApp Delivery Checklist</div>
                   {['Template approved via WhatsApp Business API', 'Opt-in confirmed for all recipients', 'Sending within 24h window for utility messages'].map(item => (
                     <div key={item} style={{ fontSize:'0.72rem', color:'var(--text-muted)', display:'flex', gap:6, marginBottom:3 }}>
-                      <span style={{ color:'#10b981' }}>✓</span>{item}
+                      <span style={{ color:'#10b981' }}></span>{item}
                     </div>
                   ))}
                 </div>
@@ -912,7 +912,7 @@ function CampaignWizard({ onClose, onDone }) {
               </button>
             : <button className="btn btn-primary" onClick={handleLaunch}
                 style={{ background: form.scheduled_at ? 'linear-gradient(135deg,#f59e0b,#d97706)' : 'linear-gradient(135deg,#10b981,#059669)' }}>
-                {form.scheduled_at ? '⏰ Schedule Campaign' : '🚀 Launch Now'}
+                {form.scheduled_at ? ' Schedule Campaign' : ' Launch Now'}
               </button>
           }
         </div>
@@ -921,32 +921,32 @@ function CampaignWizard({ onClose, onDone }) {
   );
 }
 
-// ── Automation Flow Builder ────────────────────────────────────────────────────
+//  Automation Flow Builder 
 
 const TRIGGERS = [
-  { key: 'case_created',        label: 'Case Created',           icon: '📂', desc: 'Fires when a new case is opened' },
-  { key: 'case_status_changed', label: 'Case Status Changed',    icon: '🔄', desc: 'Fires whenever case stage changes' },
-  { key: 'case_completed',      label: 'Case Completed / Closed',icon: '✅', desc: 'Fires when case is marked complete' },
-  { key: 'invoice_generated',   label: 'Invoice Generated',      icon: '🧾', desc: 'Fires when a new invoice is created' },
-  { key: 'payment_received',    label: 'Payment Received',       icon: '💳', desc: 'Fires when payment is marked as paid' },
-  { key: 'client_created',      label: 'New Client Added',       icon: '👤', desc: 'Fires when a new client is created' },
-  { key: 'device_received',     label: 'Device Received',        icon: '📦', desc: 'Fires when device is checked in' },
-  { key: 'quote_sent',          label: 'Quote Sent to Client',   icon: '📋', desc: 'Fires when a quotation is sent' },
-  { key: 'no_response_3d',      label: 'No Response (3 days)',   icon: '⏳', desc: 'Fires if client hasn\'t responded in 3 days' },
-  { key: 'subscription_expiry', label: 'Subscription Expiring',  icon: '⚠️', desc: 'Fires 7 days before subscription expires' },
-  { key: 'birthday',            label: 'Client Birthday',        icon: '🎂', desc: 'Fires on client\'s birthday (if date stored)' },
-  { key: 'manual',              label: 'Manual / One-time',      icon: '🖱️', desc: 'Triggered manually from a client/case record' },
+  { key: 'case_created',        label: 'Case Created',           icon: '', desc: 'Fires when a new case is opened' },
+  { key: 'case_status_changed', label: 'Case Status Changed',    icon: '', desc: 'Fires whenever case stage changes' },
+  { key: 'case_completed',      label: 'Case Completed / Closed',icon: '', desc: 'Fires when case is marked complete' },
+  { key: 'invoice_generated',   label: 'Invoice Generated',      icon: '', desc: 'Fires when a new invoice is created' },
+  { key: 'payment_received',    label: 'Payment Received',       icon: '', desc: 'Fires when payment is marked as paid' },
+  { key: 'client_created',      label: 'New Client Added',       icon: '', desc: 'Fires when a new client is created' },
+  { key: 'device_received',     label: 'Device Received',        icon: '', desc: 'Fires when device is checked in' },
+  { key: 'quote_sent',          label: 'Quote Sent to Client',   icon: '', desc: 'Fires when a quotation is sent' },
+  { key: 'no_response_3d',      label: 'No Response (3 days)',   icon: '', desc: 'Fires if client hasn\'t responded in 3 days' },
+  { key: 'subscription_expiry', label: 'Subscription Expiring',  icon: '', desc: 'Fires 7 days before subscription expires' },
+  { key: 'birthday',            label: 'Client Birthday',        icon: '', desc: 'Fires on client\'s birthday (if date stored)' },
+  { key: 'manual',              label: 'Manual / One-time',      icon: '', desc: 'Triggered manually from a client/case record' },
 ];
 
 const STEP_TYPES = [
-  { key: 'send_email',    label: 'Send Email',        icon: '✉️',  color: '#3b82f6' },
-  { key: 'send_whatsapp', label: 'Send WhatsApp',     icon: '💬',  color: '#10b981' },
-  { key: 'send_sms',      label: 'Send SMS',          icon: '📱',  color: '#f59e0b' },
-  { key: 'wait',          label: 'Wait / Delay',      icon: '⏱️',  color: '#8b5cf6' },
-  { key: 'condition',     label: 'If / Else Condition',icon: '🔀', color: '#06b6d4' },
-  { key: 'tag',           label: 'Add Tag to Client', icon: '🏷️',  color: '#64748b' },
-  { key: 'notify_team',   label: 'Notify Team',       icon: '🔔',  color: '#f97316' },
-  { key: 'end',           label: 'End Flow',          icon: '🏁',  color: '#ef4444' },
+  { key: 'send_email',    label: 'Send Email',        icon: '',  color: '#3b82f6' },
+  { key: 'send_whatsapp', label: 'Send WhatsApp',     icon: '',  color: '#10b981' },
+  { key: 'send_sms',      label: 'Send SMS',          icon: '',  color: '#f59e0b' },
+  { key: 'wait',          label: 'Wait / Delay',      icon: '',  color: '#8b5cf6' },
+  { key: 'condition',     label: 'If / Else Condition',icon: '', color: '#06b6d4' },
+  { key: 'tag',           label: 'Add Tag to Client', icon: '',  color: '#64748b' },
+  { key: 'notify_team',   label: 'Notify Team',       icon: '',  color: '#f97316' },
+  { key: 'end',           label: 'End Flow',          icon: '',  color: '#ef4444' },
 ];
 
 const DEFAULT_FLOWS = [
@@ -997,10 +997,10 @@ const DEFAULT_FLOWS = [
       { id: 's5', type: 'send_whatsapp', template_id: 'wa_promo', delay_value: 0, delay_unit: 'minutes', label: 'If NOT opened → Send WhatsApp promo', branch: 'no' },
     ],
   },
-  // ── WhatsApp-first flows ──────────────────────────────────────────────────
+  //  WhatsApp-first flows 
   {
     id: 'flow_wa_onboard',
-    name: '💬 WhatsApp Onboarding Drip',
+    name: ' WhatsApp Onboarding Drip',
     description: 'WhatsApp-first 3-touch welcome sequence for every new client',
     trigger: 'client_created',
     enabled: true,
@@ -1020,7 +1020,7 @@ const DEFAULT_FLOWS = [
   },
   {
     id: 'flow_wa_payment',
-    name: '💬 WhatsApp Payment Nudge',
+    name: ' WhatsApp Payment Nudge',
     description: 'Send invoice via WhatsApp + 2 automated payment reminders if unpaid',
     trigger: 'invoice_generated',
     enabled: true,
@@ -1035,12 +1035,12 @@ const DEFAULT_FLOWS = [
       { id: 'p5', type: 'send_sms',      template_id: 'sms_invoice', delay_value: 0, delay_unit: 'minutes', label: 'Also send SMS reminder simultaneously', branch: 'yes' },
       { id: 'p6', type: 'wait',          template_id: '',            delay_value: 3, delay_unit: 'days',    label: 'Wait 3 more days' },
       { id: 'p7', type: 'condition',     template_id: '',            delay_value: 0, delay_unit: 'minutes', label: 'Still unpaid after 5 days?', condition_field: 'payment_status', condition_op: 'not_equals', condition_value: 'paid' },
-      { id: 'p8', type: 'notify_team',   template_id: '',            delay_value: 0, delay_unit: 'minutes', label: 'Escalate to team if still unpaid', notify_message: '⚠️ Invoice overdue for {{name}} ({{amount}}) — Case {{case_id}}', notify_channel: 'whatsapp' },
+      { id: 'p8', type: 'notify_team',   template_id: '',            delay_value: 0, delay_unit: 'minutes', label: 'Escalate to team if still unpaid', notify_message: ' Invoice overdue for {{name}} ({{amount}}) — Case {{case_id}}', notify_channel: 'whatsapp' },
     ],
   },
   {
     id: 'flow_wa_promo_drip',
-    name: '💬 WhatsApp Promo Campaign',
+    name: ' WhatsApp Promo Campaign',
     description: 'Re-engage past clients with WhatsApp promo → follow-up if no reply',
     trigger: 'manual',
     enabled: false,
@@ -1060,7 +1060,7 @@ const DEFAULT_FLOWS = [
   },
   {
     id: 'flow_wa_birthday',
-    name: '💬 Birthday WhatsApp Greeting',
+    name: ' Birthday WhatsApp Greeting',
     description: 'Automatically wish clients on their birthday with a special discount',
     trigger: 'birthday',
     enabled: true,
@@ -1068,16 +1068,16 @@ const DEFAULT_FLOWS = [
     createdAt: new Date().toISOString(),
     runs: 0,
     steps: [
-      { id: 'b1', type: 'send_whatsapp', template_id: 'wa_promo',  delay_value: 0, delay_unit: 'minutes', label: '🎂 Send birthday greeting + offer on WhatsApp' },
+      { id: 'b1', type: 'send_whatsapp', template_id: 'wa_promo',  delay_value: 0, delay_unit: 'minutes', label: ' Send birthday greeting + offer on WhatsApp' },
       { id: 'b2', type: 'tag',           template_id: '',          delay_value: 0, delay_unit: 'minutes', label: 'Tag client as "birthday_wished"', tag_value: 'birthday_wished' },
       { id: 'b3', type: 'wait',          template_id: '',          delay_value: 3, delay_unit: 'days',    label: 'Wait 3 days' },
       { id: 'b4', type: 'condition',     template_id: '',          delay_value: 0, delay_unit: 'minutes', label: 'Did they book a service?', condition_field: 'case_status', condition_op: 'equals', condition_value: 'new' },
-      { id: 'b5', type: 'notify_team',   template_id: '',          delay_value: 0, delay_unit: 'minutes', label: 'If booked → notify team to give VIP treatment', notify_message: '🎉 Birthday client {{name}} has booked a case — give VIP treatment!', notify_channel: 'in_app' },
+      { id: 'b5', type: 'notify_team',   template_id: '',          delay_value: 0, delay_unit: 'minutes', label: 'If booked → notify team to give VIP treatment', notify_message: ' Birthday client {{name}} has booked a case — give VIP treatment!', notify_channel: 'in_app' },
     ],
   },
 ];
 
-// ── Flow Step Node (visual card) ───────────────────────────────────────────────
+//  Flow Step Node (visual card) 
 function StepNode({ step, index, emailTemplates, waTemplates, smsTemplates, onChange, onDelete, onMoveUp, onMoveDown, isLast }) {
   const stepType = STEP_TYPES.find(t => t.key === step.type) || STEP_TYPES[0];
   const allTemplates = step.type === 'send_email' ? emailTemplates : step.type === 'send_whatsapp' ? waTemplates : step.type === 'send_sms' ? smsTemplates : [];
@@ -1090,7 +1090,7 @@ function StepNode({ step, index, emailTemplates, waTemplates, smsTemplates, onCh
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '0 0 0 20px' }}>
           <div style={{ width: 2, height: 20, background: `${stepType.color}40` }} />
           <div style={{ fontSize: '0.65rem', color: step.delay_value > 0 ? stepType.color : 'var(--text-muted)', fontWeight: 700, background: step.delay_value > 0 ? `${stepType.color}15` : 'var(--bg-elevated)', padding: '2px 10px', borderRadius: 99, border: `1px solid ${step.delay_value > 0 ? stepType.color + '40' : 'var(--border-subtle)'}`, marginBottom: 4 }}>
-            {step.delay_value > 0 ? `⏱️ after ${step.delay_value} ${step.delay_unit}` : 'immediately'}
+            {step.delay_value > 0 ? ` after ${step.delay_value} ${step.delay_unit}` : 'immediately'}
           </div>
           <div style={{ width: 2, height: 12, background: `${stepType.color}40` }} />
           <div style={{ width: 0, height: 0, borderLeft: '5px solid transparent', borderRight: '5px solid transparent', borderTop: `6px solid ${stepType.color}60` }} />
@@ -1107,19 +1107,19 @@ function StepNode({ step, index, emailTemplates, waTemplates, smsTemplates, onCh
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 700, fontSize: '0.82rem', color: stepType.color }}>{stepType.label}</div>
             <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: 1 }}>
-              {step.type === 'wait' ? `⏱️ ${step.delay_value} ${step.delay_unit}` :
-               step.type === 'condition' ? `🔀 If ${step.condition_field || 'field'} ${step.condition_op || 'equals'} "${step.condition_value || '...'}"` :
-               step.type === 'tag' ? `🏷️ Tag: ${step.tag_value || '...'}` :
-               step.type === 'notify_team' ? `🔔 ${step.notify_message || 'Team notification'}` :
-               step.type === 'end' ? '🏁 End of flow' :
+              {step.type === 'wait' ? ` ${step.delay_value} ${step.delay_unit}` :
+               step.type === 'condition' ? ` If ${step.condition_field || 'field'} ${step.condition_op || 'equals'} "${step.condition_value || '...'}"` :
+               step.type === 'tag' ? ` Tag: ${step.tag_value || '...'}` :
+               step.type === 'notify_team' ? ` ${step.notify_message || 'Team notification'}` :
+               step.type === 'end' ? ' End of flow' :
                allTemplates.find(t => t.id === step.template_id)?.name || 'Select template...'}
             </div>
           </div>
           <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-            <button onClick={e => { e.stopPropagation(); onMoveUp(); }} disabled={index === 0} style={{ background: 'none', border: 'none', cursor: index===0?'default':'pointer', color: 'var(--text-muted)', fontSize: '0.75rem', opacity: index===0?0.3:1, padding: '2px 4px' }} title="Move up">▲</button>
-            <button onClick={e => { e.stopPropagation(); onMoveDown(); }} disabled={isLast} style={{ background: 'none', border: 'none', cursor: isLast?'default':'pointer', color: 'var(--text-muted)', fontSize: '0.75rem', opacity: isLast?0.3:1, padding: '2px 4px' }} title="Move down">▼</button>
-            <button onClick={e => { e.stopPropagation(); onDelete(); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', fontSize: '0.8rem', padding: '2px 6px' }} title="Remove step">✕</button>
-            <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginLeft: 4 }}>{expanded ? '▲' : '▼'}</span>
+            <button onClick={e => { e.stopPropagation(); onMoveUp(); }} disabled={index === 0} style={{ background: 'none', border: 'none', cursor: index===0?'default':'pointer', color: 'var(--text-muted)', fontSize: '0.75rem', opacity: index===0?0.3:1, padding: '2px 4px' }} title="Move up"></button>
+            <button onClick={e => { e.stopPropagation(); onMoveDown(); }} disabled={isLast} style={{ background: 'none', border: 'none', cursor: isLast?'default':'pointer', color: 'var(--text-muted)', fontSize: '0.75rem', opacity: isLast?0.3:1, padding: '2px 4px' }} title="Move down"></button>
+            <button onClick={e => { e.stopPropagation(); onDelete(); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', fontSize: '0.8rem', padding: '2px 6px' }} title="Remove step"></button>
+            <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginLeft: 4 }}>{expanded ? '' : ''}</span>
           </div>
         </div>
 
@@ -1219,7 +1219,7 @@ function StepNode({ step, index, emailTemplates, waTemplates, smsTemplates, onCh
   );
 }
 
-// ── Add Step Panel ─────────────────────────────────────────────────────────────
+//  Add Step Panel 
 function AddStepPanel({ onAdd }) {
   return (
     <div style={{ marginTop: 8 }}>
@@ -1244,7 +1244,7 @@ function AddStepPanel({ onAdd }) {
   );
 }
 
-// ── Flow Editor Modal ──────────────────────────────────────────────────────────
+//  Flow Editor Modal 
 function FlowEditor({ flow, emailTemplates, waTemplates, smsTemplates, onSave, onClose }) {
   const [form, setForm] = useState({
     name: flow?.name || '',
@@ -1300,8 +1300,8 @@ function FlowEditor({ flow, emailTemplates, waTemplates, smsTemplates, onSave, o
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" style={{ maxWidth: 1000, width: '96vw', height: '92vh', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
         <div className="modal-header" style={{ flexShrink: 0 }}>
-          <h3 className="modal-title">⚡ {flow?.id ? 'Edit' : 'Create'} Automation Flow</h3>
-          <button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button>
+          <h3 className="modal-title"> {flow?.id ? 'Edit' : 'Create'} Automation Flow</h3>
+          <button className="btn btn-ghost btn-icon" onClick={onClose}></button>
         </div>
 
         {/* Meta */}
@@ -1326,7 +1326,7 @@ function FlowEditor({ flow, emailTemplates, waTemplates, smsTemplates, onSave, o
         <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '260px 1fr', overflow: 'hidden' }}>
           {/* Left: Trigger selector */}
           <div style={{ borderRight: '1px solid var(--border-subtle)', padding: 16, overflowY: 'auto' }}>
-            <div style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--text-muted)', marginBottom: 12, textTransform: 'uppercase', letterSpacing: 1 }}>⚡ Trigger Event</div>
+            <div style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--text-muted)', marginBottom: 12, textTransform: 'uppercase', letterSpacing: 1 }}> Trigger Event</div>
             <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: 12, lineHeight: 1.5 }}>
               Select what event starts this automation flow:
             </div>
@@ -1351,7 +1351,7 @@ function FlowEditor({ flow, emailTemplates, waTemplates, smsTemplates, onSave, o
                 <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{triggerDef?.desc}</div>
               </div>
               <div style={{ marginLeft: 'auto', fontSize: '0.68rem', padding: '3px 10px', borderRadius: 99, background: form.enabled ? 'rgba(16,185,129,0.15)' : 'rgba(100,116,139,0.15)', color: form.enabled ? '#10b981' : '#64748b', fontWeight: 700 }}>
-                {form.enabled ? '● ACTIVE' : '○ INACTIVE'}
+                {form.enabled ? ' ACTIVE' : ' INACTIVE'}
               </div>
             </div>
 
@@ -1386,14 +1386,14 @@ function FlowEditor({ flow, emailTemplates, waTemplates, smsTemplates, onSave, o
             {form.steps.length} step{form.steps.length !== 1 ? 's' : ''} · Trigger: {triggerDef?.label}
           </div>
           <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
-          <button className="btn btn-primary" onClick={handleSave}>💾 Save Flow</button>
+          <button className="btn btn-primary" onClick={handleSave}> Save Flow</button>
         </div>
       </div>
     </div>
   );
 }
 
-// ── WhatsApp Marketing Hub ─────────────────────────────────────────────────────
+//  WhatsApp Marketing Hub 
 function WhatsAppMarketingHub({ waTemplates, onNewCampaign, onEditTemplate, onNewTemplate, onSwitchTab }) {
   const [broadcastForm, setBroadcastForm] = useState({ template_id: '', message: '', audience: 'all', schedule: '' });
   const [broadcastSent, setBroadcastSent] = useState(false);
@@ -1403,19 +1403,19 @@ function WhatsAppMarketingHub({ waTemplates, onNewCampaign, onEditTemplate, onNe
   const sentCampaigns = ls.get('crm_campaigns', []).filter(c => c.channel === 'whatsapp');
 
   const WA_FEATURES = [
-    { icon: '📤', label: 'Broadcast', desc: 'Send to all contacts at once', color: '#10b981', section: 'broadcast' },
-    { icon: '⚡', label: 'Automated Flows', desc: 'Trigger-based sequences', color: '#8b5cf6', section: 'flows' },
-    { icon: '🎨', label: 'Templates', desc: 'Pre-approved message templates', color: '#3b82f6', section: 'templates' },
-    { icon: '📊', label: 'Analytics', desc: 'Open & reply rates', color: '#f59e0b', section: 'analytics' },
+    { icon: '', label: 'Broadcast', desc: 'Send to all contacts at once', color: '#10b981', section: 'broadcast' },
+    { icon: '', label: 'Automated Flows', desc: 'Trigger-based sequences', color: '#8b5cf6', section: 'flows' },
+    { icon: '', label: 'Templates', desc: 'Pre-approved message templates', color: '#3b82f6', section: 'templates' },
+    { icon: '', label: 'Analytics', desc: 'Open & reply rates', color: '#f59e0b', section: 'analytics' },
   ];
 
   const WA_TIPS = [
-    { icon: '✅', tip: 'Get opt-in consent before messaging — required by WhatsApp Business Policy' },
-    { icon: '🕐', tip: 'Best time to send: 10am–12pm or 6pm–9pm in recipient\'s timezone' },
-    { icon: '📝', tip: 'Use approved templates for marketing; free-form only in 24h reply window' },
-    { icon: '🚫', tip: 'Avoid bulk spam — too many reports will get your number banned' },
-    { icon: '🖼️', tip: 'Include images or PDFs for higher engagement rates (2–3x more opens)' },
-    { icon: '💬', tip: 'Always include a clear CTA and easy way to unsubscribe (reply STOP)' },
+    { icon: '', tip: 'Get opt-in consent before messaging — required by WhatsApp Business Policy' },
+    { icon: '', tip: 'Best time to send: 10am–12pm or 6pm–9pm in recipient\'s timezone' },
+    { icon: '', tip: 'Use approved templates for marketing; free-form only in 24h reply window' },
+    { icon: '', tip: 'Avoid bulk spam — too many reports will get your number banned' },
+    { icon: '', tip: 'Include images or PDFs for higher engagement rates (2–3x more opens)' },
+    { icon: '', tip: 'Always include a clear CTA and easy way to unsubscribe (reply STOP)' },
   ];
 
   const sendBroadcast = () => {
@@ -1442,7 +1442,7 @@ function WhatsAppMarketingHub({ waTemplates, onNewCampaign, onEditTemplate, onNe
       <div style={{ background: 'linear-gradient(135deg, #064e3b, #065f46, #047857)', borderRadius: 14, padding: '24px 28px', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 20, position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', right: -20, top: -20, width: 180, height: 180, borderRadius: '50%', background: 'rgba(255,255,255,0.04)' }} />
         <div style={{ position: 'absolute', right: 60, bottom: -40, width: 120, height: 120, borderRadius: '50%', background: 'rgba(255,255,255,0.03)' }} />
-        <div style={{ fontSize: '3rem', flexShrink: 0 }}>💬</div>
+        <div style={{ fontSize: '3rem', flexShrink: 0 }}></div>
         <div style={{ flex: 1 }}>
           <div style={{ fontWeight: 900, fontSize: '1.3rem', color: '#fff', marginBottom: 6 }}>WhatsApp Marketing Hub</div>
           <div style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.75)', lineHeight: 1.6 }}>
@@ -1450,7 +1450,7 @@ function WhatsAppMarketingHub({ waTemplates, onNewCampaign, onEditTemplate, onNe
           </div>
         </div>
         <div style={{ display: 'flex', gap: 10, flexShrink: 0 }}>
-          <button onClick={onNewCampaign} style={{ padding: '10px 18px', background: '#fff', color: '#065f46', border: 'none', borderRadius: 8, fontWeight: 800, fontSize: '0.82rem', cursor: 'pointer' }}>🚀 New Campaign</button>
+          <button onClick={onNewCampaign} style={{ padding: '10px 18px', background: '#fff', color: '#065f46', border: 'none', borderRadius: 8, fontWeight: 800, fontSize: '0.82rem', cursor: 'pointer' }}> New Campaign</button>
           <button onClick={onNewTemplate} style={{ padding: '10px 18px', background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 8, fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer' }}>+ New Template</button>
         </div>
       </div>
@@ -1458,11 +1458,11 @@ function WhatsAppMarketingHub({ waTemplates, onNewCampaign, onEditTemplate, onNe
       {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12, marginBottom: 24 }}>
         {[
-          ['💬', 'WA Templates', waTemplates.length, '#10b981'],
-          ['📤', 'Broadcasts Sent', sentCampaigns.filter(c=>c.status==='sent').length, '#3b82f6'],
-          ['⚡', 'Active Flows', waFlows.filter(f=>f.enabled).length, '#8b5cf6'],
-          ['👥', 'Total Contacts', audience.filter(a=>a.phone).length || audience.length, '#f59e0b'],
-          ['⏰', 'Scheduled', sentCampaigns.filter(c=>c.status==='scheduled').length, '#06b6d4'],
+          ['', 'WA Templates', waTemplates.length, '#10b981'],
+          ['', 'Broadcasts Sent', sentCampaigns.filter(c=>c.status==='sent').length, '#3b82f6'],
+          ['', 'Active Flows', waFlows.filter(f=>f.enabled).length, '#8b5cf6'],
+          ['', 'Total Contacts', audience.filter(a=>a.phone).length || audience.length, '#f59e0b'],
+          ['', 'Scheduled', sentCampaigns.filter(c=>c.status==='scheduled').length, '#06b6d4'],
         ].map(([icon, label, val, color]) => (
           <div key={label} style={{ padding: '14px 16px', background: 'var(--bg-elevated)', borderRadius: 10, border: '1px solid var(--border-subtle)', textAlign: 'center' }}>
             <div style={{ fontSize: '1.3rem', marginBottom: 4 }}>{icon}</div>
@@ -1484,11 +1484,11 @@ function WhatsAppMarketingHub({ waTemplates, onNewCampaign, onEditTemplate, onNe
         ))}
       </div>
 
-      {/* ── Broadcast Section ── */}
+      {/*  Broadcast Section  */}
       {activeSection === 'broadcast' && (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
           <div>
-            <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-primary)', marginBottom: 16 }}>📤 Send Broadcast</div>
+            <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-primary)', marginBottom: 16 }}> Send Broadcast</div>
 
             <div className="form-group">
               <label className="form-label">Select Template *</label>
@@ -1501,7 +1501,7 @@ function WhatsAppMarketingHub({ waTemplates, onNewCampaign, onEditTemplate, onNe
             <div className="form-group">
               <label className="form-label">Audience</label>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
-                {[['all', '👥 All Contacts', audience.length], ['phone', '📱 Has Phone', audience.filter(a=>a.phone).length], ['vip', '⭐ VIP Only', Math.floor(audience.length * 0.2)]].map(([val, lbl, count]) => (
+                {[['all', ' All Contacts', audience.length], ['phone', ' Has Phone', audience.filter(a=>a.phone).length], ['vip', ' VIP Only', Math.floor(audience.length * 0.2)]].map(([val, lbl, count]) => (
                   <div key={val} onClick={() => setBroadcastForm(f => ({...f, audience: val}))}
                     style={{ padding: '10px', borderRadius: 8, border: `2px solid ${broadcastForm.audience === val ? '#10b981' : 'var(--border-subtle)'}`, background: broadcastForm.audience === val ? 'rgba(16,185,129,0.08)' : 'var(--bg-elevated)', cursor: 'pointer', textAlign: 'center' }}>
                     <div style={{ fontSize: '0.75rem', fontWeight: 700, color: broadcastForm.audience === val ? '#10b981' : 'var(--text-primary)' }}>{lbl}</div>
@@ -1520,18 +1520,18 @@ function WhatsAppMarketingHub({ waTemplates, onNewCampaign, onEditTemplate, onNe
 
             <button onClick={sendBroadcast}
               style={{ width: '100%', padding: '12px', background: 'linear-gradient(135deg, #065f46, #10b981)', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', marginTop: 8 }}>
-              {broadcastForm.schedule ? '⏰ Schedule Broadcast' : '💬 Send Broadcast Now'}
+              {broadcastForm.schedule ? ' Schedule Broadcast' : ' Send Broadcast Now'}
             </button>
 
             {broadcastSent && (
               <div style={{ marginTop: 12, padding: '10px 14px', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 8, color: '#10b981', fontWeight: 700, fontSize: '0.82rem', textAlign: 'center' }}>
-                ✅ Broadcast sent successfully! Check Campaigns tab for status.
+                 Broadcast sent successfully! Check Campaigns tab for status.
               </div>
             )}
 
             {/* WhatsApp tips */}
             <div style={{ marginTop: 20, padding: '14px 16px', background: 'var(--bg-elevated)', borderRadius: 10, border: '1px solid var(--border-subtle)' }}>
-              <div style={{ fontWeight: 700, fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: 10 }}>💡 WhatsApp Marketing Tips</div>
+              <div style={{ fontWeight: 700, fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: 10 }}> WhatsApp Marketing Tips</div>
               {WA_TIPS.map((t, i) => (
                 <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 7, fontSize: '0.72rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
                   <span style={{ flexShrink: 0 }}>{t.icon}</span><span>{t.tip}</span>
@@ -1542,7 +1542,7 @@ function WhatsAppMarketingHub({ waTemplates, onNewCampaign, onEditTemplate, onNe
 
           {/* Phone preview */}
           <div>
-            <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-primary)', marginBottom: 16 }}>📱 Message Preview</div>
+            <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-primary)', marginBottom: 16 }}> Message Preview</div>
             {/* Phone frame */}
             <div style={{ maxWidth: 320, margin: '0 auto', background: '#1a1a1a', borderRadius: 40, padding: '16px 8px', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', border: '3px solid #333' }}>
               {/* Notch */}
@@ -1554,14 +1554,14 @@ function WhatsAppMarketingHub({ waTemplates, onNewCampaign, onEditTemplate, onNe
               <div style={{ background: '#fff', borderRadius: 24, overflow: 'hidden', height: 480 }}>
                 {/* WA header */}
                 <div style={{ background: '#075e54', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#128c7e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>👤</div>
+                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#128c7e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}></div>
                   <div>
                     <div style={{ color: '#fff', fontWeight: 700, fontSize: '0.88rem' }}>Your Company</div>
-                    <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.7rem' }}>Business Account ✓</div>
+                    <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.7rem' }}>Business Account </div>
                   </div>
                   <div style={{ marginLeft: 'auto', display: 'flex', gap: 12 }}>
-                    <span style={{ color: '#fff', fontSize: '1rem' }}>📹</span>
-                    <span style={{ color: '#fff', fontSize: '1rem' }}>📞</span>
+                    <span style={{ color: '#fff', fontSize: '1rem' }}></span>
+                    <span style={{ color: '#fff', fontSize: '1rem' }}></span>
                   </div>
                 </div>
                 {/* Chat background */}
@@ -1595,14 +1595,14 @@ function WhatsAppMarketingHub({ waTemplates, onNewCampaign, onEditTemplate, onNe
                         {tpl.mediaType && tpl.mediaType !== 'none' && (
                           <div style={{ background: '#dcf8c6', borderRadius: '8px 8px 0 0', padding: 10, textAlign: 'center', marginBottom: 0 }}>
                             <div style={{ background: 'rgba(0,0,0,0.06)', borderRadius: 6, padding: '12px 20px', fontSize: '0.75rem', color: '#555' }}>
-                              {tpl.mediaType === 'image' ? '🖼️ Image' : tpl.mediaType === 'document' ? '📄 PDF Document' : '🎥 Video'}
+                              {tpl.mediaType === 'image' ? ' Image' : tpl.mediaType === 'document' ? ' PDF Document' : ' Video'}
                             </div>
                           </div>
                         )}
                         <div style={{ background: '#dcf8c6', borderRadius: tpl.mediaType && tpl.mediaType !== 'none' ? '0 0 8px 8px' : '0 8px 8px 8px', padding: '8px 12px', fontSize: '0.78rem', color: '#111', lineHeight: 1.6, boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}
                           dangerouslySetInnerHTML={{ __html: msg }} />
                         <div style={{ textAlign: 'right', fontSize: '0.6rem', color: '#667781', marginTop: 2 }}>
-                          {new Date().toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'})} ✓✓
+                          {new Date().toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'})} 
                         </div>
                       </div>
                     );
@@ -1618,14 +1618,14 @@ function WhatsAppMarketingHub({ waTemplates, onNewCampaign, onEditTemplate, onNe
         </div>
       )}
 
-      {/* ── Automated Flows Section ── */}
+      {/*  Automated Flows Section  */}
       {activeSection === 'flows' && (
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
               WhatsApp automation flows — trigger messages are sent automatically when events happen:
             </div>
-            <button onClick={() => onSwitchTab('automations')} className="btn btn-secondary">⚡ Open Flow Builder</button>
+            <button onClick={() => onSwitchTab('automations')} className="btn btn-secondary"> Open Flow Builder</button>
           </div>
           <div style={{ display: 'grid', gap: 12 }}>
             {waFlows.length === 0 ? (
@@ -1646,12 +1646,12 @@ function WhatsAppMarketingHub({ waTemplates, onNewCampaign, onEditTemplate, onNe
                     <div style={{ flex: 1 }}>
                       <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 4 }}>
                         <span style={{ fontWeight: 800, fontSize: '0.92rem', color: 'var(--text-primary)' }}>{flow.name}</span>
-                        <span style={{ fontSize: '0.68rem', padding: '2px 8px', borderRadius: 99, background: flow.enabled ? 'rgba(16,185,129,0.12)' : 'rgba(100,116,139,0.12)', color: flow.enabled ? '#10b981' : '#64748b', fontWeight: 700 }}>{flow.enabled ? '● ACTIVE' : '○ PAUSED'}</span>
+                        <span style={{ fontSize: '0.68rem', padding: '2px 8px', borderRadius: 99, background: flow.enabled ? 'rgba(16,185,129,0.12)' : 'rgba(100,116,139,0.12)', color: flow.enabled ? '#10b981' : '#64748b', fontWeight: 700 }}>{flow.enabled ? ' ACTIVE' : ' PAUSED'}</span>
                       </div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 10 }}>{flow.description}</div>
                       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                         <span style={{ fontSize: '0.7rem', padding: '3px 10px', borderRadius: 99, background: 'rgba(0,212,255,0.08)', color: 'var(--accent-primary)', fontWeight: 700, border: '1px solid rgba(0,212,255,0.2)' }}>{trigDef?.icon} {trigDef?.label}</span>
-                        <span style={{ fontSize: '0.7rem', color: '#10b981' }}>💬 {waSteps.length} WA messages</span>
+                        <span style={{ fontSize: '0.7rem', color: '#10b981' }}> {waSteps.length} WA messages</span>
                         <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{flow.steps?.length || 0} total steps</span>
                         {/* step emoji chain */}
                         <div style={{ display: 'flex', gap: 2, alignItems: 'center' }}>
@@ -1662,7 +1662,7 @@ function WhatsAppMarketingHub({ waTemplates, onNewCampaign, onEditTemplate, onNe
                         </div>
                       </div>
                     </div>
-                    <button onClick={() => onSwitchTab('automations')} className="btn btn-sm btn-ghost">✏️ Edit</button>
+                    <button onClick={() => onSwitchTab('automations')} className="btn btn-sm btn-ghost"> Edit</button>
                   </div>
                 </div>
               );
@@ -1671,7 +1671,7 @@ function WhatsAppMarketingHub({ waTemplates, onNewCampaign, onEditTemplate, onNe
         </div>
       )}
 
-      {/* ── Templates Section ── */}
+      {/*  Templates Section  */}
       {activeSection === 'templates' && (
         <div>
           <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
@@ -1684,7 +1684,7 @@ function WhatsAppMarketingHub({ waTemplates, onNewCampaign, onEditTemplate, onNe
                 <div style={{ padding: 14, background: '#e5ddd5', minHeight: 90 }}>
                   {t.mediaType && t.mediaType !== 'none' && (
                     <div style={{ background: 'rgba(0,0,0,0.08)', borderRadius: 6, padding: '6px 10px', fontSize: '0.68rem', color: '#555', marginBottom: 6, textAlign: 'center' }}>
-                      {t.mediaType === 'image' ? '🖼️ Image' : t.mediaType === 'document' ? '📄 Document' : '🎥 Video'}
+                      {t.mediaType === 'image' ? ' Image' : t.mediaType === 'document' ? ' Document' : ' Video'}
                     </div>
                   )}
                   <div style={{ background: '#fff', borderRadius: '0 8px 8px 8px', padding: '8px 10px', fontSize: '0.72rem', color: '#111', lineHeight: 1.5, maxWidth: '85%', whiteSpace: 'pre-line', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}>
@@ -1697,8 +1697,8 @@ function WhatsAppMarketingHub({ waTemplates, onNewCampaign, onEditTemplate, onNe
                     <CatBadge cat={t.category} />
                   </div>
                   <div style={{ display: 'flex', gap: 6 }}>
-                    <button className="btn btn-sm btn-ghost" onClick={() => onEditTemplate(t)}>✏️</button>
-                    <button className="btn btn-sm btn-primary" style={{ fontSize: '0.7rem', padding: '4px 10px' }} onClick={onNewCampaign}>🚀 Send</button>
+                    <button className="btn btn-sm btn-ghost" onClick={() => onEditTemplate(t)}></button>
+                    <button className="btn btn-sm btn-primary" style={{ fontSize: '0.7rem', padding: '4px 10px' }} onClick={onNewCampaign}> Send</button>
                   </div>
                 </div>
               </div>
@@ -1707,15 +1707,15 @@ function WhatsAppMarketingHub({ waTemplates, onNewCampaign, onEditTemplate, onNe
         </div>
       )}
 
-      {/* ── Analytics Section ── */}
+      {/*  Analytics Section  */}
       {activeSection === 'analytics' && (
         <div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 20 }}>
             {[
-              ['📤', 'Broadcasts', sentCampaigns.length, '#3b82f6'],
-              ['✅', 'Delivered',  sentCampaigns.reduce((s,c)=>s+(c.audience_count||0),0), '#10b981'],
-              ['👁️', 'Avg Read Rate', '67%', '#8b5cf6'],
-              ['💬', 'Avg Reply Rate', '23%', '#f59e0b'],
+              ['', 'Broadcasts', sentCampaigns.length, '#3b82f6'],
+              ['', 'Delivered',  sentCampaigns.reduce((s,c)=>s+(c.audience_count||0),0), '#10b981'],
+              ['', 'Avg Read Rate', '67%', '#8b5cf6'],
+              ['', 'Avg Reply Rate', '23%', '#f59e0b'],
             ].map(([icon, label, val, color]) => (
               <div key={label} style={{ padding: 20, background: 'var(--bg-elevated)', borderRadius: 12, border: '1px solid var(--border-subtle)', textAlign: 'center' }}>
                 <div style={{ fontSize: '1.5rem', marginBottom: 8 }}>{icon}</div>
@@ -1725,7 +1725,7 @@ function WhatsAppMarketingHub({ waTemplates, onNewCampaign, onEditTemplate, onNe
             ))}
           </div>
           <div style={{ padding: '16px 20px', background: 'rgba(16,185,129,0.06)', borderRadius: 12, border: '1px solid rgba(16,185,129,0.2)', fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.7 }}>
-            <strong style={{ color: '#10b981' }}>📊 WhatsApp vs Email:</strong><br />
+            <strong style={{ color: '#10b981' }}> WhatsApp vs Email:</strong><br />
             WhatsApp messages typically achieve <strong>95%+ open rates</strong> vs ~20–25% for email, and <strong>25–30% reply rates</strong> vs 2–5% for email. Use WhatsApp for time-sensitive messages and email for detailed content.
           </div>
           {sentCampaigns.length === 0 && (
@@ -1737,7 +1737,7 @@ function WhatsAppMarketingHub({ waTemplates, onNewCampaign, onEditTemplate, onNe
   );
 }
 
-// ── Automations Tab ────────────────────────────────────────────────────────────
+//  Automations Tab 
 function AutomationsTab({ emailTemplates, waTemplates, smsTemplates }) {
   const [flows, setFlows] = useState(() => ls.get('crm_email_flows', DEFAULT_FLOWS));
   const [showEditor, setShowEditor] = useState(null);
@@ -1755,7 +1755,7 @@ function AutomationsTab({ emailTemplates, waTemplates, smsTemplates }) {
 
   const simulateRun = (id) => {
     saveFlows(flows.map(f => f.id === id ? { ...f, runs: (f.runs || 0) + 1 } : f));
-    alert('✅ Flow simulated! In production this would execute on a matching trigger event.');
+    alert(' Flow simulated! In production this would execute on a matching trigger event.');
   };
 
   const filtered = flows.filter(f => f.name.toLowerCase().includes(search.toLowerCase()) || f.description?.toLowerCase().includes(search.toLowerCase()));
@@ -1767,10 +1767,10 @@ function AutomationsTab({ emailTemplates, waTemplates, smsTemplates }) {
       {/* Stats row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 20 }}>
         {[
-          ['⚡', 'Total Flows',  flows.length,   '#3b82f6'],
-          ['✅', 'Active Flows', activeCount,     '#10b981'],
-          ['▶️', 'Total Runs',   totalRuns,       '#8b5cf6'],
-          ['⏸️', 'Paused',       flows.length - activeCount, '#f59e0b'],
+          ['', 'Total Flows',  flows.length,   '#3b82f6'],
+          ['', 'Active Flows', activeCount,     '#10b981'],
+          ['', 'Total Runs',   totalRuns,       '#8b5cf6'],
+          ['', 'Paused',       flows.length - activeCount, '#f59e0b'],
         ].map(([icon, label, val, color]) => (
           <div key={label} style={{ padding: '14px 16px', background: 'var(--bg-elevated)', borderRadius: 10, border: '1px solid var(--border-subtle)' }}>
             <div style={{ fontSize: '1.2rem', marginBottom: 4 }}>{icon}</div>
@@ -1782,17 +1782,17 @@ function AutomationsTab({ emailTemplates, waTemplates, smsTemplates }) {
 
       {/* Controls */}
       <div style={{ display: 'flex', gap: 10, marginBottom: 16, alignItems: 'center' }}>
-        <input className="form-input" value={search} onChange={e => setSearch(e.target.value)} placeholder="🔍 Search flows..." style={{ maxWidth: 280 }} />
+        <input className="form-input" value={search} onChange={e => setSearch(e.target.value)} placeholder=" Search flows..." style={{ maxWidth: 280 }} />
         <div style={{ flex: 1 }} />
         <button className="btn btn-primary" onClick={() => setShowEditor({})}
           style={{ background: 'linear-gradient(135deg,#7c3aed,#3b82f6)', fontWeight: 700 }}>
-          ⚡ Create Flow
+           Create Flow
         </button>
       </div>
 
       {/* Info banner */}
       <div style={{ padding: '10px 16px', background: 'rgba(59,130,246,0.06)', borderRadius: 10, border: '1px solid rgba(59,130,246,0.2)', marginBottom: 16, fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-        <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>💡</span>
+        <span style={{ fontSize: '1.1rem', flexShrink: 0 }}></span>
         <div>
           <strong>How automations work:</strong> Each flow watches for a trigger event (e.g. "Case Created"). When the event fires, the flow runs its steps automatically — waiting the configured delay between each step, then sending the email/WhatsApp/SMS to the relevant client using their personalized data.
           In production, flows run server-side so they execute even when you're offline.
@@ -1802,7 +1802,7 @@ function AutomationsTab({ emailTemplates, waTemplates, smsTemplates }) {
       {/* Flow cards */}
       {filtered.length === 0 ? (
         <div style={{ textAlign: 'center', padding: 60, color: 'var(--text-muted)' }}>
-          <div style={{ fontSize: '3rem', marginBottom: 12 }}>⚡</div>
+          <div style={{ fontSize: '3rem', marginBottom: 12 }}></div>
           <div style={{ fontWeight: 700, marginBottom: 8 }}>No automation flows yet</div>
           <div style={{ fontSize: '0.82rem', marginBottom: 20 }}>Create your first flow to automate emails, WhatsApp and SMS on autopilot</div>
           <button className="btn btn-primary" onClick={() => setShowEditor({})}>Create First Flow</button>
@@ -1829,7 +1829,7 @@ function AutomationsTab({ emailTemplates, waTemplates, smsTemplates }) {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4, flexWrap: 'wrap' }}>
                       <span style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--text-primary)' }}>{flow.name}</span>
                       <span style={{ fontSize: '0.72rem', padding: '2px 8px', borderRadius: 99, background: flow.enabled ? 'rgba(16,185,129,0.12)' : 'rgba(100,116,139,0.12)', color: flow.enabled ? '#10b981' : '#64748b', fontWeight: 700, border: `1px solid ${flow.enabled ? 'rgba(16,185,129,0.3)' : 'rgba(100,116,139,0.3)'}` }}>
-                        {flow.enabled ? '● ACTIVE' : '○ PAUSED'}
+                        {flow.enabled ? ' ACTIVE' : ' PAUSED'}
                       </span>
                     </div>
 
@@ -1853,10 +1853,10 @@ function AutomationsTab({ emailTemplates, waTemplates, smsTemplates }) {
                         })}
                       </div>
                       <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{flow.steps.length} steps</span>
-                      {stepCounts.email > 0 && <span style={{ fontSize: '0.68rem', color: '#3b82f6' }}>✉️ {stepCounts.email}</span>}
-                      {stepCounts.wa > 0 && <span style={{ fontSize: '0.68rem', color: '#10b981' }}>💬 {stepCounts.wa}</span>}
-                      {stepCounts.sms > 0 && <span style={{ fontSize: '0.68rem', color: '#f59e0b' }}>📱 {stepCounts.sms}</span>}
-                      {stepCounts.wait > 0 && <span style={{ fontSize: '0.68rem', color: '#8b5cf6' }}>⏱️ {stepCounts.wait} waits</span>}
+                      {stepCounts.email > 0 && <span style={{ fontSize: '0.68rem', color: '#3b82f6' }}> {stepCounts.email}</span>}
+                      {stepCounts.wa > 0 && <span style={{ fontSize: '0.68rem', color: '#10b981' }}> {stepCounts.wa}</span>}
+                      {stepCounts.sms > 0 && <span style={{ fontSize: '0.68rem', color: '#f59e0b' }}> {stepCounts.sms}</span>}
+                      {stepCounts.wait > 0 && <span style={{ fontSize: '0.68rem', color: '#8b5cf6' }}> {stepCounts.wait} waits</span>}
                     </div>
                   </div>
 
@@ -1866,13 +1866,13 @@ function AutomationsTab({ emailTemplates, waTemplates, smsTemplates }) {
                       <span style={{ color: 'var(--text-primary)', fontWeight: 700, marginRight: 2 }}>{flow.runs || 0}</span> runs
                     </div>
                     <div style={{ display: 'flex', gap: 6 }}>
-                      <button className="btn btn-sm btn-ghost" onClick={() => setShowEditor(flow)} title="Edit flow">✏️ Edit</button>
+                      <button className="btn btn-sm btn-ghost" onClick={() => setShowEditor(flow)} title="Edit flow"> Edit</button>
                       <button className="btn btn-sm btn-ghost" onClick={() => simulateRun(flow.id)} title="Test run this flow"
-                        style={{ color: '#8b5cf6', borderColor: 'rgba(139,92,246,0.3)' }}>▶ Test</button>
+                        style={{ color: '#8b5cf6', borderColor: 'rgba(139,92,246,0.3)' }}> Test</button>
                       <button className="btn btn-sm btn-ghost"
                         onClick={() => { const dup = { ...flow, id:`flow_${Date.now()}`, name:`${flow.name} (Copy)`, enabled:false, runs:0, createdAt:new Date().toISOString(), steps: JSON.parse(JSON.stringify(flow.steps)) }; saveFlows([...flows, dup]); }}
                         title="Duplicate">⧉</button>
-                      <button className="btn btn-sm btn-ghost" style={{ color: '#ef4444' }} onClick={() => deleteFlow(flow.id)} title="Delete">🗑️</button>
+                      <button className="btn btn-sm btn-ghost" style={{ color: '#ef4444' }} onClick={() => deleteFlow(flow.id)} title="Delete"></button>
                     </div>
                   </div>
                 </div>
@@ -1901,7 +1901,7 @@ function AutomationsTab({ emailTemplates, waTemplates, smsTemplates }) {
   );
 }
 
-// ── Main Marketing Page ────────────────────────────────────────────────────────
+//  Main Marketing Page 
 export default function MarketingPage() {
   const { isAdmin } = useAuth();
   const [activeTab, setActiveTab] = useState('email_templates');
@@ -1921,18 +1921,18 @@ export default function MarketingPage() {
   const reloadCampaigns    = ()  => setCampaigns(ls.get('crm_campaigns', []));
 
   const TABS = [
-    { key: 'email_templates',  label: '✉️ Email Templates',    count: emailTemplates.length },
-    { key: 'wa_marketing',     label: '💬 WhatsApp Marketing', count: null, highlight: true },
-    { key: 'wa_templates',     label: '💬 WA Templates',       count: waTemplates.length },
-    { key: 'sms_templates',    label: '📱 SMS Templates',      count: smsTemplates.length },
-    { key: 'campaigns',        label: '🚀 Campaigns',          count: campaigns.length },
-    { key: 'automations',      label: '⚡ Automations',        count: null },
-    { key: 'analytics',        label: '📊 Analytics',          count: null },
+    { key: 'email_templates',  label: ' Email Templates',    count: emailTemplates.length },
+    { key: 'wa_marketing',     label: ' WhatsApp Marketing', count: null, highlight: true },
+    { key: 'wa_templates',     label: ' WA Templates',       count: waTemplates.length },
+    { key: 'sms_templates',    label: ' SMS Templates',      count: smsTemplates.length },
+    { key: 'campaigns',        label: ' Campaigns',          count: campaigns.length },
+    { key: 'automations',      label: ' Automations',        count: null },
+    { key: 'analytics',        label: ' Analytics',          count: null },
   ];
 
   const STATUS_COLORS = { sent: '#10b981', scheduled: '#f59e0b', draft: '#64748b', failed: '#ef4444', paused: '#6366f1' };
 
-  // ── ANALYTICS ────────────────────────────────────────────────────────────────
+  //  ANALYTICS 
   const totalSent     = campaigns.filter(c => c.status === 'sent').reduce((s, c) => s + (c.audience_count || 0), 0);
   const totalOpened   = campaigns.reduce((s, c) => s + (c.opened || 0), 0);
   const totalClicked  = campaigns.reduce((s, c) => s + (c.clicked || 0), 0);
@@ -1944,25 +1944,25 @@ export default function MarketingPage() {
       {/* Header */}
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:24 }}>
         <div>
-          <h2 style={{ margin:0, fontSize:'1.3rem', fontWeight:800, color:'var(--text-primary)' }}>📣 Marketing & Campaigns</h2>
+          <h2 style={{ margin:0, fontSize:'1.3rem', fontWeight:800, color:'var(--text-primary)' }}> Marketing & Campaigns</h2>
           <p style={{ margin:'4px 0 0', fontSize:'0.8rem', color:'var(--text-muted)' }}>
             Manage email templates, WhatsApp messages & multi-channel campaigns
           </p>
         </div>
         <button className="btn btn-primary" onClick={() => setShowCampaign(true)}
           style={{ background:'linear-gradient(135deg,#7c3aed,#3b82f6)', fontWeight:700 }}>
-          🚀 New Campaign
+           New Campaign
         </button>
       </div>
 
       {/* Quick stats */}
       <div style={{ display:'grid', gridTemplateColumns:'repeat(5, 1fr)', gap:12, marginBottom:24 }}>
         {[
-          ['📤', 'Campaigns Sent', campaigns.filter(c => c.status === 'sent').length, '#3b82f6'],
-          ['📬', 'Total Delivered', totalSent, '#10b981'],
-          ['👁️', 'Open Rate', `${openRate}%`, '#8b5cf6'],
-          ['👆', 'Click Rate', `${clickRate}%`, '#f59e0b'],
-          ['⏰', 'Scheduled', campaigns.filter(c => c.status === 'scheduled').length, '#06b6d4'],
+          ['', 'Campaigns Sent', campaigns.filter(c => c.status === 'sent').length, '#3b82f6'],
+          ['', 'Total Delivered', totalSent, '#10b981'],
+          ['', 'Open Rate', `${openRate}%`, '#8b5cf6'],
+          ['', 'Click Rate', `${clickRate}%`, '#f59e0b'],
+          ['', 'Scheduled', campaigns.filter(c => c.status === 'scheduled').length, '#06b6d4'],
         ].map(([icon, label, val, color]) => (
           <div key={label} style={{ padding:'14px 16px', background:'var(--bg-elevated)', borderRadius:10, border:'1px solid var(--border-subtle)' }}>
             <div style={{ fontSize:'1.2rem', marginBottom:4 }}>{icon}</div>
@@ -1991,11 +1991,11 @@ export default function MarketingPage() {
         ))}
       </div>
 
-      {/* ── Email Templates ── */}
+      {/*  Email Templates  */}
       {activeTab === 'email_templates' && (
         <div>
           <div style={{ display:'flex', gap:10, marginBottom:16, alignItems:'center' }}>
-            <input className="form-input" value={tplSearch} onChange={e => setTplSearch(e.target.value)} placeholder="🔍 Search templates..." style={{ maxWidth:280 }} />
+            <input className="form-input" value={tplSearch} onChange={e => setTplSearch(e.target.value)} placeholder=" Search templates..." style={{ maxWidth:280 }} />
             <select className="form-select" style={{ width:160 }} onChange={e => { }}>
               <option value="">All Categories</option>
               <option value="marketing">Marketing</option>
@@ -2016,7 +2016,7 @@ export default function MarketingPage() {
                 reader.readAsText(file);
                 e.target.value = '';
               }} />
-              📁 Import HTML
+               Import HTML
             </label>
           </div>
 
@@ -2040,14 +2040,14 @@ export default function MarketingPage() {
                   <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
                     <span style={{ fontSize:'0.68rem', color:'var(--text-muted)' }}>Used {t.usageCount || 0}x</span>
                     <div style={{ display:'flex', gap:6 }}>
-                      <button className="btn btn-sm btn-ghost" onClick={() => setShowEmailEditor(t)}>✏️ Edit</button>
+                      <button className="btn btn-sm btn-ghost" onClick={() => setShowEmailEditor(t)}> Edit</button>
                       <button className="btn btn-sm btn-primary" onClick={() => { setActiveTab('campaigns'); setShowCampaign(true); }}
-                        style={{ fontSize:'0.7rem', padding:'4px 10px' }}>🚀 Send</button>
+                        style={{ fontSize:'0.7rem', padding:'4px 10px' }}> Send</button>
                       <button className="btn btn-sm btn-ghost" title="Duplicate"
                         onClick={() => { const dup = { ...t, id:`tpl_${Date.now()}`, name:`${t.name} (Copy)`, usageCount:0, createdAt:new Date().toISOString() }; saveEmailTemplates([...emailTemplates, dup]); }}>⧉</button>
                       {isAdmin && (
                         <button className="btn btn-sm btn-ghost" style={{ color:'#ef4444' }} title="Delete"
-                          onClick={() => { if (window.confirm('Delete this template?')) saveEmailTemplates(emailTemplates.filter(x => x.id !== t.id)); }}>🗑️</button>
+                          onClick={() => { if (window.confirm('Delete this template?')) saveEmailTemplates(emailTemplates.filter(x => x.id !== t.id)); }}></button>
                       )}
                     </div>
                   </div>
@@ -2058,8 +2058,8 @@ export default function MarketingPage() {
         </div>
       )}
 
-      {/* ── WhatsApp Templates ── */}
-      {/* ── WhatsApp Marketing Hub ── */}
+      {/*  WhatsApp Templates  */}
+      {/*  WhatsApp Marketing Hub  */}
       {activeTab === 'wa_marketing' && (
         <WhatsAppMarketingHub
           waTemplates={waTemplates}
@@ -2074,7 +2074,7 @@ export default function MarketingPage() {
       {activeTab === 'wa_templates' && (
         <div>
           <div style={{ display:'flex', gap:10, marginBottom:16 }}>
-            <input className="form-input" value={tplSearch} onChange={e => setTplSearch(e.target.value)} placeholder="🔍 Search templates..." style={{ maxWidth:280 }} />
+            <input className="form-input" value={tplSearch} onChange={e => setTplSearch(e.target.value)} placeholder=" Search templates..." style={{ maxWidth:280 }} />
             <div style={{ flex:1 }} />
             <button className="btn btn-secondary" onClick={() => setShowWaEditor({})}>+ Create Template</button>
           </div>
@@ -2085,7 +2085,7 @@ export default function MarketingPage() {
                 <div style={{ padding:'14px', background:'#e5ddd5', minHeight:100 }}>
                   {t.mediaType !== 'none' && (
                     <div style={{ background:'rgba(0,0,0,0.1)', borderRadius:6, padding:'8px', textAlign:'center', marginBottom:6, fontSize:'0.7rem', color:'#555' }}>
-                      {t.mediaType === 'image' ? '🖼️ Image' : t.mediaType === 'document' ? '📄 Document' : '🎥 Video'}
+                      {t.mediaType === 'image' ? ' Image' : t.mediaType === 'document' ? ' Document' : ' Video'}
                     </div>
                   )}
                   <div style={{ background:'#fff', borderRadius:'0 8px 8px 8px', padding:'8px 10px', fontSize:'0.75rem', color:'#111', lineHeight:1.5, maxWidth:'80%', whiteSpace:'pre-line' }}>
@@ -2098,14 +2098,14 @@ export default function MarketingPage() {
                     <CatBadge cat={t.category} />
                   </div>
                   <div style={{ display:'flex', gap:6, justifyContent:'flex-end' }}>
-                    <button className="btn btn-sm btn-ghost" onClick={() => setShowWaEditor(t)}>✏️ Edit</button>
+                    <button className="btn btn-sm btn-ghost" onClick={() => setShowWaEditor(t)}> Edit</button>
                     <button className="btn btn-sm btn-primary" style={{ fontSize:'0.7rem', padding:'4px 10px' }}
-                      onClick={() => { setActiveTab('campaigns'); setShowCampaign(true); }}>🚀 Send</button>
+                      onClick={() => { setActiveTab('campaigns'); setShowCampaign(true); }}> Send</button>
                     <button className="btn btn-sm btn-ghost"
                       onClick={() => { const dup = {...t, id:`wa_${Date.now()}`, name:`${t.name} (Copy)`, createdAt:new Date().toISOString()}; saveWaTemplates([...waTemplates, dup]); }}>⧉</button>
                     {isAdmin && (
                       <button className="btn btn-sm btn-ghost" style={{ color:'#ef4444' }}
-                        onClick={() => { if (window.confirm('Delete?')) saveWaTemplates(waTemplates.filter(x => x.id !== t.id)); }}>🗑️</button>
+                        onClick={() => { if (window.confirm('Delete?')) saveWaTemplates(waTemplates.filter(x => x.id !== t.id)); }}></button>
                     )}
                   </div>
                 </div>
@@ -2115,11 +2115,11 @@ export default function MarketingPage() {
         </div>
       )}
 
-      {/* ── SMS Templates ── */}
+      {/*  SMS Templates  */}
       {activeTab === 'sms_templates' && (
         <div>
           <div style={{ display:'flex', gap:10, marginBottom:16 }}>
-            <input className="form-input" value={tplSearch} onChange={e => setTplSearch(e.target.value)} placeholder="🔍 Search templates..." style={{ maxWidth:280 }} />
+            <input className="form-input" value={tplSearch} onChange={e => setTplSearch(e.target.value)} placeholder=" Search templates..." style={{ maxWidth:280 }} />
             <div style={{ flex:1 }} />
             <button className="btn btn-secondary" onClick={() => {
               const name = prompt('Template name:');
@@ -2134,7 +2134,7 @@ export default function MarketingPage() {
             {smsTemplates.filter(t => t.name.toLowerCase().includes(tplSearch.toLowerCase())).map(t => (
               <div key={t.id} style={{ background:'var(--bg-elevated)', border:'1px solid var(--border-subtle)', borderRadius:12, padding:'16px' }}>
                 <div style={{ display:'flex', justifyContent:'space-between', marginBottom:10 }}>
-                  <div style={{ fontWeight:700, fontSize:'0.88rem' }}>📱 {t.name}</div>
+                  <div style={{ fontWeight:700, fontSize:'0.88rem' }}> {t.name}</div>
                   <span style={{ fontSize:'0.68rem', color:'var(--text-muted)' }}>{t.message.length} chars</span>
                 </div>
                 <div style={{ background:'var(--bg-base)', borderRadius:8, padding:'10px 12px', fontFamily:'monospace', fontSize:'0.78rem', color:'var(--text-secondary)', lineHeight:1.6, marginBottom:12 }}>
@@ -2144,11 +2144,11 @@ export default function MarketingPage() {
                   <button className="btn btn-sm btn-ghost" onClick={() => {
                     const msg = prompt('Edit message:', t.message);
                     if (msg) saveSmsTemplates(smsTemplates.map(x => x.id === t.id ? {...x, message: msg} : x));
-                  }}>✏️ Edit</button>
+                  }}> Edit</button>
                   <button className="btn btn-sm btn-primary" style={{ fontSize:'0.7rem', padding:'4px 10px' }}
-                    onClick={() => { setActiveTab('campaigns'); setShowCampaign(true); }}>🚀 Send</button>
+                    onClick={() => { setActiveTab('campaigns'); setShowCampaign(true); }}> Send</button>
                   {isAdmin && <button className="btn btn-sm btn-ghost" style={{ color:'#ef4444' }}
-                    onClick={() => { if (window.confirm('Delete?')) saveSmsTemplates(smsTemplates.filter(x => x.id !== t.id)); }}>🗑️</button>}
+                    onClick={() => { if (window.confirm('Delete?')) saveSmsTemplates(smsTemplates.filter(x => x.id !== t.id)); }}></button>}
                 </div>
               </div>
             ))}
@@ -2156,21 +2156,21 @@ export default function MarketingPage() {
         </div>
       )}
 
-      {/* ── Campaigns ── */}
+      {/*  Campaigns  */}
       {activeTab === 'campaigns' && (
         <div>
           <div style={{ display:'flex', gap:10, marginBottom:16 }}>
-            <input className="form-input" value={campSearch} onChange={e => setCampSearch(e.target.value)} placeholder="🔍 Search campaigns..." style={{ maxWidth:280 }} />
+            <input className="form-input" value={campSearch} onChange={e => setCampSearch(e.target.value)} placeholder=" Search campaigns..." style={{ maxWidth:280 }} />
             <div style={{ flex:1 }} />
             <button className="btn btn-primary" onClick={() => setShowCampaign(true)}
               style={{ background:'linear-gradient(135deg,#7c3aed,#3b82f6)' }}>
-              🚀 New Campaign
+               New Campaign
             </button>
           </div>
 
           {campaigns.length === 0 ? (
             <div style={{ textAlign:'center', padding:60, color:'var(--text-muted)' }}>
-              <div style={{ fontSize:'3rem', marginBottom:12 }}>🚀</div>
+              <div style={{ fontSize:'3rem', marginBottom:12 }}></div>
               <div style={{ fontSize:'1rem', fontWeight:700, marginBottom:8 }}>No campaigns yet</div>
               <div style={{ fontSize:'0.82rem', marginBottom:20 }}>Create your first email, WhatsApp, or SMS campaign</div>
               <button className="btn btn-primary" onClick={() => setShowCampaign(true)}>Launch Your First Campaign</button>
@@ -2197,7 +2197,7 @@ export default function MarketingPage() {
                           <div style={{ fontSize:'0.68rem', color:'var(--text-muted)' }}>{c.template_id}</div>
                         </td>
                         <td style={{ padding:'12px 14px', fontSize:'0.85rem' }}>
-                          {c.channel === 'email' ? '✉️ Email' : c.channel === 'whatsapp' ? '💬 WhatsApp' : '📱 SMS'}
+                          {c.channel === 'email' ? ' Email' : c.channel === 'whatsapp' ? ' WhatsApp' : ' SMS'}
                         </td>
                         <td style={{ padding:'12px 14px' }}>
                           <span style={{ fontSize:'0.72rem', padding:'3px 10px', borderRadius:99, background:`${statusColor}18`, color:statusColor, fontWeight:700, border:`1px solid ${statusColor}30` }}>
@@ -2227,7 +2227,7 @@ export default function MarketingPage() {
                         <td style={{ padding:'12px 14px' }}>
                           {isAdmin && (
                             <button className="btn btn-sm btn-ghost" style={{ color:'#ef4444' }} title="Delete campaign"
-                              onClick={() => { if (window.confirm('Delete this campaign?')) { ls.set('crm_campaigns', campaigns.filter(x => x.id !== c.id)); reloadCampaigns(); } }}>🗑️</button>
+                              onClick={() => { if (window.confirm('Delete this campaign?')) { ls.set('crm_campaigns', campaigns.filter(x => x.id !== c.id)); reloadCampaigns(); } }}></button>
                           )}
                         </td>
                       </tr>
@@ -2240,7 +2240,7 @@ export default function MarketingPage() {
         </div>
       )}
 
-      {/* ── Automations ── */}
+      {/*  Automations  */}
       {activeTab === 'automations' && (
         <AutomationsTab
           emailTemplates={emailTemplates}
@@ -2249,15 +2249,15 @@ export default function MarketingPage() {
         />
       )}
 
-      {/* ── Analytics ── */}
+      {/*  Analytics  */}
       {activeTab === 'analytics' && (
         <div>
           <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:14, marginBottom:24 }}>
             {[
-              ['📤', 'Total Campaigns', campaigns.length, '#3b82f6'],
-              ['📬', 'Total Sent', totalSent, '#10b981'],
-              ['👁️', 'Avg. Open Rate', `${openRate}%`, '#8b5cf6'],
-              ['👆', 'Avg. Click Rate', `${clickRate}%`, '#f59e0b'],
+              ['', 'Total Campaigns', campaigns.length, '#3b82f6'],
+              ['', 'Total Sent', totalSent, '#10b981'],
+              ['', 'Avg. Open Rate', `${openRate}%`, '#8b5cf6'],
+              ['', 'Avg. Click Rate', `${clickRate}%`, '#f59e0b'],
             ].map(([icon, label, val, color]) => (
               <div key={label} style={{ padding:'20px', background:'var(--bg-elevated)', borderRadius:12, border:'1px solid var(--border-subtle)' }}>
                 <div style={{ fontSize:'1.5rem', marginBottom:8 }}>{icon}</div>
@@ -2270,8 +2270,8 @@ export default function MarketingPage() {
           {/* Channel breakdown */}
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
             <div style={{ background:'var(--bg-elevated)', borderRadius:12, border:'1px solid var(--border-subtle)', padding:20 }}>
-              <div style={{ fontWeight:700, fontSize:'0.9rem', marginBottom:16, color:'var(--text-primary)' }}>📊 Campaigns by Channel</div>
-              {[['✉️ Email', campaigns.filter(c=>c.channel==='email').length, '#3b82f6'], ['💬 WhatsApp', campaigns.filter(c=>c.channel==='whatsapp').length, '#10b981'], ['📱 SMS', campaigns.filter(c=>c.channel==='sms').length, '#f59e0b']].map(([label, count, color]) => (
+              <div style={{ fontWeight:700, fontSize:'0.9rem', marginBottom:16, color:'var(--text-primary)' }}> Campaigns by Channel</div>
+              {[[' Email', campaigns.filter(c=>c.channel==='email').length, '#3b82f6'], [' WhatsApp', campaigns.filter(c=>c.channel==='whatsapp').length, '#10b981'], [' SMS', campaigns.filter(c=>c.channel==='sms').length, '#f59e0b']].map(([label, count, color]) => (
                 <div key={label} style={{ marginBottom:12 }}>
                   <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
                     <span style={{ fontSize:'0.8rem', color:'var(--text-secondary)' }}>{label}</span>
@@ -2285,8 +2285,8 @@ export default function MarketingPage() {
             </div>
 
             <div style={{ background:'var(--bg-elevated)', borderRadius:12, border:'1px solid var(--border-subtle)', padding:20 }}>
-              <div style={{ fontWeight:700, fontSize:'0.9rem', marginBottom:16, color:'var(--text-primary)' }}>📈 Campaign Status</div>
-              {[['✅ Sent', campaigns.filter(c=>c.status==='sent').length, '#10b981'], ['⏰ Scheduled', campaigns.filter(c=>c.status==='scheduled').length, '#f59e0b'], ['📝 Draft', campaigns.filter(c=>c.status==='draft').length, '#64748b'], ['❌ Failed', campaigns.filter(c=>c.status==='failed').length, '#ef4444']].map(([label, count, color]) => (
+              <div style={{ fontWeight:700, fontSize:'0.9rem', marginBottom:16, color:'var(--text-primary)' }}> Campaign Status</div>
+              {[[' Sent', campaigns.filter(c=>c.status==='sent').length, '#10b981'], [' Scheduled', campaigns.filter(c=>c.status==='scheduled').length, '#f59e0b'], [' Draft', campaigns.filter(c=>c.status==='draft').length, '#64748b'], [' Failed', campaigns.filter(c=>c.status==='failed').length, '#ef4444']].map(([label, count, color]) => (
                 <div key={label} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'8px 0', borderBottom:'1px solid var(--border-subtle)' }}>
                   <span style={{ fontSize:'0.8rem', color:'var(--text-secondary)' }}>{label}</span>
                   <span style={{ fontSize:'0.88rem', fontWeight:700, color }}>{count}</span>

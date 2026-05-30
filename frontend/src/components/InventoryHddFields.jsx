@@ -86,7 +86,7 @@ export default function InventoryHddFields({
   if (!category) return null;
 
   if (loading) {
-    return <div style={{ padding: 12, textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.8rem' }}>⏳ Loading fields for this category…</div>;
+    return <div style={{ padding: 12, textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.8rem' }}> Loading fields for this category…</div>;
   }
 
   if (!schema?.standardFields?.length && !schema?.customFields?.length) {
@@ -174,7 +174,7 @@ export default function InventoryHddFields({
         {schema.customFields?.map(cf => (
           <div key={cf.id} className="form-group" style={{ margin: 0 }}>
             <label className="form-label" style={{ color: 'var(--accent-secondary)' }}>
-              ✦ {cf.field_label}{cf.is_mandatory && ' *'}
+               {cf.field_label}{cf.is_mandatory && ' *'}
             </label>
             <input
               type="text"

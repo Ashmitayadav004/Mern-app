@@ -60,7 +60,7 @@ function printCourierSlip(inv) {
     .cut-line{text-align:center;font-size:9px;color:#94a3b8;margin-top:12px;border-top:1px dashed #cbd5e1;padding-top:8px}
   </style></head><body>
   <div class="controls">
-    <strong>📦 Courier Slip</strong>
+    <strong> Courier Slip</strong>
     <label>Size: <select id="sz" onchange="upd()">
       <option value="A5 landscape">A5 — Medium</option>
       <option value="A4 landscape">A4 — Large</option>
@@ -76,13 +76,13 @@ function printCourierSlip(inv) {
       H:<input type="number" id="ch" value="105" min="50" max="500">mm
       <button onclick="updCustom()" style="background:#00d4ff;color:#0f172a;border:none;padding:3px 8px;border-radius:4px;font-size:11px;cursor:pointer">Apply</button>
     </div>
-    <button class="btn-close" onclick="window.close()">✕ Close</button>
-    <button type="button" class="btn-print">🖨 Print</button>
+    <button class="btn-close" onclick="window.close()"> Close</button>
+    <button type="button" class="btn-print"> Print</button>
   </div>
   <div class="slip-wrap"><div class="slip">
     <div class="slip-header">
       <div>
-        <div class="brand">📦 ${coName}</div>
+        <div class="brand"> ${coName}</div>
         <div class="date-line">Date: ${today}</div>
       </div>
       <div class="ref-no">${ref}</div>
@@ -104,9 +104,9 @@ function printCourierSlip(inv) {
       <div><div class="ref-lbl">Reference</div><div class="ref-text">${ref}</div></div>
       <div class="tags"><span class="s-tag">DATA RECOVERY</span><span class="d-tag">${today}</span></div>
     </div>
-    <div class="warn">⚠ FRAGILE — Handle with care. Contains electronic storage media. Do NOT expose to magnets, heat, or static.</div>
+    <div class="warn"> FRAGILE — Handle with care. Contains electronic storage media. Do NOT expose to magnets, heat, or static.</div>
   </div></div>
-  <div class="cut-line">✂ Cut along this line — Affix to courier package</div>
+  <div class="cut-line"> Cut along this line — Affix to courier package</div>
   <script>
     function upd(){
       var v=document.getElementById('sz').value;
@@ -128,7 +128,7 @@ function StatusBadge({ status, map }) {
   return <span style={{ fontSize: '0.68rem', fontWeight: 700, padding: '3px 8px', borderRadius: 999, color: s.color, background: s.bg, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{s.label}</span>;
 }
 
-// ── Line Items Editor ───────────────────────────────────────────
+//  Line Items Editor 
 function LineItemsEditor({ items, onChange }) {
   const add = () => onChange([...items, { description: '', qty: 1, unit_price: 0 }]);
   const remove = (i) => onChange(items.filter((_, j) => j !== i));
@@ -146,7 +146,7 @@ function LineItemsEditor({ items, onChange }) {
           <input className="form-input" style={{ padding: '7px 10px' }} value={it.description} onChange={e => update(i, 'description', e.target.value)} placeholder="Service / item description" />
           <input className="form-input" style={{ padding: '7px 8px' }} type="number" min="1" value={it.qty} onChange={e => update(i, 'qty', parseFloat(e.target.value) || 1)} />
           <input className="form-input" style={{ padding: '7px 8px' }} type="number" min="0" value={it.unit_price} onChange={e => update(i, 'unit_price', parseFloat(e.target.value) || 0)} />
-          <button onClick={() => remove(i)} style={{ background: 'rgba(239,68,68,0.15)', border: 'none', borderRadius: 6, color: '#f87171', cursor: 'pointer', fontSize: '0.8rem' }}>✕</button>
+          <button onClick={() => remove(i)} style={{ background: 'rgba(239,68,68,0.15)', border: 'none', borderRadius: 6, color: '#f87171', cursor: 'pointer', fontSize: '0.8rem' }}></button>
         </div>
       ))}
       <button className="btn btn-secondary btn-sm" onClick={add} style={{ marginTop: 4 }}>+ Add Line</button>
@@ -160,17 +160,17 @@ function LineItemsEditor({ items, onChange }) {
   );
 }
 
-// ── Invoice Print View ──────────────────────────────────────────
+//  Invoice Print View 
 function InvoicePrintModal({ invoice, onClose }) {
   const handlePrint = () => window.print();
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal modal-xl" onClick={e => e.stopPropagation()} style={{ maxWidth: 860 }}>
         <div className="modal-header">
-          <h3 className="modal-title">🖨 Invoice — {invoice.invoice_number}</h3>
+          <h3 className="modal-title"> Invoice — {invoice.invoice_number}</h3>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button className="btn btn-primary btn-sm" onClick={handlePrint}>🖨 Print / Save PDF</button>
-            <button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button>
+            <button className="btn btn-primary btn-sm" onClick={handlePrint}> Print / Save PDF</button>
+            <button className="btn btn-ghost btn-icon" onClick={onClose}></button>
           </div>
         </div>
         <div className="modal-body" id="print-invoice" style={{ background: '#fff', color: '#111', borderRadius: 8, padding: 40, fontFamily: 'Inter, sans-serif' }}>
@@ -257,7 +257,7 @@ function InvoicePrintModal({ invoice, onClose }) {
   );
 }
 
-// ── Record Payment Modal ────────────────────────────────────────
+//  Record Payment Modal 
 function RecordPaymentModal({ invoice, onClose, onDone }) {
   const [form, setForm] = useState({ amount: invoice.total - (invoice.amount_paid || 0), method: 'UPI', reference: '', note: '' });
   const [loading, setLoading] = useState(false);
@@ -269,7 +269,7 @@ function RecordPaymentModal({ invoice, onClose, onDone }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
-        <div className="modal-header"><h3 className="modal-title">💳 Record Payment — {invoice.invoice_number}</h3><button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button></div>
+        <div className="modal-header"><h3 className="modal-title"> Record Payment — {invoice.invoice_number}</h3><button className="btn btn-ghost btn-icon" onClick={onClose}></button></div>
         <div className="modal-body">
           <div style={{ background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)', padding: '10px 14px', marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
             <span className="text-xs text-muted">Invoice Total</span><span className="font-mono" style={{ fontWeight: 800, color: 'var(--accent-primary)' }}>{fmt(invoice.total)}</span>
@@ -292,13 +292,13 @@ function RecordPaymentModal({ invoice, onClose, onDone }) {
           </div>
           <div className="form-group"><label className="form-label">Note</label><input className="form-input" value={form.note} onChange={e => setForm({ ...form, note: e.target.value })} /></div>
         </div>
-        <div className="modal-footer"><button className="btn btn-secondary" onClick={onClose}>Cancel</button><button className="btn btn-primary" disabled={loading || !form.amount} onClick={handle}>{loading ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Recording…</> : '✓ Record Payment'}</button></div>
+        <div className="modal-footer"><button className="btn btn-secondary" onClick={onClose}>Cancel</button><button className="btn btn-primary" disabled={loading || !form.amount} onClick={handle}>{loading ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Recording…</> : ' Record Payment'}</button></div>
       </div>
     </div>
   );
 }
 
-// ── Quote / Invoice Form Modal ──────────────────────────────────
+//  Quote / Invoice Form Modal 
 function QuoteFormModal({ existing, onClose, onDone }) {
   const isEdit = !!existing;
   const [form, setForm] = useState(existing ? { ...existing } : { title: '', client_name: '', company: '', case_number: '', line_items: [{ description: '', qty: 1, unit_price: 0 }], discount_pct: 0, tax_pct: 18, valid_until: '', notes: '' });
@@ -320,7 +320,7 @@ function QuoteFormModal({ existing, onClose, onDone }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal modal-xl" onClick={e => e.stopPropagation()}>
-        <div className="modal-header"><h3 className="modal-title">{isEdit ? '✏️ Edit Quote' : '+ New Quote / Estimate'}</h3><button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button></div>
+        <div className="modal-header"><h3 className="modal-title">{isEdit ? ' Edit Quote' : '+ New Quote / Estimate'}</h3><button className="btn btn-ghost btn-icon" onClick={onClose}></button></div>
         <div className="modal-body">
           <div className="form-row form-row-2">
             <div className="form-group"><label className="form-label required">Quote Title</label><input className="form-input" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="e.g. HDD Recovery — WD Blue" /></div>
@@ -350,13 +350,13 @@ function QuoteFormModal({ existing, onClose, onDone }) {
             </div>
           </div>
         </div>
-        <div className="modal-footer"><button className="btn btn-secondary" onClick={onClose}>Cancel</button><button className="btn btn-primary" disabled={loading || !form.title || !form.client_name} onClick={handle}>{loading ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Saving…</> : isEdit ? '✓ Update Quote' : '+ Create Quote'}</button></div>
+        <div className="modal-footer"><button className="btn btn-secondary" onClick={onClose}>Cancel</button><button className="btn btn-primary" disabled={loading || !form.title || !form.client_name} onClick={handle}>{loading ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Saving…</> : isEdit ? ' Update Quote' : '+ Create Quote'}</button></div>
       </div>
     </div>
   );
 }
 
-// ── Convert to Invoice Modal ────────────────────────────────────
+//  Convert to Invoice Modal 
 function ConvertModal({ quote, onClose, onDone }) {
   const [form, setForm] = useState({ client_address: '', client_gstin: '' });
   const [loading, setLoading] = useState(false);
@@ -368,19 +368,19 @@ function ConvertModal({ quote, onClose, onDone }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
-        <div className="modal-header"><h3 className="modal-title">📄 Convert to Invoice — {quote.quote_number}</h3><button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button></div>
+        <div className="modal-header"><h3 className="modal-title"> Convert to Invoice — {quote.quote_number}</h3><button className="btn btn-ghost btn-icon" onClick={onClose}></button></div>
         <div className="modal-body">
-          <div className="alert alert-info" style={{ marginBottom: 16 }}><span className="alert-icon">ℹ️</span><div>An invoice will be generated from this quote for <strong>{fmt(quote.total)}</strong> due in 15 days.</div></div>
+          <div className="alert alert-info" style={{ marginBottom: 16 }}><span className="alert-icon">ℹ</span><div>An invoice will be generated from this quote for <strong>{fmt(quote.total)}</strong> due in 15 days.</div></div>
           <div className="form-group"><label className="form-label">Client Address</label><textarea className="form-textarea" style={{ minHeight: 60 }} value={form.client_address} onChange={e => setForm({ ...form, client_address: e.target.value })} placeholder="Full billing address" /></div>
           <div className="form-group"><label className="form-label">Client GSTIN (optional)</label><input className="form-input" value={form.client_gstin} onChange={e => setForm({ ...form, client_gstin: e.target.value })} placeholder="27XXXXX1234X1ZA" /></div>
         </div>
-        <div className="modal-footer"><button className="btn btn-secondary" onClick={onClose}>Cancel</button><button className="btn btn-primary" disabled={loading} onClick={handle}>{loading ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Creating…</> : '📄 Generate Invoice'}</button></div>
+        <div className="modal-footer"><button className="btn btn-secondary" onClick={onClose}>Cancel</button><button className="btn btn-primary" disabled={loading} onClick={handle}>{loading ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Creating…</> : ' Generate Invoice'}</button></div>
       </div>
     </div>
   );
 }
 
-// ── Expense Form Modal ──────────────────────────────────────────
+//  Expense Form Modal 
 function ExpenseModal({ onClose, onDone }) {
   const [form, setForm] = useState({ date: new Date().toISOString().slice(0, 10), category: 'consumables', description: '', vendor: '', amount: '', tax_amt: '', receipt_note: '' });
   const [loading, setLoading] = useState(false);
@@ -392,7 +392,7 @@ function ExpenseModal({ onClose, onDone }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
-        <div className="modal-header"><h3 className="modal-title">+ Record Expense</h3><button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button></div>
+        <div className="modal-header"><h3 className="modal-title">+ Record Expense</h3><button className="btn btn-ghost btn-icon" onClick={onClose}></button></div>
         <div className="modal-body">
           <div className="form-row form-row-2">
             <div className="form-group"><label className="form-label required">Date</label><input type="date" className="form-input" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} /></div>
@@ -419,7 +419,7 @@ function ExpenseModal({ onClose, onDone }) {
   );
 }
 
-// ── Main Accounting Page ────────────────────────────────────────
+//  Main Accounting Page 
 export default function AccountingPage() {
   const { canAccess } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
@@ -454,10 +454,10 @@ export default function AccountingPage() {
   useEffect(() => { load(); }, [load]);
 
   const TABS = [
-    { key: 'overview', label: '📊 Overview' },
-    { key: 'quotes', label: `📋 Quotes (${quotes.length})` },
-    { key: 'invoices', label: `🧾 Invoices (${invoices.length})` },
-    { key: 'expenses', label: `💸 Expenses (${expenses.length})` },
+    { key: 'overview', label: ' Overview' },
+    { key: 'quotes', label: ` Quotes (${quotes.length})` },
+    { key: 'invoices', label: ` Invoices (${invoices.length})` },
+    { key: 'expenses', label: ` Expenses (${expenses.length})` },
   ];
 
   return (
@@ -480,18 +480,18 @@ export default function AccountingPage() {
         {TABS.map(t => <button key={t.key} className={`tab-btn ${activeTab === t.key ? 'active' : ''}`} onClick={() => { setActiveTab(t.key); setSearch(''); setStatusFilter(''); }}>{t.label}</button>)}
       </div>
 
-      {/* ── OVERVIEW ── */}
+      {/*  OVERVIEW  */}
       {activeTab === 'overview' && summary && (
         <div>
           {/* KPI Cards */}
           <div className="stats-grid" style={{ marginBottom: 24 }}>
             {[
-              { icon: '💰', label: 'Total Revenue (Invoice)', value: fmt(summary.total_collected), color: 'var(--status-success)', bg: 'rgba(16,185,129,0.1)' },
-              { icon: '💼', label: 'Case Revenue (Paid)', value: fmt(summary.case_total_paid), color: 'var(--status-success)', bg: 'rgba(16,185,129,0.1)' },
-              { icon: '⏳', label: 'Case Pending', value: fmt(summary.case_total_pending), color: 'var(--status-warning)', bg: 'rgba(245,158,11,0.1)' },
-              { icon: '🔴', label: 'Overdue (30+ days)', value: fmt(summary.case_total_pending_overdue), color: 'var(--status-danger)', bg: 'rgba(239,68,68,0.1)' },
-              { icon: '💸', label: 'Total Expenses', value: fmt(summary.total_expenses), color: '#f472b6', bg: 'rgba(236,72,153,0.1)' },
-              { icon: '📈', label: 'Net Profit (Month)', value: fmt(summary.profit_month), color: summary.profit_month >= 0 ? 'var(--status-success)' : 'var(--status-danger)', bg: summary.profit_month >= 0 ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)' },
+              { icon: '', label: 'Total Revenue (Invoice)', value: fmt(summary.total_collected), color: 'var(--status-success)', bg: 'rgba(16,185,129,0.1)' },
+              { icon: '', label: 'Case Revenue (Paid)', value: fmt(summary.case_total_paid), color: 'var(--status-success)', bg: 'rgba(16,185,129,0.1)' },
+              { icon: '', label: 'Case Pending', value: fmt(summary.case_total_pending), color: 'var(--status-warning)', bg: 'rgba(245,158,11,0.1)' },
+              { icon: '', label: 'Overdue (30+ days)', value: fmt(summary.case_total_pending_overdue), color: 'var(--status-danger)', bg: 'rgba(239,68,68,0.1)' },
+              { icon: '', label: 'Total Expenses', value: fmt(summary.total_expenses), color: '#f472b6', bg: 'rgba(236,72,153,0.1)' },
+              { icon: '', label: 'Net Profit (Month)', value: fmt(summary.profit_month), color: summary.profit_month >= 0 ? 'var(--status-success)' : 'var(--status-danger)', bg: summary.profit_month >= 0 ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)' },
             ].map(stat => (
               <div key={stat.label} className="stat-card" style={{ '--stat-color': stat.color, '--stat-bg': stat.bg }}>
                 <div className="stat-icon">{stat.icon}</div>
@@ -504,7 +504,7 @@ export default function AccountingPage() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
             {/* Invoice Status */}
             <div className="card">
-              <div className="card-title" style={{ marginBottom: 16 }}>🧾 Invoice Status</div>
+              <div className="card-title" style={{ marginBottom: 16 }}> Invoice Status</div>
               {Object.entries(summary.invoiceCounts || {}).map(([s, count]) => {
                 const info = I_STATUS[s] || { color: '#94a3b8', label: s };
                 return (
@@ -522,7 +522,7 @@ export default function AccountingPage() {
 
             {/* Expenses Breakdown */}
             <div className="card">
-              <div className="card-title" style={{ marginBottom: 16 }}>💸 Expense Breakdown</div>
+              <div className="card-title" style={{ marginBottom: 16 }}> Expense Breakdown</div>
               {Object.entries(summary.expenseByCategory || {}).map(([cat, amt]) => {
                 const pct = Math.round(amt / summary.totalExpenses * 100);
                 return (
@@ -540,7 +540,7 @@ export default function AccountingPage() {
 
           {/* Monthly Chart */}
           <div className="card">
-            <div className="card-title" style={{ marginBottom: 16 }}>📅 Last 6 Months — Revenue vs Expenses</div>
+            <div className="card-title" style={{ marginBottom: 16 }}> Last 6 Months — Revenue vs Expenses</div>
             <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, height: 160, padding: '0 8px' }}>
               {(summary.monthlyRevenue || []).map(m => {
                 const maxVal = Math.max(...summary.monthlyRevenue.map(x => Math.max(x.revenue, x.expenses)), 1);
@@ -565,11 +565,11 @@ export default function AccountingPage() {
         </div>
       )}
 
-      {/* ── QUOTES ── */}
+      {/*  QUOTES  */}
       {activeTab === 'quotes' && (
         <div>
           <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
-            <div className="search-bar"><span className="search-icon">🔍</span><input className="search-input" placeholder="Search quotes…" value={search} onChange={e => setSearch(e.target.value)} /></div>
+            <div className="search-bar"><span className="search-icon"></span><input className="search-input" placeholder="Search quotes…" value={search} onChange={e => setSearch(e.target.value)} /></div>
             <select className="form-select" style={{ width: 'auto', fontSize: '0.8rem' }} value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
               <option value="">All Statuses</option>
               {Object.keys(Q_STATUS).map(s => <option key={s} value={s}>{Q_STATUS[s].label}</option>)}
@@ -580,7 +580,7 @@ export default function AccountingPage() {
               <thead><tr><th>Quote #</th><th>Client</th><th>Title</th><th>Total</th><th>Valid Until</th><th>Status</th><th>Actions</th></tr></thead>
               <tbody>
                 {loading ? <tr><td colSpan={7}><div style={{ display: 'flex', justifyContent: 'center', padding: 40 }}><div className="spinner" /></div></td></tr>
-                  : quotes.length === 0 ? <tr><td colSpan={7}><div className="empty-state"><div className="empty-icon">📋</div><div className="empty-title">No quotes found</div></div></td></tr>
+                  : quotes.length === 0 ? <tr><td colSpan={7}><div className="empty-state"><div className="empty-icon"></div><div className="empty-title">No quotes found</div></div></td></tr>
                     : quotes.map(q => (
                       <tr key={q.id}>
                         <td><span className="font-mono text-xs" style={{ color: 'var(--accent-primary)' }}>{q.quote_number}</span></td>
@@ -591,12 +591,12 @@ export default function AccountingPage() {
                         <td><StatusBadge status={q.status} map={Q_STATUS} /></td>
                         <td>
                           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                            {q.status === 'draft' && <button className="btn btn-secondary btn-sm" onClick={() => { setEditQuote(q); setShowQuoteForm(true); }}>✏️ Edit</button>}
-                            {q.status === 'draft' && <button className="btn btn-secondary btn-sm" onClick={async () => { await accountingApi.updateQuoteStatus(q.id, 'sent'); load(); }}>📤 Send</button>}
-                            {q.status === 'sent' && <button className="btn btn-secondary btn-sm" onClick={async () => { await accountingApi.updateQuoteStatus(q.id, 'accepted'); load(); }}>✅ Accept</button>}
-                            {q.status === 'sent' && <button className="btn btn-secondary btn-sm" onClick={async () => { await accountingApi.updateQuoteStatus(q.id, 'rejected'); load(); }}>❌ Reject</button>}
-                            {(q.status === 'accepted') && <button className="btn btn-primary btn-sm" onClick={() => setConvertQuote(q)}>📄 Invoice</button>}
-                            {q.status === 'draft' && <button className="btn btn-danger btn-sm" onClick={async () => { if (confirm('Delete this quote?')) { await accountingApi.deleteQuote(q.id); load(); } }}>🗑</button>}
+                            {q.status === 'draft' && <button className="btn btn-secondary btn-sm" onClick={() => { setEditQuote(q); setShowQuoteForm(true); }}> Edit</button>}
+                            {q.status === 'draft' && <button className="btn btn-secondary btn-sm" onClick={async () => { await accountingApi.updateQuoteStatus(q.id, 'sent'); load(); }}> Send</button>}
+                            {q.status === 'sent' && <button className="btn btn-secondary btn-sm" onClick={async () => { await accountingApi.updateQuoteStatus(q.id, 'accepted'); load(); }}> Accept</button>}
+                            {q.status === 'sent' && <button className="btn btn-secondary btn-sm" onClick={async () => { await accountingApi.updateQuoteStatus(q.id, 'rejected'); load(); }}> Reject</button>}
+                            {(q.status === 'accepted') && <button className="btn btn-primary btn-sm" onClick={() => setConvertQuote(q)}> Invoice</button>}
+                            {q.status === 'draft' && <button className="btn btn-danger btn-sm" onClick={async () => { if (confirm('Delete this quote?')) { await accountingApi.deleteQuote(q.id); load(); } }}></button>}
                           </div>
                         </td>
                       </tr>
@@ -607,11 +607,11 @@ export default function AccountingPage() {
         </div>
       )}
 
-      {/* ── INVOICES ── */}
+      {/*  INVOICES  */}
       {activeTab === 'invoices' && (
         <div>
           <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
-            <div className="search-bar"><span className="search-icon">🔍</span><input className="search-input" placeholder="Search invoices…" value={search} onChange={e => setSearch(e.target.value)} /></div>
+            <div className="search-bar"><span className="search-icon"></span><input className="search-input" placeholder="Search invoices…" value={search} onChange={e => setSearch(e.target.value)} /></div>
             <select className="form-select" style={{ width: 'auto', fontSize: '0.8rem' }} value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
               <option value="">All Statuses</option>
               {Object.keys(I_STATUS).map(s => <option key={s} value={s}>{I_STATUS[s].label}</option>)}
@@ -622,7 +622,7 @@ export default function AccountingPage() {
               <thead><tr><th>Invoice #</th><th>Client</th><th>Title</th><th>Total</th><th>Due Date</th><th>Status</th><th>Actions</th></tr></thead>
               <tbody>
                 {loading ? <tr><td colSpan={7}><div style={{ display: 'flex', justifyContent: 'center', padding: 40 }}><div className="spinner" /></div></td></tr>
-                  : invoices.length === 0 ? <tr><td colSpan={7}><div className="empty-state"><div className="empty-icon">🧾</div><div className="empty-title">No invoices found</div></div></td></tr>
+                  : invoices.length === 0 ? <tr><td colSpan={7}><div className="empty-state"><div className="empty-icon"></div><div className="empty-title">No invoices found</div></div></td></tr>
                     : invoices.map(inv => (
                       <tr key={inv.id}>
                         <td><span className="font-mono text-xs" style={{ color: 'var(--accent-primary)' }}>{inv.invoice_number}</span></td>
@@ -633,10 +633,10 @@ export default function AccountingPage() {
                         <td><StatusBadge status={inv.status} map={I_STATUS} /></td>
                         <td>
                           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                            <button className="btn btn-secondary btn-sm" onClick={() => setPrintInvoice(inv)}>🖨️ Print</button>
-                            <button className="btn btn-secondary btn-sm" onClick={() => printCourierSlip(inv)}>🚚 Courier</button>
-                            {['unpaid', 'overdue', 'partial'].includes(inv.status) && <button className="btn btn-primary btn-sm" onClick={() => setPayInvoice(inv)}>💳 Pay</button>}
-                            {inv.status !== 'paid' && <button className="btn btn-danger btn-sm" onClick={async () => { if (confirm('Delete invoice?')) { await accountingApi.deleteInvoice(inv.id); load(); } }}>🗑</button>}
+                            <button className="btn btn-secondary btn-sm" onClick={() => setPrintInvoice(inv)}> Print</button>
+                            <button className="btn btn-secondary btn-sm" onClick={() => printCourierSlip(inv)}> Courier</button>
+                            {['unpaid', 'overdue', 'partial'].includes(inv.status) && <button className="btn btn-primary btn-sm" onClick={() => setPayInvoice(inv)}> Pay</button>}
+                            {inv.status !== 'paid' && <button className="btn btn-danger btn-sm" onClick={async () => { if (confirm('Delete invoice?')) { await accountingApi.deleteInvoice(inv.id); load(); } }}></button>}
                           </div>
                         </td>
                       </tr>
@@ -647,18 +647,18 @@ export default function AccountingPage() {
         </div>
       )}
 
-      {/* ── EXPENSES ── */}
+      {/*  EXPENSES  */}
       {activeTab === 'expenses' && (
         <div>
           <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
-            <div className="search-bar"><span className="search-icon">🔍</span><input className="search-input" placeholder="Search expenses…" value={search} onChange={e => setSearch(e.target.value)} /></div>
+            <div className="search-bar"><span className="search-icon"></span><input className="search-input" placeholder="Search expenses…" value={search} onChange={e => setSearch(e.target.value)} /></div>
           </div>
           <div className="table-container">
             <table>
               <thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Vendor</th><th>Amount</th><th>Tax</th><th>Total</th><th></th></tr></thead>
               <tbody>
                 {loading ? <tr><td colSpan={8}><div style={{ display: 'flex', justifyContent: 'center', padding: 40 }}><div className="spinner" /></div></td></tr>
-                  : expenses.length === 0 ? <tr><td colSpan={8}><div className="empty-state"><div className="empty-icon">💸</div><div className="empty-title">No expenses recorded</div></div></td></tr>
+                  : expenses.length === 0 ? <tr><td colSpan={8}><div className="empty-state"><div className="empty-icon"></div><div className="empty-title">No expenses recorded</div></div></td></tr>
                     : expenses.map(exp => (
                       <tr key={exp.id}>
                         <td className="text-xs font-mono">{fmtDate(exp.date)}</td>
@@ -668,7 +668,7 @@ export default function AccountingPage() {
                         <td className="font-mono text-xs">{fmt(exp.amount)}</td>
                         <td className="font-mono text-xs text-muted">{exp.tax_amt > 0 ? fmt(exp.tax_amt) : '—'}</td>
                         <td><span className="font-mono" style={{ fontWeight: 800, color: 'var(--text-primary)' }}>{fmt(exp.total)}</span></td>
-                        <td>{canAccess('admin') && <button className="btn btn-danger btn-sm" onClick={async () => { if (confirm('Delete expense?')) { await accountingApi.deleteExpense(exp.id); load(); } }}>🗑</button>}</td>
+                        <td>{canAccess('admin') && <button className="btn btn-danger btn-sm" onClick={async () => { if (confirm('Delete expense?')) { await accountingApi.deleteExpense(exp.id); load(); } }}></button>}</td>
                       </tr>
                     ))}
               </tbody>

@@ -11,15 +11,15 @@ const BASE_URL = '/api';
 const getToken = () => localStorage.getItem('accessToken');
 
 const INV_CATEGORIES = [
-  { key: 'wd_35',      label: 'WD 3.5"',       icon: '💿', color: '#3b82f6' },
-  { key: 'wd_25',      label: 'WD 2.5"',       icon: '💽', color: '#22d3ee' },
-  { key: 'seagate_35', label: 'Seagate 3.5"',  icon: '💿', color: '#f59e0b' },
-  { key: 'seagate_25', label: 'Seagate 2.5"',  icon: '💽', color: '#fbbf24' },
-  { key: 'others_35',  label: 'Others 3.5"',   icon: '💿', color: '#8b5cf6' },
-  { key: 'others_25',  label: 'Others 2.5"',   icon: '💽', color: '#a78bfa' },
-  { key: 'pcb',        label: 'PCB',            icon: '🔌', color: '#10b981' },
-  { key: 'ssd',        label: 'SSD',            icon: '⚡', color: '#06b6d4' },
-  { key: 'phone',      label: 'Phone',          icon: '📱', color: '#ec4899' },
+  { key: 'wd_35',      label: 'WD 3.5"',       icon: '', color: '#3b82f6' },
+  { key: 'wd_25',      label: 'WD 2.5"',       icon: '', color: '#22d3ee' },
+  { key: 'seagate_35', label: 'Seagate 3.5"',  icon: '', color: '#f59e0b' },
+  { key: 'seagate_25', label: 'Seagate 2.5"',  icon: '', color: '#fbbf24' },
+  { key: 'others_35',  label: 'Others 3.5"',   icon: '', color: '#8b5cf6' },
+  { key: 'others_25',  label: 'Others 2.5"',   icon: '', color: '#a78bfa' },
+  { key: 'pcb',        label: 'PCB',            icon: '', color: '#10b981' },
+  { key: 'ssd',        label: 'SSD',            icon: '', color: '#06b6d4' },
+  { key: 'phone',      label: 'Phone',          icon: '', color: '#ec4899' },
 ];
 
 const HDD_COMPANIES = [
@@ -349,9 +349,9 @@ export default function InventoryDetail() {
   const isOtherCat = uiCat === 'other' || uiCat === 'others' || uiCat === 'stock_item' || (!isHDD && !isPCB && !isSSD);
 
   const TABS = [
-    { key: 'overview', label: '📋 Overview' },
-    { key: 'photos', label: `📷 Media (${images.length})` },
-    { key: 'history', label: '📜 History' },
+    { key: 'overview', label: ' Overview' },
+    { key: 'photos', label: ` Media (${images.length})` },
+    { key: 'history', label: ' History' },
     ...(compareWithCase ? [{ key: 'compare', label: '🔬 Comparison' }] : []),
   ];
 
@@ -537,7 +537,7 @@ export default function InventoryDetail() {
             <div className="grid-2">
               {/* Stock Details */}
               <div className="card">
-                <div className="card-title" style={{ marginBottom:14 }}>🖥️ {cat.label} — Technical Details</div>
+                <div className="card-title" style={{ marginBottom:14 }}> {cat.label} — Technical Details</div>
                 <div className="tech-data-table">
                   {detailRows.map(([label, value]) => value ? (
                     <div key={label} className="tech-data-cell">
@@ -551,7 +551,7 @@ export default function InventoryDetail() {
               {/* Status & Stock Info */}
               <div>
                 <div className="card" style={{ marginBottom:16 }}>
-                  <div className="card-title" style={{ marginBottom:14 }}>📦 Stock Status</div>
+                  <div className="card-title" style={{ marginBottom:14 }}> Stock Status</div>
                   <div className="tech-data-table">
                     {[
                       ['Status', <StatusBadge status={item.status || 'available'} />],
@@ -572,7 +572,7 @@ export default function InventoryDetail() {
                 </div>
                 {item.case_number && (
                   <div className="alert alert-info">
-                    <span className="alert-icon">🔗</span>
+                    <span className="alert-icon"></span>
                     <div>Linked to case <strong>{item.case_number}</strong>
                       <button className="btn btn-ghost btn-sm" style={{ marginLeft:8 }} onClick={() => navigate(`/cases/${item.case_number}`)}>View Case →</button>
                     </div>
@@ -580,7 +580,7 @@ export default function InventoryDetail() {
                 )}
                 {isOtherCat && item.notes && (
                   <div className="card" style={{ padding: 14, marginBottom: 12 }}>
-                    <div style={{ fontWeight: 700, marginBottom: 6, fontSize: '0.82rem' }}>📝 Problem</div>
+                    <div style={{ fontWeight: 700, marginBottom: 6, fontSize: '0.82rem' }}> Problem</div>
                     <p style={{ fontSize: '0.82rem', lineHeight: 1.7, color: 'var(--text-secondary)' }}>{item.notes}</p>
                   </div>
                 )}
@@ -598,14 +598,14 @@ export default function InventoryDetail() {
                   </div>
                 )}
                 <div className="card" style={{ padding: 14, marginBottom: item.description ? 12 : 0 }}>
-                  <div style={{ fontWeight: 700, marginBottom: 6, fontSize: '0.82rem' }}>❤️ Health</div>
+                  <div style={{ fontWeight: 700, marginBottom: 6, fontSize: '0.82rem' }}> Health</div>
                   <p style={{ fontSize: '0.84rem', color: item.health ? 'var(--text-primary)' : 'var(--text-muted)' }}>
                     {item.health || 'Not specified'}
                   </p>
                 </div>
                 {item.description && (
                   <div className="card" style={{ padding:14 }}>
-                    <div style={{ fontWeight:700,marginBottom:6,fontSize:'0.82rem' }}>📝 Note</div>
+                    <div style={{ fontWeight:700,marginBottom:6,fontSize:'0.82rem' }}> Note</div>
                     <p style={{ fontSize:'0.82rem',lineHeight:1.7,color:'var(--text-secondary)' }}>{item.description}</p>
                   </div>
                 )}
@@ -628,7 +628,7 @@ export default function InventoryDetail() {
             {uploading ? (
               <><div className="spinner" style={{ width:24,height:24,margin:'0 auto 8px' }} /><div style={{ color:'var(--text-muted)',fontSize:'0.82rem' }}>Uploading…</div></>
             ) : (
-              <><div style={{ fontSize:'2.5rem',marginBottom:8 }}>📤</div><div style={{ fontWeight:600,marginBottom:4 }}>Drag & drop media or click to browse</div><div style={{ fontSize:'0.75rem',color:'var(--text-muted)' }}>Supports images, videos (MP4, MOV, WebM), and files (PDF, DOC, ZIP, etc.)</div></>
+              <><div style={{ fontSize:'2.5rem',marginBottom:8 }}></div><div style={{ fontWeight:600,marginBottom:4 }}>Drag & drop media or click to browse</div><div style={{ fontSize:'0.75rem',color:'var(--text-muted)' }}>Supports images, videos (MP4, MOV, WebM), and files (PDF, DOC, ZIP, etc.)</div></>
             )}
           </div>
           {images.length === 0 ? (
@@ -647,14 +647,14 @@ export default function InventoryDetail() {
       {/* History Tab */}
       {activeTab === 'history' && (
         <div className="card">
-          <div className="card-title" style={{ marginBottom:14 }}>📜 Stock Movement History</div>
+          <div className="card-title" style={{ marginBottom:14 }}> Stock Movement History</div>
           {history.length === 0 ? (
-            <div className="empty-state"><div className="empty-icon">📜</div><div className="empty-title">No history records yet</div></div>
+            <div className="empty-state"><div className="empty-icon"></div><div className="empty-title">No history records yet</div></div>
           ) : (
             <div style={{ display:'flex',flexDirection:'column',gap:8 }}>
               {history.map((h, i) => (
                 <div key={i} style={{ display:'flex',gap:12,alignItems:'center',padding:'10px 0',borderBottom:'1px solid var(--border-subtle)' }}>
-                  <span style={{ fontSize:'1.2rem' }}>{h.type==='in'?'📥':h.type==='out'?'📤':h.type==='disposed'?'🗑️':'🔒'}</span>
+                  <span style={{ fontSize:'1.2rem' }}>{h.type==='in'?'':h.type==='out'?'':h.type==='disposed'?'':''}</span>
                   <div style={{ flex:1 }}>
                     <div style={{ fontWeight:600,fontSize:'0.82rem' }}>{h.type?.toUpperCase()} — {h.quantity} unit(s)</div>
                     <div style={{ fontSize:'0.72rem',color:'var(--text-muted)' }}>{h.notes}</div>

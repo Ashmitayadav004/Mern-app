@@ -13,9 +13,9 @@ const getPlans = () => {
   } catch {}
   return [
     { key: 'starter', label: 'Starter', price: 999, maxUsers: 2, color: '#64748b', features: ['1 Admin + 2 Staff', 'Up to 100 cases/month', 'Basic reports (CSV)', 'Knowledge Base', 'Email notifications', '5 GB storage'] },
-    { key: 'professional', label: 'Professional', price: 2499, maxUsers: 5, color: '#0284c7', badge: '🔥 Popular', features: ['1 Admin + 5 Staff', 'Unlimited cases', 'Full reports (PDF)', 'Accounting module', 'WhatsApp integration', '50 GB storage', 'Priority support'] },
+    { key: 'professional', label: 'Professional', price: 2499, maxUsers: 5, color: '#0284c7', badge: ' Popular', features: ['1 Admin + 5 Staff', 'Unlimited cases', 'Full reports (PDF)', 'Accounting module', 'WhatsApp integration', '50 GB storage', 'Priority support'] },
     { key: 'business', label: 'Business', price: 4999, maxUsers: 15, color: '#8b5cf6', features: ['15 team members', 'Full analytics', '100 GB storage', 'API access', 'Dedicated support'] },
-    { key: 'enterprise', label: 'Enterprise', price: 9999, maxUsers: -1, color: '#f59e0b', badge: '⚡ Best Value', features: ['Unlimited users', 'Everything in Business', 'White-label branding', 'Custom integrations', 'SLA guarantee'] },
+    { key: 'enterprise', label: 'Enterprise', price: 9999, maxUsers: -1, color: '#f59e0b', badge: ' Best Value', features: ['Unlimited users', 'Everything in Business', 'White-label branding', 'Custom integrations', 'SLA guarantee'] },
   ];
 };
 
@@ -69,7 +69,7 @@ function PlanCard({ plan, current, daysLeft, onUpgrade }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
         {(plan.features || []).map(f => (
           <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-            <span style={{ color: plan.color, fontSize: '0.75rem' }}>✓</span>{f}
+            <span style={{ color: plan.color, fontSize: '0.75rem' }}></span>{f}
           </div>
         ))}
       </div>
@@ -82,7 +82,7 @@ function PlanCard({ plan, current, daysLeft, onUpgrade }) {
       )}
       {isCurrent && (
         <div style={{ textAlign: 'center', fontSize: '0.78rem', color: isExpired ? 'var(--status-danger)' : 'var(--text-muted)', paddingTop: 8 }}>
-          {isExpired ? '⚠️ Subscription Expired' : daysLeft !== null ? `✓ Active — ${daysLeft} day${daysLeft !== 1 ? 's' : ''} remaining` : 'Active'}
+          {isExpired ? ' Subscription Expired' : daysLeft !== null ? ` Active — ${daysLeft} day${daysLeft !== 1 ? 's' : ''} remaining` : 'Active'}
         </div>
       )}
     </div>
@@ -164,7 +164,7 @@ function PaymentModal({ plan, user, onClose, onSuccess }) {
             localStorage.setItem('sa_purchase_log', JSON.stringify(arr.slice(0, 200)));
             const cnt = parseInt(localStorage.getItem('sa_new_purchase_count') || '0') + 1;
             localStorage.setItem('sa_new_purchase_count', cnt.toString());
-            alert(`✅ Payment successful!\nPayment ID: ${response.razorpay_payment_id}\n\nYour ${plan.label} plan is now active!`);
+            alert(` Payment successful!\nPayment ID: ${response.razorpay_payment_id}\n\nYour ${plan.label} plan is now active!`);
             onSuccess && onSuccess({ plan, months, payment_id: response.razorpay_payment_id });
             onClose();
           },
@@ -172,7 +172,7 @@ function PaymentModal({ plan, user, onClose, onSuccess }) {
         };
         new window.Razorpay(opts).open();
       } else {
-        alert(`🔧 Demo Mode: Razorpay not loaded.\n\nPlan: ${plan.label}\nDuration: ${months} month${months > 1 ? 's' : ''}\nAmount: ₹${finalAmount.toLocaleString('en-IN')}${coupon ? `\n(Coupon: ${coupon.code} — saved ₹${couponDiscount.toLocaleString('en-IN')})` : ''}`);
+        alert(` Demo Mode: Razorpay not loaded.\n\nPlan: ${plan.label}\nDuration: ${months} month${months > 1 ? 's' : ''}\nAmount: ₹${finalAmount.toLocaleString('en-IN')}${coupon ? `\n(Coupon: ${coupon.code} — saved ₹${couponDiscount.toLocaleString('en-IN')})` : ''}`);
         setLoading(false);
       }
     }, 400);
@@ -182,8 +182,8 @@ function PaymentModal({ plan, user, onClose, onSuccess }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal modal-xl" onClick={e => e.stopPropagation()} style={{ maxWidth: 600 }}>
         <div className="modal-header">
-          <h3 className="modal-title">💎 Upgrade to {plan.label}</h3>
-          <button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button>
+          <h3 className="modal-title"> Upgrade to {plan.label}</h3>
+          <button className="btn btn-ghost btn-icon" onClick={onClose}></button>
         </div>
         <div className="modal-body">
           {/* Plan Summary */}
@@ -215,20 +215,20 @@ function PaymentModal({ plan, user, onClose, onSuccess }) {
 
           {/* Coupon */}
           <div style={{ marginTop: 4, padding: '12px 14px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)', marginBottom: 4 }}>
-            <div style={{ fontWeight: 600, fontSize: '0.82rem', marginBottom: 8 }}>🏷️ Have a Coupon Code?</div>
+            <div style={{ fontWeight: 600, fontSize: '0.82rem', marginBottom: 8 }}> Have a Coupon Code?</div>
             <div style={{ display: 'flex', gap: 8 }}>
               <input className="form-input font-mono" style={{ flex: 1, textTransform: 'uppercase' }}
                 value={couponCode} onChange={e => { setCouponCode(e.target.value.toUpperCase()); setCouponError(''); if (couponApplied) { setCoupon(null); setCouponApplied(false); } }}
                 placeholder="SAVE20 / LAUNCH50..." />
               <button className="btn btn-secondary" onClick={applyCoupon}
                 style={{ background: couponApplied ? 'rgba(16,185,129,0.1)' : undefined, color: couponApplied ? '#10b981' : undefined }}>
-                {couponApplied ? '✓ Applied' : 'Apply'}
+                {couponApplied ? ' Applied' : 'Apply'}
               </button>
             </div>
-            {couponError && <div style={{ fontSize: '0.72rem', color: 'var(--status-danger)', marginTop: 4 }}>⚠ {couponError}</div>}
+            {couponError && <div style={{ fontSize: '0.72rem', color: 'var(--status-danger)', marginTop: 4 }}> {couponError}</div>}
             {couponApplied && coupon && (
               <div style={{ fontSize: '0.72rem', color: '#10b981', marginTop: 4 }}>
-                ✓ Coupon "{coupon.code}" applied — {coupon.discount_type === 'percent' ? `${coupon.discount_value}% off` : `₹${coupon.discount_value} off`}
+                 Coupon "{coupon.code}" applied — {coupon.discount_type === 'percent' ? `${coupon.discount_value}% off` : `₹${coupon.discount_value} off`}
               </div>
             )}
           </div>
@@ -262,23 +262,23 @@ function PaymentModal({ plan, user, onClose, onSuccess }) {
           {/* Payment Link option */}
           {linkGenerated ? (
             <div style={{ padding: '10px 14px', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 'var(--radius-md)', marginBottom: 12, fontSize: '0.82rem' }}>
-              <div style={{ fontWeight: 600, color: '#10b981', marginBottom: 4 }}>✅ Payment Link Generated & Copied!</div>
+              <div style={{ fontWeight: 600, color: '#10b981', marginBottom: 4 }}> Payment Link Generated & Copied!</div>
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-muted)', wordBreak: 'break-all' }}>{linkGenerated}</div>
             </div>
           ) : (
             <button className="btn btn-secondary" style={{ width: '100%', marginBottom: 10, gap: 8 }} onClick={generateSecureLink} disabled={loading}>
-              {loading ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Generating…</> : '🔗 Generate Secure Payment Link (Share via WhatsApp/Email)'}
+              {loading ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Generating…</> : ' Generate Secure Payment Link (Share via WhatsApp/Email)'}
             </button>
           )}
 
           <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: 4, textAlign: 'center' }}>
-            🔒 Amount locked server-side. Client cannot modify the payment amount.
+             Amount locked server-side. Client cannot modify the payment amount.
           </div>
         </div>
         <div className="modal-footer">
           <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
           <button className="btn btn-primary" disabled={loading || !form.name || !form.email} onClick={handlePay}>
-            {loading ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Processing…</> : `💳 Pay ₹${finalAmount.toLocaleString('en-IN')}`}
+            {loading ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Processing…</> : ` Pay ₹${finalAmount.toLocaleString('en-IN')}`}
           </button>
         </div>
       </div>
@@ -292,13 +292,13 @@ export default function SubscriptionPage() {
   const [upgradeTarget, setUpgradeTarget] = useState(null);
   const PLANS = getPlans();
 
-  // ── Owner-Only Guard ───────────────────────────────────────────────────
+  //  Owner-Only Guard 
   // Only the per-tenant admin (account owner) can manage subscription.
   // Super admins manage plans from the SuperAdmin Console.
   if (!isOwner) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 400, textAlign: 'center', gap: 16 }}>
-        <div style={{ fontSize: '3rem' }}>🔒</div>
+        <div style={{ fontSize: '3rem' }}></div>
         <h2 style={{ margin: 0 }}>Owner Access Only</h2>
         <p style={{ color: 'var(--text-muted)', maxWidth: 440, fontSize: '0.85rem', lineHeight: 1.6 }}>
           {isSuperAdmin
@@ -306,7 +306,7 @@ export default function SubscriptionPage() {
             : 'Only the account owner (Admin) can view or modify subscription plans. Please contact your administrator.'}
         </p>
         <button className="btn btn-secondary" onClick={() => navigate(isSuperAdmin ? '/super-admin' : '/')}>
-          {isSuperAdmin ? '👑 Go to Super Admin Console' : '← Back to Dashboard'}
+          {isSuperAdmin ? ' Go to Super Admin Console' : '← Back to Dashboard'}
         </button>
       </div>
     );
@@ -352,7 +352,7 @@ export default function SubscriptionPage() {
       {/* Expiry / Status Banner */}
       {isExpired ? (
         <div className="alert alert-danger" style={{ marginBottom: 20 }}>
-          <span className="alert-icon">⚠️</span>
+          <span className="alert-icon"></span>
           <div>
             <strong>Subscription Expired!</strong> Your {currentPlan.label} plan expired on {new Date(expiryDate).toLocaleDateString('en-IN')}.
             Renew now to restore full access.
@@ -360,7 +360,7 @@ export default function SubscriptionPage() {
         </div>
       ) : isExpiringSoon ? (
         <div className="alert alert-warning" style={{ marginBottom: 20 }}>
-          <span className="alert-icon">⏰</span>
+          <span className="alert-icon"></span>
           <div>
             <strong>Subscription expiring soon!</strong> Your plan expires in <strong>{daysLeft} days</strong> on {new Date(expiryDate).toLocaleDateString('en-IN')}.
             Renew early to avoid interruption.
@@ -377,7 +377,7 @@ export default function SubscriptionPage() {
             </div>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
-            <button className="btn btn-secondary btn-sm" onClick={() => setUpgradeTarget(currentPlan)}>🔄 Renew Plan</button>
+            <button className="btn btn-secondary btn-sm" onClick={() => setUpgradeTarget(currentPlan)}> Renew Plan</button>
           </div>
         </div>
       )}
@@ -392,7 +392,7 @@ export default function SubscriptionPage() {
       {/* Payment History */}
       {purchases.length > 0 && (
         <div className="card" style={{ marginBottom: 24 }}>
-          <div className="card-title" style={{ marginBottom: 14 }}>🧾 Your Purchase History</div>
+          <div className="card-title" style={{ marginBottom: 14 }}> Your Purchase History</div>
           <div className="table-container">
             <table>
               <thead><tr><th>Date</th><th>Plan</th><th>Duration</th><th>Amount</th><th>Status</th><th>Payment ID</th></tr></thead>
@@ -421,7 +421,7 @@ export default function SubscriptionPage() {
 
       {/* FAQ */}
       <div className="card">
-        <div className="card-title" style={{ marginBottom: 16 }}>❓ Frequently Asked Questions</div>
+        <div className="card-title" style={{ marginBottom: 16 }}> Frequently Asked Questions</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
           {[
             ['Do you have coupon codes?', 'Yes! Enter a coupon code at checkout to receive discounts. Coupons may be global or account-specific. Contact support for exclusive offers.'],

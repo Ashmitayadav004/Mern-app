@@ -92,7 +92,7 @@ export default function InventoryStockConfigManager() {
       const key = newCatLabel.toLowerCase().replace(/[^a-z0-9]+/g, '_');
       const next = [...categories, {
         id: `local_${Date.now()}`, key, label: newCatLabel.trim(),
-        brand: newCatBrand, icon: '💿', color: '#8b5cf6', isHdd: true, active: true,
+        brand: newCatBrand, icon: '', color: '#8b5cf6', isHdd: true, active: true,
       }];
       setCategories(next);
       saveCategories(next);
@@ -141,20 +141,20 @@ export default function InventoryStockConfigManager() {
   };
 
   const TABS = [
-    ['brands', '🏷️ Brands (Company list)'],
-    ['categories', '📂 Categories (Add Stock)'],
-    ['fields', '📋 Stock Form Fields'],
+    ['brands', ' Brands (Company list)'],
+    ['categories', ' Categories (Add Stock)'],
+    ['fields', ' Stock Form Fields'],
   ];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div className="alert alert-info" style={{ marginBottom: 0 }}>
-        <span className="alert-icon">💡</span>
+        <span className="alert-icon"></span>
         <strong>Categories</strong> match Add Stock → Category (WD, PCB, SSD, Phone).
         <strong>Brands</strong> match Company dropdown on HDD items.
         <strong>Stock Form Fields</strong> are mapped per category in Field Config.
       </div>
-      {error && <div className="alert alert-warning">⚠ {error}</div>}
+      {error && <div className="alert alert-warning"> {error}</div>}
       {loading && <div className="text-muted text-sm">Loading…</div>}
 
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
@@ -176,12 +176,12 @@ export default function InventoryStockConfigManager() {
                 <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{b.config_key}</span>
               </label>
               {!b.is_system && (
-                <button type="button" className="btn btn-danger btn-sm" onClick={() => deleteBrand(b)}>🗑 Delete</button>
+                <button type="button" className="btn btn-danger btn-sm" onClick={() => deleteBrand(b)}> Delete</button>
               )}
             </div>
           ))}
           <div className="card" style={{ padding: 14 }}>
-            <div style={{ fontWeight: 700, marginBottom: 8 }}>➕ Add Brand</div>
+            <div style={{ fontWeight: 700, marginBottom: 8 }}> Add Brand</div>
             <div style={{ display: 'flex', gap: 8 }}>
               <input className="form-input" style={{ flex: 1 }} placeholder="e.g. Toshiba, Samsung"
                 value={newBrand} onChange={e => setNewBrand(e.target.value)} onKeyDown={e => e.key === 'Enter' && addBrand()} />
@@ -202,11 +202,11 @@ export default function InventoryStockConfigManager() {
                   key: {c.key} {c.brand ? `· ${c.brand}` : ''} {c.isHdd === false ? '· non-HDD' : ''}
                 </div>
               </div>
-              <button type="button" className="btn btn-danger btn-sm" onClick={() => deleteCategory(c)}>🗑</button>
+              <button type="button" className="btn btn-danger btn-sm" onClick={() => deleteCategory(c)}></button>
             </div>
           ))}
           <div className="card" style={{ padding: 14 }}>
-            <div style={{ fontWeight: 700, marginBottom: 8 }}>➕ Add Category</div>
+            <div style={{ fontWeight: 700, marginBottom: 8 }}> Add Category</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: 8 }}>
               <input className="form-input" placeholder='Label e.g. Toshiba 2.5"' value={newCatLabel} onChange={e => setNewCatLabel(e.target.value)} />
               <select className="form-select" value={newCatBrand} onChange={e => setNewCatBrand(e.target.value)}>
@@ -232,11 +232,11 @@ export default function InventoryStockConfigManager() {
                 <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>{f.field_label}</div>
                 <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{f.field_key}</div>
               </div>
-              <button type="button" className="btn btn-ghost btn-sm" style={{ color: 'var(--danger)' }} onClick={() => deleteStockField(f.field_key)}>🗑</button>
+              <button type="button" className="btn btn-ghost btn-sm" style={{ color: 'var(--danger)' }} onClick={() => deleteStockField(f.field_key)}></button>
             </div>
           ))}
           <div className="card" style={{ padding: 14 }}>
-            <div style={{ fontWeight: 700, marginBottom: 8 }}>➕ Add Field</div>
+            <div style={{ fontWeight: 700, marginBottom: 8 }}> Add Field</div>
             <div style={{ display: 'flex', gap: 8 }}>
               <input className="form-input" style={{ flex: 1 }} placeholder="e.g. RMA Number, Warranty"
                 value={newFieldLabel} onChange={e => setNewFieldLabel(e.target.value)} onKeyDown={e => e.key === 'Enter' && addStockField()} />

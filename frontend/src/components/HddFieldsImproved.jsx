@@ -163,7 +163,7 @@ function HddFieldsImproved({ hddKey, form, setForm, customFieldValues, setCustom
           fontSize: "0.8rem",
         }}
       >
-        ⏳ Loading field configuration...
+         Loading field configuration...
       </div>
     );
   }
@@ -232,7 +232,7 @@ function HddFieldsImproved({ hddKey, form, setForm, customFieldValues, setCustom
                       textDecoration: "none",
                     }}
                   >
-                    📎 Decode Guide
+                     Decode Guide
                   </a>
                 )}
               </label>
@@ -341,7 +341,7 @@ function HddFieldsImproved({ hddKey, form, setForm, customFieldValues, setCustom
                 color: "var(--accent-secondary)",
               }}
             >
-              ✦ {cf.field_label}
+               {cf.field_label}
               {cf.is_mandatory && (
                 <span
                   style={{

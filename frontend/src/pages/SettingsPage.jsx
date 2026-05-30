@@ -6,7 +6,7 @@ import HddFieldConfigManager from '../components/settings/HddFieldConfigManager'
 import InventoryStockConfigManager from '../components/settings/InventoryStockConfigManager';
 import { INV_DEFAULTS, loadInventoryFields } from '../utils/inventoryFieldSettings';
 
-// ── Per-family Inventory field/dropdown manager ────────────────────────────────
+//  Per-family Inventory field/dropdown manager 
 const stripDecorativeIcon = (label = '') => String(label).replace(/^[\p{Extended_Pictographic}\uFE0F]+\s*/gu, '').trim();
 
 function InvCategorySettings({ deviceFamily }) {
@@ -62,7 +62,7 @@ function InvCategorySettings({ deviceFamily }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       {saved && (
         <div style={{ padding: '8px 14px', background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: 8, fontSize: '0.8rem', color: '#22c55e', fontWeight: 700 }}>
-          ✓ Saved
+           Saved
         </div>
       )}
 
@@ -74,13 +74,13 @@ function InvCategorySettings({ deviceFamily }) {
             <span style={{ fontSize: '0.78rem', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', width: 120, flexShrink: 0 }}>{f.key}</span>
             <span style={{ fontWeight: 600, fontSize: '0.85rem', flex: 1 }}>{f.label}</span>
             <span style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: 20, background: f.type === 'select' ? 'rgba(0,212,255,0.1)' : 'rgba(99,102,241,0.1)', color: f.type === 'select' ? 'var(--accent-primary)' : '#a78bfa', fontWeight: 700 }}>
-              {f.type === 'select' ? `▾ ${(f.options || []).length} opts` : 'text'}
+              {f.type === 'select' ? ` ${(f.options || []).length} opts` : 'text'}
             </span>
             {f.custom && (
               <button type="button" onClick={e => { e.stopPropagation(); removeField(f.key); }}
-                style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '1rem', padding: '0 4px' }}>✕</button>
+                style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '1rem', padding: '0 4px' }}></button>
             )}
-            <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>{expandedField === f.key ? '▲' : '▼'}</span>
+            <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>{expandedField === f.key ? '' : ''}</span>
           </div>
 
           {/* Expanded: option list */}
@@ -92,7 +92,7 @@ function InvCategorySettings({ deviceFamily }) {
                   <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'var(--bg-card)', border: '1px solid var(--border-default)', borderRadius: 20, padding: '3px 10px', fontSize: '0.78rem' }}>
                     <span>{opt}</span>
                     <button type="button" onClick={() => removeOption(f.key, idx)}
-                      style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 11, padding: 0, lineHeight: 1 }}>✕</button>
+                      style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 11, padding: 0, lineHeight: 1 }}></button>
                   </div>
                 ))}
                 {!(f.options || []).length && <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>No options yet — add below.</span>}
@@ -115,7 +115,7 @@ function InvCategorySettings({ deviceFamily }) {
 
       {/* Add custom field */}
       <div style={{ background: 'var(--bg-elevated)', borderRadius: 8, border: '1px dashed var(--border-default)', padding: 14 }}>
-        <div style={{ fontWeight: 700, fontSize: '0.82rem', marginBottom: 8 }}>➕ Add Custom Field</div>
+        <div style={{ fontWeight: 700, fontSize: '0.82rem', marginBottom: 8 }}> Add Custom Field</div>
         <div style={{ display: 'flex', gap: 8 }}>
           <input className="form-input" style={{ flex: 1 }} placeholder='e.g. "Warranty", "Supplier Code"'
             value={newFieldLabel} onChange={e => setNewFieldLabel(e.target.value)}
@@ -125,7 +125,7 @@ function InvCategorySettings({ deviceFamily }) {
       </div>
 
       <div style={{ textAlign: 'right' }}>
-        <button type="button" className="btn btn-secondary btn-sm" onClick={resetDefaults}>↺ Reset Defaults</button>
+        <button type="button" className="btn btn-secondary btn-sm" onClick={resetDefaults}> Reset Defaults</button>
       </div>
     </div>
   );
@@ -161,11 +161,11 @@ function CreateUserModal({ onClose, onCreated }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
-          <h3 className="modal-title">👤 Create New User</h3>
-          <button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button>
+          <h3 className="modal-title"> Create New User</h3>
+          <button className="btn btn-ghost btn-icon" onClick={onClose}></button>
         </div>
         <div className="modal-body">
-          {error && <div className="alert alert-danger" style={{ marginBottom: 16 }}><span className="alert-icon">⚠</span> {error}</div>}
+          {error && <div className="alert alert-danger" style={{ marginBottom: 16 }}><span className="alert-icon"></span> {error}</div>}
           <form onSubmit={handleSubmit}>
             <div className="form-row form-row-2">
               <div className="form-group">
@@ -270,7 +270,7 @@ function UserRolesManager() {
                 <input type="number" className="form-input" value={r.level} onChange={e=>{const n=[...roles]; n[i].level=parseInt(e.target.value)||0; save(n);}} />
               </div>
               <div style={{ paddingTop:20 }}>
-                <button className="btn btn-danger btn-sm" onClick={()=>removeRole(i)}>✕</button>
+                <button className="btn btn-danger btn-sm" onClick={()=>removeRole(i)}></button>
               </div>
             </div>
             <div style={{ marginTop:12 }}>
@@ -293,10 +293,10 @@ function UserRolesManager() {
 }
 
 const ROLE_LABELS = {
-  admin: '🛡️ Admin',
-  senior_engineer: '⚙️ Senior Engineer',
-  junior_engineer: '🔧 Junior Engineer',
-  staff: '💁 Staff',
+  admin: ' Admin',
+  senior_engineer: ' Senior Engineer',
+  junior_engineer: ' Junior Engineer',
+  staff: ' Staff',
 };
 
 const ROLE_COLORS = {
@@ -386,7 +386,7 @@ function StageCategoriesManager({ stages, onChange }) {
               <input className="form-input" value={s} onChange={e=>{ const n=[...items]; n[i]=e.target.value; save(n); }} style={{ flex:1 }} />
               <button className="btn btn-secondary btn-sm" onClick={()=>moveUp(i)}>↑</button>
               <button className="btn btn-secondary btn-sm" onClick={()=>moveDown(i)}>↓</button>
-              <button className="btn btn-danger btn-sm" onClick={()=>save(items.filter((_,j)=>j!==i))}>✕</button>
+              <button className="btn btn-danger btn-sm" onClick={()=>save(items.filter((_,j)=>j!==i))}></button>
             </div>
           ))}
         </div>
@@ -417,7 +417,7 @@ function SymptomCategoriesManager({ symptoms, onChange }) {
           {items.map((s,i) => (
             <div key={i} style={{ display:'flex',alignItems:'center',gap:4,background:'var(--bg-elevated)',padding:'4px 10px',borderRadius:999,border:'1px solid var(--border-subtle)' }}>
               <input className="form-input" value={s} onChange={e=>{ const n=[...items]; n[i]=e.target.value; save(n); }} style={{ background:'transparent',border:'none',padding:0,width:Math.max(80,s.length*8),fontSize:'0.75rem',fontFamily:'var(--font-mono)',color:'var(--text-primary)' }} />
-              <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.75rem',padding:0,lineHeight:1 }} onClick={()=>save(items.filter((_,j)=>j!==i))}>✕</button>
+              <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.75rem',padding:0,lineHeight:1 }} onClick={()=>save(items.filter((_,j)=>j!==i))}></button>
             </div>
           ))}
         </div>
@@ -447,7 +447,7 @@ function FailureTypesManager({ items: initialItems, onChange }) {
         {items.map((s,i) => (
           <div key={i} style={{ display:'flex',alignItems:'center',gap:4,background:'var(--bg-elevated)',padding:'5px 12px',borderRadius:999,border:'1px solid var(--border-default)' }}>
             <input className="form-input" value={s} onChange={e=>{ const n=[...items]; n[i]=e.target.value; save(n); }} style={{ background:'transparent',border:'none',padding:0,width:Math.max(80,s.length*8),fontSize:'0.78rem',fontFamily:'var(--font-mono)',color:'var(--text-primary)' }} />
-            <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.78rem',padding:0,lineHeight:1 }} onClick={()=>save(items.filter((_,j)=>j!==i))}>✕</button>
+            <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.78rem',padding:0,lineHeight:1 }} onClick={()=>save(items.filter((_,j)=>j!==i))}></button>
           </div>
         ))}
       </div>
@@ -476,7 +476,7 @@ function BrandsManager({ items: initialItems, onChange }) {
         {items.map((s,i) => (
           <div key={i} style={{ display:'flex',alignItems:'center',gap:4,background:'var(--bg-elevated)',padding:'5px 12px',borderRadius:999,border:'1px solid var(--border-default)' }}>
             <input className="form-input" value={s} onChange={e=>{ const n=[...items]; n[i]=e.target.value; save(n); }} style={{ background:'transparent',border:'none',padding:0,width:Math.max(80,s.length*8),fontSize:'0.78rem',color:'var(--text-primary)' }} />
-            <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.78rem',padding:0 }} onClick={()=>save(items.filter((_,j)=>j!==i))}>✕</button>
+            <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.78rem',padding:0 }} onClick={()=>save(items.filter((_,j)=>j!==i))}></button>
           </div>
         ))}
       </div>
@@ -503,7 +503,7 @@ function ManufactureCountriesManager({ items: initialItems, onChange }) {
         {items.map((s,i) => (
           <div key={i} style={{ display:'flex',alignItems:'center',gap:4,background:'var(--bg-elevated)',padding:'5px 12px',borderRadius:999,border:'1px solid var(--border-default)' }}>
             <input className="form-input" value={s} onChange={e=>{ const n=[...items]; n[i]=e.target.value; save(n); }} style={{ background:'transparent',border:'none',padding:0,width:Math.max(80,s.length*8),fontSize:'0.78rem',color:'var(--text-primary)' }} />
-            <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.78rem',padding:0 }} onClick={()=>save(items.filter((_,j)=>j!==i))}>✕</button>
+            <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.78rem',padding:0 }} onClick={()=>save(items.filter((_,j)=>j!==i))}></button>
           </div>
         ))}
       </div>
@@ -530,7 +530,7 @@ function InterfacesManager({ items: initialItems, onChange }) {
         {items.map((s,i) => (
           <div key={i} style={{ display:'flex',alignItems:'center',gap:4,background:'var(--bg-elevated)',padding:'5px 12px',borderRadius:999,border:'1px solid var(--border-default)' }}>
             <input className="form-input" value={s} onChange={e=>{ const n=[...items]; n[i]=e.target.value; save(n); }} style={{ background:'transparent',border:'none',padding:0,width:Math.max(80,s.length*8),fontSize:'0.78rem',color:'var(--text-primary)' }} />
-            <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.78rem',padding:0 }} onClick={()=>save(items.filter((_,j)=>j!==i))}>✕</button>
+            <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.78rem',padding:0 }} onClick={()=>save(items.filter((_,j)=>j!==i))}></button>
           </div>
         ))}
       </div>
@@ -557,7 +557,7 @@ function HddTypesManager({ items: initialItems, onChange }) {
         {items.map((s,i) => (
           <div key={i} style={{ display:'flex',alignItems:'center',gap:4,background:'var(--bg-elevated)',padding:'5px 12px',borderRadius:999,border:'1px solid var(--border-default)' }}>
             <input className="form-input" value={s} onChange={e=>{ const n=[...items]; n[i]=e.target.value; save(n); }} style={{ background:'transparent',border:'none',padding:0,width:Math.max(80,s.length*8),fontSize:'0.78rem',color:'var(--text-primary)' }} />
-            <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.78rem',padding:0 }} onClick={()=>save(items.filter((_,j)=>j!==i))}>✕</button>
+            <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.78rem',padding:0 }} onClick={()=>save(items.filter((_,j)=>j!==i))}></button>
           </div>
         ))}
       </div>
@@ -586,7 +586,7 @@ function PaymentMethodsManager({ items: initialItems, onChange }) {
         {items.map((s,i) => (
           <div key={i} style={{ display:'flex',alignItems:'center',gap:4,background:'var(--bg-elevated)',padding:'5px 12px',borderRadius:999,border:'1px solid var(--border-default)' }}>
             <input className="form-input" value={s} onChange={e=>{ const n=[...items]; n[i]=e.target.value; save(n); }} style={{ background:'transparent',border:'none',padding:0,width:Math.max(80,s.length*8),fontSize:'0.78rem',color:'var(--text-primary)' }} />
-            <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.78rem',padding:0 }} onClick={()=>save(items.filter((_,j)=>j!==i))}>✕</button>
+            <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.78rem',padding:0 }} onClick={()=>save(items.filter((_,j)=>j!==i))}></button>
           </div>
         ))}
       </div>
@@ -598,7 +598,7 @@ function PaymentMethodsManager({ items: initialItems, onChange }) {
   );
 }
 
-// ── Capacities Manager ────────────────────────────────────────────────────────
+//  Capacities Manager 
 function CapacitiesManager({ capacities, onChange }) {
   const DEFAULT_CAPS = ['160GB','250GB','320GB','500GB','750GB','1TB','1.5TB','2TB','3TB','4TB','6TB','8TB','10TB','12TB','14TB','16TB','18TB','20TB'];
   const [caps, setCaps] = useState(() => capacities || DEFAULT_CAPS);
@@ -615,7 +615,7 @@ function CapacitiesManager({ capacities, onChange }) {
         {caps.map(c => (
           <div key={c} style={{display:'flex',alignItems:'center',gap:6,padding:'5px 10px',background:'var(--bg-elevated)',border:'1px solid var(--border-default)',borderRadius:20,fontSize:'0.8rem'}}>
             <span>{c}</span>
-            <button onClick={()=>remove(c)} style={{background:'none',border:'none',cursor:'pointer',color:'var(--text-muted)',fontSize:11,padding:0,lineHeight:1}}>✕</button>
+            <button onClick={()=>remove(c)} style={{background:'none',border:'none',cursor:'pointer',color:'var(--text-muted)',fontSize:11,padding:0,lineHeight:1}}></button>
           </div>
         ))}
       </div>
@@ -627,12 +627,12 @@ function CapacitiesManager({ capacities, onChange }) {
         </div>
         <button className="btn btn-primary" onClick={add}>+ Add</button>
       </div>
-      <button className="btn btn-secondary btn-sm" style={{alignSelf:'flex-start'}} onClick={()=>{if(confirm('Reset to defaults?'))save(DEFAULT_CAPS);}}>↺ Reset Defaults</button>
+      <button className="btn btn-secondary btn-sm" style={{alignSelf:'flex-start'}} onClick={()=>{if(confirm('Reset to defaults?'))save(DEFAULT_CAPS);}}> Reset Defaults</button>
     </div>
   );
 }
 
-// ── Razorpay Settings Panel ──────────────────────────────────────────────────
+//  Razorpay Settings Panel 
 function RazorpaySettingsPanel({ company, setCompany, companySaved, savingCompany, handleSaveCompany }) {
   const [verifying, setVerifying] = useState(false);
   const [verifyResult, setVerifyResult] = useState(null);
@@ -702,26 +702,26 @@ function RazorpaySettingsPanel({ company, setCompany, companySaved, savingCompan
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div className="card-title" style={{ marginBottom: 0 }}>💳 Razorpay Integration</div>
+          <div className="card-title" style={{ marginBottom: 0 }}> Razorpay Integration</div>
           {isVerified && (
             <span style={{ fontSize: '0.72rem', padding: '3px 10px', borderRadius: 999, background: 'rgba(34,197,94,0.15)', color: '#22c55e', fontWeight: 700, border: '1px solid rgba(34,197,94,0.3)' }}>
-              ✓ {currentVerification.name}
+               {currentVerification.name}
             </span>
           )}
         </div>
-        <button className={`btn btn-sm ${companySaved ? 'btn-secondary' : 'btn-primary'}`} disabled={savingCompany} onClick={handleSaveCompany}>{savingCompany ? '…' : companySaved ? '✓ Saved' : '💾 Save'}</button>
+        <button className={`btn btn-sm ${companySaved ? 'btn-secondary' : 'btn-primary'}`} disabled={savingCompany} onClick={handleSaveCompany}>{savingCompany ? '…' : companySaved ? ' Saved' : ' Save'}</button>
       </div>
       <div className="alert alert-info" style={{ marginBottom: 16 }}>
-        <span className="alert-icon">ℹ️</span>
+        <span className="alert-icon">ℹ</span>
         <div>Get your API keys from <a href="https://dashboard.razorpay.com/app/keys" target="_blank" rel="noreferrer">Razorpay Dashboard → Settings → API Keys</a>. Use <strong>Test Mode</strong> for development, then switch to Live keys in production.</div>
       </div>
 
       {/* API Keys */}
       <div className="card" style={{ marginBottom: 16 }}>
-        <div className="card-title" style={{ marginBottom: 12 }}>🔑 API Keys</div>
+        <div className="card-title" style={{ marginBottom: 12 }}> API Keys</div>
         {isVerified && (
           <div style={{ padding: '10px 14px', background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: 8, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{ fontSize: '1.6rem' }}>✅</div>
+            <div style={{ fontSize: '1.6rem' }}></div>
             <div>
               <div style={{ fontWeight: 700, color: '#22c55e', fontSize: '0.85rem' }}>{currentVerification.name}</div>
               {savedVerification?.business && <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 1 }}>Business: {savedVerification.business}</div>}
@@ -743,38 +743,38 @@ function RazorpaySettingsPanel({ company, setCompany, companySaved, savingCompan
         </div>
         <div style={{ display: 'flex', gap: 10, marginTop: 14, alignItems: 'center', flexWrap: 'wrap' }}>
           <button className="btn btn-secondary" onClick={verifyKeys} disabled={verifying}>
-            {verifying ? <><div className="spinner" style={{width:12,height:12,display:'inline-block',marginRight:6}} />Verifying…</> : '🔍 Verify Keys'}
+            {verifying ? <><div className="spinner" style={{width:12,height:12,display:'inline-block',marginRight:6}} />Verifying…</> : ' Verify Keys'}
           </button>
           <button className="btn btn-ghost btn-sm" onClick={testWebhook} disabled={testingWebhook}>
-            {testingWebhook ? 'Sending…' : '🔗 Test Webhook'}
+            {testingWebhook ? 'Sending…' : ' Test Webhook'}
           </button>
           {verifyResult && !verifyResult.ok && (
-            <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#ef4444', padding: '5px 10px', background: 'rgba(239,68,68,0.1)', borderRadius: 6, border: '1px solid rgba(239,68,68,0.3)' }}>❌ {verifyResult.message}</span>
+            <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#ef4444', padding: '5px 10px', background: 'rgba(239,68,68,0.1)', borderRadius: 6, border: '1px solid rgba(239,68,68,0.3)' }}> {verifyResult.message}</span>
           )}
           {webhookTestResult && (
-            <span style={{ fontSize: '0.75rem', color: webhookTestResult.ok ? '#22c55e' : '#ef4444' }}>{webhookTestResult.ok ? '✅' : '❌'} {webhookTestResult.message}</span>
+            <span style={{ fontSize: '0.75rem', color: webhookTestResult.ok ? '#22c55e' : '#ef4444' }}>{webhookTestResult.ok ? '' : ''} {webhookTestResult.message}</span>
           )}
         </div>
       </div>
 
       {/* Webhook Config */}
       <div className="card" style={{ marginBottom: 16 }}>
-        <div className="card-title" style={{ marginBottom: 10 }}>📡 Webhook Configuration</div>
+        <div className="card-title" style={{ marginBottom: 10 }}> Webhook Configuration</div>
         <div style={{ padding: '10px 14px', background: 'var(--bg-elevated)', borderRadius: 8, marginBottom: 10 }}>
           <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: 4 }}>Configure this URL in Razorpay Dashboard → Webhooks:</div>
           <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--accent-primary)', background: 'rgba(0,212,255,0.06)', padding: '7px 12px', borderRadius: 6, border: '1px solid rgba(0,212,255,0.18)', wordBreak: 'break-all' }}>{window.location.origin}/api/razorpay/webhook</div>
         </div>
         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <div>✓ Enable events: <strong style={{ color: 'var(--text-secondary)' }}>payment.captured, subscription.activated, subscription.halted, subscription.cancelled</strong></div>
-          <div>✓ On <strong style={{ color: '#22c55e' }}>payment.captured</strong> → client account auto-upgraded to Premium, expiry date updated</div>
-          <div>✓ On <strong style={{ color: '#ef4444' }}>subscription.halted</strong> → account auto-moved to Free tier, admin notified</div>
-          <div>✓ All events tracked in <strong style={{ color: 'var(--accent-primary)' }}>Super Admin → Purchases</strong> tab</div>
+          <div> Enable events: <strong style={{ color: 'var(--text-secondary)' }}>payment.captured, subscription.activated, subscription.halted, subscription.cancelled</strong></div>
+          <div> On <strong style={{ color: '#22c55e' }}>payment.captured</strong> → client account auto-upgraded to Premium, expiry date updated</div>
+          <div> On <strong style={{ color: '#ef4444' }}>subscription.halted</strong> → account auto-moved to Free tier, admin notified</div>
+          <div> All events tracked in <strong style={{ color: 'var(--accent-primary)' }}>Super Admin → Purchases</strong> tab</div>
         </div>
       </div>
 
       {/* Auto-Management */}
       <div className="card" style={{ marginBottom: 16 }}>
-        <div className="card-title" style={{ marginBottom: 14 }}>⚡ Auto-Management Settings</div>
+        <div className="card-title" style={{ marginBottom: 14 }}> Auto-Management Settings</div>
         {[
           ['razorpay_auto_expire', 'Auto-expire accounts on subscription end date', 'Automatically marks accounts as expired when their subscription period ends. Required for SaaS enforcement.'],
           ['razorpay_auto_notify', 'Notify admin on all payment events', 'Admin receives badge notification for every payment capture, failure, or subscription state change.'],
@@ -796,7 +796,7 @@ function RazorpaySettingsPanel({ company, setCompany, companySaved, savingCompan
 
       {/* Subscription Plan ID */}
       <div className="card" style={{ marginBottom: 16 }}>
-        <div className="card-title" style={{ marginBottom: 12 }}>📦 Subscription Plan</div>
+        <div className="card-title" style={{ marginBottom: 12 }}> Subscription Plan</div>
         <div className="form-group" style={{ marginBottom: 0 }}>
           <label className="form-label">Razorpay Subscription Plan ID <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>(optional — for recurring billing)</span></label>
           <input className="form-input font-mono" value={company.razorpay_plan_id || ''} onChange={e => setCompany(c => ({ ...c, razorpay_plan_id: e.target.value }))} placeholder="plan_XXXXXXXXXX" />
@@ -807,7 +807,7 @@ function RazorpaySettingsPanel({ company, setCompany, companySaved, savingCompan
       {/* Payment Methods */}
       <div className="card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <div className="card-title" style={{ marginBottom: 0 }}>💳 Payment Methods</div>
+          <div className="card-title" style={{ marginBottom: 0 }}> Payment Methods</div>
           <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Shown in all payment forms across the app</span>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
@@ -816,17 +816,17 @@ function RazorpaySettingsPanel({ company, setCompany, companySaved, savingCompan
               {editingIdx === idx ? (
                 <>
                   <input className="form-input" style={{ flex: 1, fontSize: '0.82rem', padding: '5px 8px' }} value={editVal} onChange={e => setEditVal(e.target.value)} onKeyDown={e => e.key === 'Enter' && saveEdit()} autoFocus />
-                  <button className="btn btn-primary btn-sm" onClick={saveEdit}>✓</button>
-                  <button className="btn btn-ghost btn-sm" onClick={() => setEditingIdx(null)}>✕</button>
+                  <button className="btn btn-primary btn-sm" onClick={saveEdit}></button>
+                  <button className="btn btn-ghost btn-sm" onClick={() => setEditingIdx(null)}></button>
                 </>
               ) : (
                 <>
                   <span style={{ fontSize: '1rem', width: 24, textAlign: 'center', flexShrink: 0 }}>
-                    {m.toLowerCase().includes('upi') ? '📱' : m.toLowerCase().includes('cash') ? '💵' : m.toLowerCase().includes('card') ? '💳' : m.toLowerCase().includes('bank') || m.toLowerCase().includes('neft') || m.toLowerCase().includes('rtgs') ? '🏦' : m.toLowerCase().includes('cheque') ? '📝' : m.toLowerCase().includes('wallet') ? '👜' : '💰'}
+                    {m.toLowerCase().includes('upi') ? '' : m.toLowerCase().includes('cash') ? '' : m.toLowerCase().includes('card') ? '' : m.toLowerCase().includes('bank') || m.toLowerCase().includes('neft') || m.toLowerCase().includes('rtgs') ? '' : m.toLowerCase().includes('cheque') ? '' : m.toLowerCase().includes('wallet') ? '' : ''}
                   </span>
                   <span style={{ flex: 1, fontSize: '0.82rem', fontWeight: 600 }}>{m}</span>
-                  <button className="btn btn-ghost btn-sm" style={{ fontSize: '0.72rem' }} onClick={() => startEdit(idx)}>✏️ Edit</button>
-                  <button className="btn btn-ghost btn-sm" style={{ fontSize: '0.72rem', color: 'var(--danger)' }} onClick={() => removeMethod(idx)}>✕</button>
+                  <button className="btn btn-ghost btn-sm" style={{ fontSize: '0.72rem' }} onClick={() => startEdit(idx)}> Edit</button>
+                  <button className="btn btn-ghost btn-sm" style={{ fontSize: '0.72rem', color: 'var(--danger)' }} onClick={() => removeMethod(idx)}></button>
                 </>
               )}
             </div>
@@ -866,7 +866,7 @@ function NumberFormatsManager({ company, setCompany }) {
   return (
     <div style={{ display:'flex',flexDirection:'column',gap:16 }}>
       <div className="alert alert-info" style={{marginBottom:0}}>
-        <span className="alert-icon">ℹ️</span>
+        <span className="alert-icon">ℹ</span>
         <div>
           <strong>Format Tokens:</strong> {'{YYYY}'} = 4-digit year, {'{YY}'} = 2-digit year, {'{MM}'} = month, {'{NNNN}'} = 4-digit seq number, {'{NNN}'} = 3-digit, {'{NN}'} = 2-digit, {'{N}'} = raw number
         </div>
@@ -913,7 +913,7 @@ function PlanManagementPanel() {
   return (
     <div>
       <div style={{ marginBottom:16, padding:'10px 16px', background:'rgba(245,158,11,0.08)', border:'1px solid rgba(245,158,11,0.25)', borderRadius:'var(--radius-md)', display:'flex', alignItems:'center', gap:10 }}>
-        <span style={{ fontSize:'1.1rem' }}>👑</span>
+        <span style={{ fontSize:'1.1rem' }}></span>
         <div>
           <div style={{ fontWeight:700, fontSize:'0.82rem', color:'#f59e0b' }}>Super Admin Exclusive — Subscription Plan Management</div>
           <div style={{ fontSize:'0.72rem', color:'var(--text-muted)', marginTop:2 }}>Only the platform Super Admin can create, edit, or remove subscription plans. Tenant owners can only view their assigned plan.</div>
@@ -927,7 +927,7 @@ function PlanManagementPanel() {
           <div key={plan.id} style={{ background:'var(--bg-elevated)',borderRadius:'var(--radius-lg)',padding:20,border:'1px solid var(--border-default)' }}>
             <div style={{ display:'flex',justifyContent:'space-between',marginBottom:12 }}>
               <input className="form-input" style={{ fontWeight:700,fontSize:'1rem',flex:1,marginRight:8 }} value={plan.name} onChange={e=>update(plan.id,'name',e.target.value)} />
-              <button className="btn btn-danger btn-sm" onClick={()=>remove(plan.id)}>✕</button>
+              <button className="btn btn-danger btn-sm" onClick={()=>remove(plan.id)}></button>
             </div>
             <div style={{ display:'flex',gap:10,marginBottom:12 }}>
               <div className="form-group" style={{ flex:1,marginBottom:0 }}>
@@ -956,7 +956,7 @@ function PlanManagementPanel() {
         ))}
       </div>
       <div style={{ marginTop:16,textAlign:'right' }}>
-        <button className="btn btn-primary" onClick={()=>alert('✅ Plans saved!')}>💾 Save Plans</button>
+        <button className="btn btn-primary" onClick={()=>alert(' Plans saved!')}> Save Plans</button>
       </div>
     </div>
   );
@@ -998,9 +998,9 @@ export default function SettingsPage() {
     slate_pro:    { id:'slate_pro',    name:'Slate Pro (Light)', bg:'linear-gradient(135deg,#f8fafc,#e2e8f0)',accent:'#3b82f6', accent2:'#8b5cf6', dark:false },
   });
   const [allLayouts] = useState([
-    { id:'split_hero',    name:'Split Hero',     desc:'Text left, image right', icon:'▐▌' },
-    { id:'centered_hero', name:'Centered Hero',  desc:'Centered text, image below', icon:'▬' },
-    { id:'reversed_hero', name:'Reversed Hero',  desc:'Image left, text right', icon:'▌▐' },
+    { id:'split_hero',    name:'Split Hero',     desc:'Text left, image right', icon:'' },
+    { id:'centered_hero', name:'Centered Hero',  desc:'Centered text, image below', icon:'' },
+    { id:'reversed_hero', name:'Reversed Hero',  desc:'Image left, text right', icon:'' },
   ]);
   // Homepage CMS & SEO
   const [homepageData, setHomepageData] = useState(null);
@@ -1163,7 +1163,7 @@ export default function SettingsPage() {
   };
 
   const settingsGroups = isSuperAdmin ? [
-    { id: 'profile_settings', label: '👤 My Profile Settings', icon: '👤',
+    { id: 'profile_settings', label: ' My Profile Settings', icon: '',
       children: [
         { key: 'profile',  label: 'My Profile' },
         { key: 'security', label: 'Security' },
@@ -1397,12 +1397,12 @@ export default function SettingsPage() {
           {activeTab === 'profile' && (
             <div className="card">
               <div className="card-header">
-                <div className="card-title">👤 My Profile</div>
+                <div className="card-title"> My Profile</div>
               </div>
               <div style={{ display: 'flex', gap: 20, marginBottom: 24, flexWrap:'wrap' }}>
                 <div className="avatar-upload-ring" onClick={() => avatarRef.current?.click()} style={{ width: 80, height: 80, borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.8rem', fontWeight: 800, color: 'white', flexShrink: 0, overflow:'hidden', boxShadow:'var(--shadow-md)' }}>
                   {user?.avatar ? <img src={user.avatar} alt="avatar" style={{width:'100%',height:'100%',objectFit:'cover'}}/> : user?.fullName?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
-                  <div className="avatar-overlay">📷 Ed</div>
+                  <div className="avatar-overlay"> Ed</div>
                 </div>
                 <input ref={avatarRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { if (e.target.files[0]) handleAvatarUpload(e.target.files[0]); }} />
                 <div>
@@ -1425,7 +1425,7 @@ export default function SettingsPage() {
                   ['Email', user?.email],
                   ['Username', user?.username],
                   ['Role', user?.role?.replace('_', ' ')],
-                  ['Account Status', user?.is_active ? '✓ Active' : '✗ Inactive'],
+                  ['Account Status', user?.is_active ? ' Active' : ' Inactive'],
                   ['Last Login', user?.last_login ? new Date(user.last_login).toLocaleString('en-IN') : 'N/A'],
                   ['Member Since', user?.created_at ? new Date(user.created_at).toLocaleDateString('en-IN') : 'N/A'],
                 ].map(([l, v]) => (
@@ -1454,10 +1454,10 @@ export default function SettingsPage() {
           {activeTab === 'security' && (
             <div className="card">
               <div className="card-header">
-                <div className="card-title">🔐 Change Password</div>
+                <div className="card-title"> Change Password</div>
               </div>
-              {pwSuccess && <div className="alert alert-success" style={{ marginBottom: 16 }}><span className="alert-icon">✓</span> {pwSuccess}</div>}
-              {pwError && <div className="alert alert-danger" style={{ marginBottom: 16 }}><span className="alert-icon">⚠</span> {pwError}</div>}
+              {pwSuccess && <div className="alert alert-success" style={{ marginBottom: 16 }}><span className="alert-icon"></span> {pwSuccess}</div>}
+              {pwError && <div className="alert alert-danger" style={{ marginBottom: 16 }}><span className="alert-icon"></span> {pwError}</div>}
               <form onSubmit={handlePasswordChange} style={{ maxWidth: 400 }}>
                 <div className="form-group">
                   <label className="form-label required">Current Password</label>
@@ -1472,11 +1472,11 @@ export default function SettingsPage() {
                   <input type="password" className="form-input" required value={pwForm.confirmPassword} onChange={e => setPwForm({ ...pwForm, confirmPassword: e.target.value })} />
                 </div>
                 <button type="submit" className="btn btn-primary" disabled={savingPw || !pwForm.currentPassword || !pwForm.newPassword}>
-                  {savingPw ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Updating...</> : '🔐 Change Password'}
+                  {savingPw ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Updating...</> : ' Change Password'}
                 </button>
               </form>
               <div style={{ marginTop: 24, padding: 16, background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
-                <div style={{ fontWeight: 600, fontSize: '0.82rem', marginBottom: 8 }}>🛡️ Security Requirements</div>
+                <div style={{ fontWeight: 600, fontSize: '0.82rem', marginBottom: 8 }}> Security Requirements</div>
                 <ul style={{ fontSize: '0.78rem', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: 4, paddingLeft: 16 }}>
                   <li>Minimum 8 characters</li>
                   <li>At least one uppercase letter (A-Z)</li>
@@ -1492,7 +1492,7 @@ export default function SettingsPage() {
           {activeTab === 'users' && (
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                <div className="card-title">👥 User Management</div>
+                <div className="card-title"> User Management</div>
                 {canAccess('admin') && (
                   <button className="btn btn-primary btn-sm" onClick={() => setShowCreateUser(true)}>+ Create User</button>
                 )}
@@ -1528,7 +1528,7 @@ export default function SettingsPage() {
                           <td className="text-xs text-muted">{u.last_login ? new Date(u.last_login).toLocaleString('en-IN') : 'Never'}</td>
                           <td>
                             <span style={{ fontSize: '0.7rem', fontWeight: 700, color: u.is_active ? 'var(--status-success)' : 'var(--status-danger)' }}>
-                              {u.is_active ? '● Active' : '○ Inactive'}
+                              {u.is_active ? ' Active' : ' Inactive'}
                             </span>
                           </td>
                           <td>
@@ -1536,7 +1536,7 @@ export default function SettingsPage() {
                               {canAccess('super_admin') && u.id !== user.id && (
                                 <button className="btn btn-sm" style={{background:'rgba(124,58,237,0.1)',color:'#a78bfa',border:'1px solid rgba(124,58,237,0.3)'}}
                                   onClick={() => { sessionStorage.setItem('impersonating_as', u.username); window.location.href = '/'; }}>
-                                  👁️ Impersonate
+                                   Impersonate
                                 </button>
                               )}
                               {canAccess('admin') && u.id !== user.id && (
@@ -1559,7 +1559,7 @@ export default function SettingsPage() {
           {/* AUDIT LOGS */}
           {activeTab === 'audit' && (
             <div>
-              <div className="card-title" style={{ marginBottom: 16 }}>📋 System Audit Log</div>
+              <div className="card-title" style={{ marginBottom: 16 }}> System Audit Log</div>
               <div className="table-container">
                 {loading ? (
                   <div style={{ display: 'flex', justifyContent: 'center', padding: 40 }}><div className="spinner" /></div>
@@ -1597,9 +1597,9 @@ export default function SettingsPage() {
           {activeTab === 'company' && company && (
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                <div className="card-title">🏢 Company Profile</div>
+                <div className="card-title"> Company Profile</div>
                 <button className={`btn btn-sm ${companySaved ? 'btn-secondary' : 'btn-primary'}`} disabled={savingCompany} onClick={handleSaveCompany}>
-                  {savingCompany ? <><div className="spinner" style={{ width: 12, height: 12 }} /> Saving…</> : companySaved ? '✓ Saved' : '💾 Save'}
+                  {savingCompany ? <><div className="spinner" style={{ width: 12, height: 12 }} /> Saving…</> : companySaved ? ' Saved' : ' Save'}
                 </button>
               </div>
               {/* Logo upload */}
@@ -1608,10 +1608,10 @@ export default function SettingsPage() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                   <div style={{ width: 80, height: 80, borderRadius: 'var(--radius-md)', border: '2px dashed var(--border-default)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', background: 'var(--bg-elevated)', cursor: 'pointer' }}
                     onClick={() => logoRef.current?.click()}>
-                    {company.logo_data ? <img src={company.logo_data} alt="logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : <span style={{ fontSize: '2rem' }}>🏢</span>}
+                    {company.logo_data ? <img src={company.logo_data} alt="logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : <span style={{ fontSize: '2rem' }}></span>}
                   </div>
                   <div>
-                    <button className="btn btn-secondary btn-sm" onClick={() => logoRef.current?.click()}>📁 Upload Logo</button>
+                    <button className="btn btn-secondary btn-sm" onClick={() => logoRef.current?.click()}> Upload Logo</button>
                     <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 4 }}>PNG, JPG — appears on invoices and quotes</div>
                   </div>
                   <input ref={logoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { if (e.target.files[0]) handleLogoUpload(e.target.files[0]); }} />
@@ -1635,7 +1635,7 @@ export default function SettingsPage() {
                   <label className="form-label">Subscription Expiry Date</label>
                   <input type="date" className="form-input" value={company?.subscription_expiry || ''} onChange={e => setCompany(c => ({ ...c, subscription_expiry: e.target.value }))} />
                   <div style={{ fontSize:'0.72rem', color: company?.subscription_expiry && new Date(company.subscription_expiry) < new Date() ? 'var(--status-danger)' : 'var(--text-muted)', marginTop:4 }}>
-                    {company?.subscription_expiry ? (new Date(company.subscription_expiry) < new Date() ? '⚠️ Subscription expired! Renew to continue.' : `✓ Active until ${new Date(company.subscription_expiry).toLocaleDateString('en-IN')}`) : 'No expiry date set'}
+                    {company?.subscription_expiry ? (new Date(company.subscription_expiry) < new Date() ? ' Subscription expired! Renew to continue.' : ` Active until ${new Date(company.subscription_expiry).toLocaleDateString('en-IN')}`) : 'No expiry date set'}
                   </div>
                 </div>
               </div>
@@ -1646,8 +1646,8 @@ export default function SettingsPage() {
           {activeTab === 'invoice' && company && (
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-                <div className="card-title">🧾 Invoice & Quote Setup</div>
-                <button className={`btn btn-sm ${companySaved ? 'btn-secondary' : 'btn-primary'}`} disabled={savingCompany} onClick={handleSaveCompany}>{savingCompany ? '…' : companySaved ? '✓ Saved' : '💾 Save'}</button>
+                <div className="card-title"> Invoice & Quote Setup</div>
+                <button className={`btn btn-sm ${companySaved ? 'btn-secondary' : 'btn-primary'}`} disabled={savingCompany} onClick={handleSaveCompany}>{savingCompany ? '…' : companySaved ? ' Saved' : ' Save'}</button>
               </div>
               <div className="card" style={{ marginBottom: 16 }}>
                 <div className="card-title" style={{ marginBottom: 12 }}>Bank Details (shown on invoice)</div>
@@ -1671,13 +1671,13 @@ export default function SettingsPage() {
           {activeTab === 'smtp' && company && (
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-                <div className="card-title">📧 Email / SMTP Configuration</div>
+                <div className="card-title"> Email / SMTP Configuration</div>
                 <div style={{ display: 'flex', gap: 8 }}>
-                  <button className="btn btn-secondary btn-sm" disabled={smtpTesting} onClick={handleTestSmtp}>{smtpTesting ? <><div className="spinner" style={{ width: 12, height: 12 }} /> Testing…</> : '📤 Send Test Email'}</button>
-                  <button className="btn btn-primary btn-sm" disabled={savingCompany} onClick={handleSaveCompany}>{savingCompany ? '…' : '💾 Save'}</button>
+                  <button className="btn btn-secondary btn-sm" disabled={smtpTesting} onClick={handleTestSmtp}>{smtpTesting ? <><div className="spinner" style={{ width: 12, height: 12 }} /> Testing…</> : ' Send Test Email'}</button>
+                  <button className="btn btn-primary btn-sm" disabled={savingCompany} onClick={handleSaveCompany}>{savingCompany ? '…' : ' Save'}</button>
                 </div>
               </div>
-              {smtpResult && <div className={`alert ${smtpResult.ok ? 'alert-success' : 'alert-danger'}`} style={{ marginBottom: 16 }}><span className="alert-icon">{smtpResult.ok ? '✓' : '⚠'}</span>{smtpResult.msg}</div>}
+              {smtpResult && <div className={`alert ${smtpResult.ok ? 'alert-success' : 'alert-danger'}`} style={{ marginBottom: 16 }}><span className="alert-icon">{smtpResult.ok ? '' : ''}</span>{smtpResult.msg}</div>}
               <div className="card" style={{ marginBottom: 16 }}>
                 <div className="form-row form-row-2">
                   <div className="form-group"><label className="form-label">SMTP Host</label><input className="form-input font-mono" value={company.smtp_host || ''} onChange={e => setCompany(c => ({ ...c, smtp_host: e.target.value }))} placeholder="smtp.gmail.com" /></div>
@@ -1701,7 +1701,7 @@ export default function SettingsPage() {
             <div>
               <div className="card" style={{ marginBottom: 16 }}>
                 <div className="card-header">
-                  <div className="card-title">🔒 Data Encryption</div>
+                  <div className="card-title"> Data Encryption</div>
                   <span style={{ fontSize: '0.7rem', padding: '3px 8px', borderRadius: 999, background: 'rgba(16,185,129,0.15)', color: 'var(--status-success)', fontFamily: 'var(--font-mono)', fontWeight: 700 }}>AES-256-GCM ACTIVE</span>
                 </div>
                 <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: 1.7, marginBottom: 16 }}>
@@ -1721,10 +1721,10 @@ export default function SettingsPage() {
                 <div className="form-group">
                   <label className="form-label">Custom Encryption Key (optional)</label>
                   <input type="password" className="form-input font-mono" placeholder="Leave blank to use system default key" defaultValue={localStorage.getItem('enc_key') || ''} onChange={e => { if (e.target.value) localStorage.setItem('enc_key', e.target.value); else localStorage.removeItem('enc_key'); }} />
-                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 4 }}>⚠️ Changing this key will make previously encrypted data unreadable. Store securely.</div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 4 }}> Changing this key will make previously encrypted data unreadable. Store securely.</div>
                 </div>
                 <div className="alert alert-warning" style={{ marginTop: 8 }}>
-                  <span className="alert-icon">⚠️</span>
+                  <span className="alert-icon"></span>
                   <div><strong>Important:</strong> The encryption key is stored in your browser. In production, use a server-side HSM or secrets manager to manage keys.</div>
                 </div>
               </div>
@@ -1735,8 +1735,8 @@ export default function SettingsPage() {
           {activeTab === 'invoice' && company && (
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-                <div className="card-title">🧾 Invoice Setup</div>
-                <button className={`btn btn-sm ${companySaved ? 'btn-secondary' : 'btn-primary'}`} disabled={savingCompany} onClick={handleSaveCompany}>{savingCompany ? '…' : companySaved ? '✓ Saved' : '💾 Save'}</button>
+                <div className="card-title"> Invoice Setup</div>
+                <button className={`btn btn-sm ${companySaved ? 'btn-secondary' : 'btn-primary'}`} disabled={savingCompany} onClick={handleSaveCompany}>{savingCompany ? '…' : companySaved ? ' Saved' : ' Save'}</button>
               </div>
               <div className="card" style={{ marginBottom: 16 }}>
                 <div className="card-title" style={{ marginBottom: 12 }}>Bank Details (shown on invoice)</div>
@@ -1756,7 +1756,7 @@ export default function SettingsPage() {
                   <label className="form-label">Append Pages from Images (PDF)</label>
                   <p style={{fontSize:'0.75rem',color:'var(--text-muted)',marginBottom:8}}>Images uploaded here are appended to every Invoice and Quote PDF as additional pages (T&amp;C, warranty, etc.)</p>
                   <label className="btn btn-secondary" style={{cursor:'pointer'}}>
-                    📎 Upload Append Image
+                     Upload Append Image
                     <input type="file" accept="image/*" style={{display:'none'}} onChange={e=>{
                       const file = e.target.files[0];
                       if(!file) return;
@@ -1765,7 +1765,7 @@ export default function SettingsPage() {
                         const existing = JSON.parse(localStorage.getItem('invoice_append_images')||'[]');
                         existing.push({ name:file.name, data:ev.target.result, addedAt:new Date().toISOString() });
                         localStorage.setItem('invoice_append_images', JSON.stringify(existing));
-                        alert('✅ Image added to invoice/quote PDF pages!');
+                        alert(' Image added to invoice/quote PDF pages!');
                       };
                       reader.readAsDataURL(file);
                     }} />
@@ -1778,7 +1778,7 @@ export default function SettingsPage() {
                         const arr = JSON.parse(localStorage.getItem('invoice_append_images')||'[]').filter((_,j)=>j!==i);
                         localStorage.setItem('invoice_append_images', JSON.stringify(arr));
                         window.location.reload();
-                      }}>✕</button>
+                      }}></button>
                     </div>
                   ))}
                 </div>
@@ -1790,8 +1790,8 @@ export default function SettingsPage() {
           {activeTab === 'gst' && company && (
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-                <div className="card-title">🧳 GST & Tax Configuration</div>
-                <button className={`btn btn-sm ${companySaved ? 'btn-secondary' : 'btn-primary'}`} disabled={savingCompany} onClick={handleSaveCompany}>{savingCompany ? '…' : companySaved ? '✓ Saved' : '💾 Save'}</button>
+                <div className="card-title"> GST & Tax Configuration</div>
+                <button className={`btn btn-sm ${companySaved ? 'btn-secondary' : 'btn-primary'}`} disabled={savingCompany} onClick={handleSaveCompany}>{savingCompany ? '…' : companySaved ? ' Saved' : ' Save'}</button>
               </div>
 
               {/* Enable/Disable */}
@@ -1872,7 +1872,7 @@ export default function SettingsPage() {
 
                   {/* Invoice display */}
                   <div style={{ marginTop:16, padding:'12px 14px', background:'var(--bg-elevated)', borderRadius:8, border:'1px solid var(--border-subtle)' }}>
-                    <div style={{fontWeight:700, fontSize:'0.82rem', marginBottom:10}}>📄 How it appears on Invoice</div>
+                    <div style={{fontWeight:700, fontSize:'0.82rem', marginBottom:10}}> How it appears on Invoice</div>
                     <div style={{ display:'flex', flexDirection:'column', gap:6, fontSize:'0.8rem', color:'var(--text-secondary)', fontFamily:'var(--font-mono)' }}>
                       {(company.gst_tax_type||'cgst_sgst') === 'igst' ? (
                         <>
@@ -1895,7 +1895,7 @@ export default function SettingsPage() {
 
               {/* Invoice number format */}
               <div className="card" style={{ marginBottom:16 }}>
-                <div className="card-title" style={{marginBottom:12}}>🔢 Invoice Number Format</div>
+                <div className="card-title" style={{marginBottom:12}}> Invoice Number Format</div>
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:12 }}>
                   <div className="form-group" style={{margin:0}}>
                     <label className="form-label">Invoice Prefix</label>
@@ -1924,7 +1924,7 @@ export default function SettingsPage() {
           {/* ACTIVITY LOG */}
           {activeTab === 'activity' && (
             <div>
-              <div className="card-title" style={{ marginBottom: 16 }}>📊 Activity Log</div>
+              <div className="card-title" style={{ marginBottom: 16 }}> Activity Log</div>
               <div className="table-container">
                 {loading ? (
                   <div style={{ display: 'flex', justifyContent: 'center', padding: 40 }}><div className="spinner" /></div>
@@ -1954,9 +1954,9 @@ export default function SettingsPage() {
           {activeTab === 'whatsapp' && (
             <div>
               <div className="card" style={{ marginBottom:16 }}>
-                <div className="card-title" style={{ marginBottom:16 }}>📱 WhatsApp Business Cloud API (Meta)</div>
+                <div className="card-title" style={{ marginBottom:16 }}> WhatsApp Business Cloud API (Meta)</div>
                 <div className="alert alert-info" style={{ marginBottom:16 }}>
-                  <span className="alert-icon">ℹ️</span>
+                  <span className="alert-icon">ℹ</span>
                   <div>Go to <strong>Meta for Developers → Your App → WhatsApp → API Setup</strong> to find your credentials. You need a verified Business Account and approved message templates.</div>
                 </div>
                 <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:12 }}>
@@ -1967,7 +1967,7 @@ export default function SettingsPage() {
                   <div className="form-group"><label className="form-label">API Version</label><input className="form-input font-mono" value={company?.wa_api_version||'v18.0'} onChange={e=>setCompany(c=>({...c,wa_api_version:e.target.value}))} /></div>
                 </div>
                 <div style={{ marginTop:16,padding:'14px 16px',background:'var(--bg-elevated)',borderRadius:'var(--radius-md)',border:'1px solid var(--border-subtle)' }}>
-                  <div className="form-label" style={{ marginBottom:12 }}>📋 Message Templates</div>
+                  <div className="form-label" style={{ marginBottom:12 }}> Message Templates</div>
                   <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:12 }}>
                     <div className="form-group"><label className="form-label">New Case Created Template</label><input className="form-input font-mono text-xs" value={company?.wa_template_new_case||''} onChange={e=>setCompany(c=>({...c,wa_template_new_case:e.target.value}))} placeholder="template_name (en_US)" /></div>
                     <div className="form-group"><label className="form-label">Stage Update Template</label><input className="form-input font-mono text-xs" value={company?.wa_template_stage_update||''} onChange={e=>setCompany(c=>({...c,wa_template_stage_update:e.target.value}))} placeholder="template_name (en_US)" /></div>
@@ -1976,7 +1976,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
                 <div style={{ marginTop:16 }}>
-                  <div className="form-label" style={{ marginBottom:10 }}>🔔 Notification Triggers</div>
+                  <div className="form-label" style={{ marginBottom:10 }}> Notification Triggers</div>
                   {[
                     ['wa_notify_new_case','Send WA when new case is created'],
                     ['wa_notify_stage_change','Send WA when stage changes'],
@@ -1990,7 +1990,7 @@ export default function SettingsPage() {
                   ))}
                 </div>
                 <div style={{ marginTop:16,textAlign:'right' }}>
-                  <button className="btn btn-primary" onClick={handleSaveCompany} disabled={savingCompany}>{savingCompany?'Saving…':companySaved?'✓ Saved':'💾 Save WhatsApp Settings'}</button>
+                  <button className="btn btn-primary" onClick={handleSaveCompany} disabled={savingCompany}>{savingCompany?'Saving…':companySaved?' Saved':' Save WhatsApp Settings'}</button>
                 </div>
               </div>
             </div>
@@ -2000,15 +2000,15 @@ export default function SettingsPage() {
           {activeTab === 'n8n' && (
             <div>
               <div className="card" style={{ marginBottom:16 }}>
-                <div className="card-title" style={{ marginBottom:16 }}>🔄 n8n Workflow Integration</div>
+                <div className="card-title" style={{ marginBottom:16 }}> n8n Workflow Integration</div>
                 <div className="alert alert-info" style={{ marginBottom:16 }}>
-                  <span className="alert-icon">ℹ️</span>
+                  <span className="alert-icon">ℹ</span>
                   <div>Connect RecoverLab CRM to your n8n instance. Set a webhook URL and the CRM will POST events to n8n when actions occur. You can then build any automation workflow in n8n.</div>
                 </div>
                 <div className="form-group"><label className="form-label">n8n Base URL</label><input className="form-input font-mono" value={company?.n8n_base_url||''} onChange={e=>setCompany(c=>({...c,n8n_base_url:e.target.value}))} placeholder="https://your-n8n.example.com" /></div>
                 <div className="form-group"><label className="form-label">n8n API Key (for triggering workflows)</label><input className="form-input font-mono" type="password" value={company?.n8n_api_key||''} onChange={e=>setCompany(c=>({...c,n8n_api_key:e.target.value}))} placeholder="n8n API key from Settings → API" /></div>
                 <div style={{ borderTop:'1px solid var(--border-subtle)',marginTop:12,paddingTop:16 }}>
-                  <div className="form-label" style={{ marginBottom:12 }}>🔗 Webhook URLs (n8n → CRM triggers)</div>
+                  <div className="form-label" style={{ marginBottom:12 }}> Webhook URLs (n8n → CRM triggers)</div>
                   {[
                     ['n8n_webhook_case_created', 'New Case Created'],
                     ['n8n_webhook_case_modified', 'Case Modified'],
@@ -2027,13 +2027,13 @@ export default function SettingsPage() {
                   ))}
                 </div>
                 <div style={{ marginTop:16,padding:'14px',background:'rgba(0,212,255,0.06)',borderRadius:'var(--radius-md)',border:'1px solid rgba(0,212,255,0.2)' }}>
-                  <div style={{ fontWeight:700,fontSize:'0.82rem',marginBottom:8,color:'var(--accent-primary)' }}>📡 CRM → n8n Outgoing Events</div>
+                  <div style={{ fontWeight:700,fontSize:'0.82rem',marginBottom:8,color:'var(--accent-primary)' }}> CRM → n8n Outgoing Events</div>
                   <div style={{ fontSize:'0.78rem',color:'var(--text-muted)',lineHeight:1.8 }}>
                     Each event will POST JSON to your n8n webhook with: <code style={{ background:'var(--bg-elevated)',padding:'2px 6px',borderRadius:4 }}>event_type, data, timestamp, company_id</code>. Handle it in n8n to trigger emails, WhatsApp, database updates, Slack notifications, or anything else.
                   </div>
                 </div>
                 <div style={{ marginTop:16,textAlign:'right' }}>
-                  <button className="btn btn-primary" onClick={handleSaveCompany} disabled={savingCompany}>{savingCompany?'Saving…':companySaved?'✓ Saved':'💾 Save n8n Settings'}</button>
+                  <button className="btn btn-primary" onClick={handleSaveCompany} disabled={savingCompany}>{savingCompany?'Saving…':companySaved?' Saved':' Save n8n Settings'}</button>
                 </div>
               </div>
             </div>
@@ -2041,7 +2041,7 @@ export default function SettingsPage() {
 
           {activeTab === 'case_settings_client' && (
             <div className="card">
-              <div className="card-title" style={{ marginBottom:16 }}>👤 Client & Case Workflow</div>
+              <div className="card-title" style={{ marginBottom:16 }}> Client & Case Workflow</div>
               <p style={{ fontSize:'0.82rem',color:'var(--text-muted)',marginBottom:20 }}>
                 Settings used by the initial case creation step and case workflow. Customize how new cases are staged and managed.
               </p>
@@ -2054,7 +2054,7 @@ export default function SettingsPage() {
 
           {activeTab === 'case_settings_device' && (
             <div className="card">
-              <div className="card-title" style={{ marginBottom:16 }}>💾 Device</div>
+              <div className="card-title" style={{ marginBottom:16 }}> Device</div>
               <p style={{ fontSize:'0.82rem',color:'var(--text-muted)',marginBottom:20 }}>
                 Device step settings for new case creation. These values appear when selecting device type, interface, brand, capacity and manufacturer.
               </p>
@@ -2085,7 +2085,7 @@ export default function SettingsPage() {
 
           {activeTab === 'case_settings_hdd_fields' && (
             <div className="card">
-              <div className="card-title" style={{ marginBottom:16 }}>🔧 HDD Fields</div>
+              <div className="card-title" style={{ marginBottom:16 }}> HDD Fields</div>
               <p style={{ fontSize:'0.82rem',color:'var(--text-muted)',marginBottom:20 }}>
                 Fields used in the HDD fields step. Manage which dynamic fields are required for each HDD/device type.
               </p>
@@ -2095,7 +2095,7 @@ export default function SettingsPage() {
 
           {activeTab === 'case_settings_problem' && (
             <div className="card">
-              <div className="card-title" style={{ marginBottom:16 }}>📸 Problem</div>
+              <div className="card-title" style={{ marginBottom:16 }}> Problem</div>
               <p style={{ fontSize:'0.82rem',color:'var(--text-muted)',marginBottom:20 }}>
                 Problem step settings for symptom and failure type selection during new case creation.
               </p>
@@ -2112,7 +2112,7 @@ export default function SettingsPage() {
 
           {activeTab === 'case_settings_commercial' && (
             <div className="card">
-              <div className="card-title" style={{ marginBottom:16 }}>💰 Commercial</div>
+              <div className="card-title" style={{ marginBottom:16 }}> Commercial</div>
               <p style={{ fontSize:'0.82rem',color:'var(--text-muted)',marginBottom:20 }}>
                 Commercial step settings for payment method options and billing defaults used in new case creation.
               </p>
@@ -2127,8 +2127,8 @@ export default function SettingsPage() {
           {activeTab === 'numbers' && company && (
             <div>
               <div style={{ display:'flex',justifyContent:'space-between',marginBottom:16 }}>
-                <div className="card-title">🔢 Number Formats &amp; Sequences</div>
-                <button className={`btn btn-sm ${companySaved?'btn-secondary':'btn-primary'}`} disabled={savingCompany} onClick={handleSaveCompany}>{savingCompany?'…':companySaved?'✓ Saved':'💾 Save'}</button>
+                <div className="card-title"> Number Formats &amp; Sequences</div>
+                <button className={`btn btn-sm ${companySaved?'btn-secondary':'btn-primary'}`} disabled={savingCompany} onClick={handleSaveCompany}>{savingCompany?'…':companySaved?' Saved':' Save'}</button>
               </div>
               <NumberFormatsManager company={company} setCompany={setCompany} />
             </div>
@@ -2137,7 +2137,7 @@ export default function SettingsPage() {
           {/* HDD TYPES (Case Settings child) */}
           {activeTab === 'hdd_types' && (
             <div className="card">
-              <div className="card-title" style={{ marginBottom: 4 }}>🖴 HDD Types & Brands</div>
+              <div className="card-title" style={{ marginBottom: 4 }}> HDD Types & Brands</div>
               <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 16 }}>
                 Manage HDD brands, stock categories, and stock form field definitions used across the inventory.
               </div>
@@ -2148,7 +2148,7 @@ export default function SettingsPage() {
           {/* FIELD CONFIG (Case Settings child) */}
           {activeTab === 'field_config' && (
             <div className="card">
-              <div className="card-title" style={{ marginBottom: 4 }}>🔧 Field Config</div>
+              <div className="card-title" style={{ marginBottom: 4 }}> Field Config</div>
               <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 16 }}>
                 Control which fields appear on the Add Case form per HDD / Device Type and set each field's visibility status.
               </div>
@@ -2160,7 +2160,7 @@ export default function SettingsPage() {
           {activeTab === 'inv_hdd' && (
             <div className="card">
               <div className="card-header">
-                <div className="card-title">🖴 HDD Inventory Settings</div>
+                <div className="card-title"> HDD Inventory Settings</div>
               </div>
               <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 16 }}>
                 Configure dynamic form fields, dropdown options, and stock properties for <strong>HDD</strong> items.
@@ -2173,7 +2173,7 @@ export default function SettingsPage() {
           {activeTab === 'inv_ssd' && (
             <div className="card">
               <div className="card-header">
-                <div className="card-title">⚡ SSD Inventory Settings</div>
+                <div className="card-title"> SSD Inventory Settings</div>
               </div>
               <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 16 }}>
                 Configure dynamic form fields, dropdown options, and stock properties for <strong>SSD</strong> items.
@@ -2186,7 +2186,7 @@ export default function SettingsPage() {
           {activeTab === 'inv_pcb' && (
             <div className="card">
               <div className="card-header">
-                <div className="card-title">🔌 PCB Inventory Settings</div>
+                <div className="card-title"> PCB Inventory Settings</div>
               </div>
               <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 16 }}>
                 Configure dynamic form fields, dropdown options, and stock properties for <strong>PCB</strong> items.
@@ -2199,7 +2199,7 @@ export default function SettingsPage() {
           {activeTab === 'inv_other' && (
             <div className="card">
               <div className="card-header">
-                <div className="card-title">📦 Other Inventory Settings</div>
+                <div className="card-title"> Other Inventory Settings</div>
               </div>
               <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 16 }}>
                 Configure dynamic form fields, dropdown options, and stock properties for <strong>Other</strong> category items.
@@ -2211,7 +2211,7 @@ export default function SettingsPage() {
           {/* CAPACITIES */}
           {activeTab === 'capacities' && (
             <div className="card">
-              <div className="card-title" style={{marginBottom:16}}>📏 HDD Capacity Options</div>
+              <div className="card-title" style={{marginBottom:16}}> HDD Capacity Options</div>
               <CapacitiesManager
                 capacities={caseSettings.capacities}
                 onChange={(capacities) => saveCaseSettings({ capacities })}
@@ -2222,7 +2222,7 @@ export default function SettingsPage() {
           {/* USER ROLES */}
           {activeTab === 'roles' && (
             <div className="card">
-              <div className="card-title" style={{ marginBottom:16 }}>🛡️ User Role Management</div>
+              <div className="card-title" style={{ marginBottom:16 }}> User Role Management</div>
               <UserRolesManager />
             </div>
           )}
@@ -2230,7 +2230,7 @@ export default function SettingsPage() {
           {/* SUBSCRIPTION PLANS */}
           {activeTab === 'plans' && isSuperAdmin && (
             <div>
-              <div className="card-title" style={{ marginBottom:16 }}>💎 Subscription Plan Management</div>
+              <div className="card-title" style={{ marginBottom:16 }}> Subscription Plan Management</div>
               <PlanManagementPanel />
             </div>
           )}
@@ -2245,7 +2245,7 @@ export default function SettingsPage() {
             return (
               <div>
                 <div style={{ marginBottom:16, padding:'10px 16px', background:'rgba(245,158,11,0.08)', border:'1px solid rgba(245,158,11,0.25)', borderRadius:'var(--radius-md)', display:'flex', alignItems:'center', gap:10 }}>
-                  <span style={{ fontSize:'1.1rem' }}>🔒</span>
+                  <span style={{ fontSize:'1.1rem' }}></span>
                   <div>
                     <div style={{ fontWeight:700, fontSize:'0.82rem', color:'#f59e0b' }}>Managed by Platform Super Admin</div>
                     <div style={{ fontSize:'0.72rem', color:'var(--text-muted)', marginTop:2 }}>Your subscription plan is assigned and managed by the platform owner. Contact your administrator to upgrade or modify your plan.</div>
@@ -2262,7 +2262,7 @@ export default function SettingsPage() {
                     {expiry ? (
                       <>
                         <div style={{ fontSize:'1.1rem', fontWeight:900, color: isExpired ? '#ef4444' : expiringSoon ? '#f59e0b' : '#10b981' }}>
-                          {isExpired ? '⚠️ Expired' : expiringSoon ? `⏳ ${daysLeft}d left` : `✓ Active`}
+                          {isExpired ? ' Expired' : expiringSoon ? ` ${daysLeft}d left` : ` Active`}
                         </div>
                         <div style={{ fontSize:'0.72rem', color:'var(--text-muted)', marginTop:4 }}>
                           {isExpired ? `Expired on` : 'Renews on'} {new Date(expiry).toLocaleDateString('en-IN')}
@@ -2277,7 +2277,7 @@ export default function SettingsPage() {
                     <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(220px,1fr))', gap:6 }}>
                       {currentPlan.features.map(f => (
                         <div key={f} style={{ fontSize:'0.78rem', color:'var(--text-secondary)', display:'flex', gap:8, alignItems:'center' }}>
-                          <span style={{ color:'#10b981', flexShrink:0 }}>✓</span>{f}
+                          <span style={{ color:'#10b981', flexShrink:0 }}></span>{f}
                         </div>
                       ))}
                     </div>
@@ -2297,7 +2297,7 @@ export default function SettingsPage() {
           {/* DATABASE MANAGEMENT */}
           {activeTab === 'database' && (
             <div>
-              <div className="card-title" style={{ marginBottom:16 }}>🗄️ Database Management & Tools</div>
+              <div className="card-title" style={{ marginBottom:16 }}> Database Management & Tools</div>
 
               <div className="card" style={{ marginBottom:16 }}>
                 <div style={{ fontWeight:700, marginBottom:8 }}>System Backup & Restore</div>
@@ -2319,7 +2319,7 @@ export default function SettingsPage() {
                     link.href = URL.createObjectURL(blob);
                     link.download = `crm_backup_secure_${new Date().toISOString().replace(/\D/g,'').slice(0,14)}.json`;
                     link.click();
-                  }}>⬇️ Download Encrypted Backup</button>
+                  }}> Download Encrypted Backup</button>
                   
                   <label className="btn btn-secondary" style={{ cursor:'pointer' }}>
                     <input type="file" accept=".json" style={{display:'none'}} onChange={e => {
@@ -2353,7 +2353,7 @@ export default function SettingsPage() {
                       };
                       reader.readAsText(file);
                     }} />
-                    ⬆️ Restore Encrypted Backup
+                     Restore Encrypted Backup
                   </label>
                 </div>
               </div>
@@ -2409,7 +2409,7 @@ export default function SettingsPage() {
                 <div style={{ fontSize:'0.82rem', color:'var(--text-muted)', marginBottom:16 }}>Bulk import compatible donor drives into stock inventory.</div>
                 <div style={{ display:'flex', gap:10, alignItems:'center', flexWrap:'wrap' }}>
                   <label className="btn btn-secondary" style={{ cursor:'pointer' }}>
-                    📥 Append from CSV
+                     Append from CSV
                     <input type="file" accept=".csv,.xlsx" style={{ display:'none' }} onChange={e => {
                       const file = e.target.files[0];
                       if (!file) return;
@@ -2417,7 +2417,7 @@ export default function SettingsPage() {
                       reader.onload = ev => {
                         const text = ev.target.result;
                         const rows = text.split('\n').filter(r => r.trim()).slice(1); // skip header
-                        alert(`✅ ${rows.length} records parsed from CSV. Stock will be appended after save.`);
+                        alert(` ${rows.length} records parsed from CSV. Stock will be appended after save.`);
                         // Store for later processing
                         localStorage.setItem('pending_stock_import', JSON.stringify({ mode: 'append', data: text, filename: file.name }));
                       };
@@ -2426,7 +2426,7 @@ export default function SettingsPage() {
                     }} />
                   </label>
                   <label className="btn btn-danger" style={{ cursor:'pointer' }}>
-                    🔄 Overwrite from CSV
+                     Overwrite from CSV
                     <input type="file" accept=".csv,.xlsx" style={{ display:'none' }} onChange={e => {
                       const file = e.target.files[0];
                       if (!file) return;
@@ -2435,7 +2435,7 @@ export default function SettingsPage() {
                       reader.onload = ev => {
                         const text = ev.target.result;
                         const rows = text.split('\n').filter(r => r.trim()).slice(1);
-                        alert(`✅ ${rows.length} records parsed. Inventory will be overwritten after save.`);
+                        alert(` ${rows.length} records parsed. Inventory will be overwritten after save.`);
                         localStorage.setItem('pending_stock_import', JSON.stringify({ mode: 'overwrite', data: text, filename: file.name }));
                       };
                       reader.readAsText(file);
@@ -2443,7 +2443,7 @@ export default function SettingsPage() {
                     }} />
                   </label>
                   <a className="btn btn-secondary" href="data:text/csv;charset=utf-8,name,brand,model,serial_number,pcb_number,capacity_gb,condition,location,notes%0AExample Donor,WD,WD10EZEX,SN123456,PCB-001,1000,good,Shelf-A1,Good condition" download="stock_template.csv">
-                    📋 Download CSV Template
+                     Download CSV Template
                   </a>
                 </div>
               </div>
@@ -2453,9 +2453,9 @@ export default function SettingsPage() {
           {/* RECYCLE BIN CONFIG */}
           {activeTab === 'recyclebin' && (
             <div className="card">
-              <div className="card-title" style={{ marginBottom:16 }}>🗑️ Recycle Bin Configuration</div>
+              <div className="card-title" style={{ marginBottom:16 }}> Recycle Bin Configuration</div>
               <div className="alert alert-warning" style={{ marginBottom:16 }}>
-                <span className="alert-icon">⚠️</span>
+                <span className="alert-icon"></span>
                 <div>The Recycle Bin password is <strong>separate from your login password</strong>. This password is required for Super Admin to permanently delete items.</div>
               </div>
               <div className="form-group"><label className="form-label">Recycle Bin Password</label>
@@ -2463,7 +2463,7 @@ export default function SettingsPage() {
               <div className="form-group"><label className="form-label">Confirm Recycle Bin Password</label>
                 <input type="password" className="form-input" value={company?.recycle_bin_password_confirm||''} onChange={e=>setCompany(c=>({...c,recycle_bin_password_confirm:e.target.value}))} /></div>
               <div style={{ textAlign:'right',marginTop:16 }}>
-                <button className="btn btn-primary" onClick={handleSaveCompany} disabled={savingCompany}>{savingCompany?'Saving…':companySaved?'✓ Saved':'💾 Save'}</button>
+                <button className="btn btn-primary" onClick={handleSaveCompany} disabled={savingCompany}>{savingCompany?'Saving…':companySaved?' Saved':' Save'}</button>
               </div>
             </div>
           )}
@@ -2471,9 +2471,9 @@ export default function SettingsPage() {
           {/* NUMBERS SETUP */}
           {activeTab === 'invoice' && (
             <div className="card">
-              <div className="card-title" style={{ marginBottom:16 }}>🧾 Custom Number Prefixes / Starting Values</div>
+              <div className="card-title" style={{ marginBottom:16 }}> Custom Number Prefixes / Starting Values</div>
               <div className="alert alert-info" style={{ marginBottom:16 }}>
-                <span className="alert-icon">ℹ️</span>
+                <span className="alert-icon">ℹ</span>
                 <div>Set your own starting numbers for cases, invoices, and quotes. The system will auto-increment from the starting value.</div>
               </div>
               {[
@@ -2496,7 +2496,7 @@ export default function SettingsPage() {
                 </strong>
               </div>
               <div style={{ textAlign:'right' }}>
-                <button className="btn btn-primary" onClick={handleSaveCompany} disabled={savingCompany}>{savingCompany?'Saving…':companySaved?'✓ Saved':'💾 Save Number Settings'}</button>
+                <button className="btn btn-primary" onClick={handleSaveCompany} disabled={savingCompany}>{savingCompany?'Saving…':companySaved?' Saved':' Save Number Settings'}</button>
               </div>
             </div>
           )}
@@ -2506,7 +2506,7 @@ export default function SettingsPage() {
             <div>
               <div className="card" style={{marginBottom:16}}>
                 <div className="card-header" style={{marginBottom:20}}>
-                  <div className="card-title">🎨 Theme & Layout Manager</div>
+                  <div className="card-title"> Theme & Layout Manager</div>
                   <p style={{color:'var(--text-muted)',fontSize:'0.8rem',marginTop:4}}>Choose a color theme and hero layout for your public homepage. Changes apply instantly.</p>
                 </div>
                 {!homepageData ? (
@@ -2539,7 +2539,7 @@ export default function SettingsPage() {
                             </div>
                             <div style={{padding:'10px 14px',background:'var(--bg-elevated)'}}>
                               <div style={{fontSize:'0.87rem',fontWeight:700,color:'var(--text-primary)',marginBottom:3}}>{t.name}</div>
-                              <div style={{fontSize:'0.68rem',color:'var(--text-muted)'}}>{t.dark ? '🌙 Dark Theme' : '☀️ Light Theme'}</div>
+                              <div style={{fontSize:'0.68rem',color:'var(--text-muted)'}}>{t.dark ? ' Dark Theme' : ' Light Theme'}</div>
                             </div>
                           </div>
                         );
@@ -2566,14 +2566,14 @@ export default function SettingsPage() {
                             <div style={{fontSize:'2rem',marginBottom:8,textAlign:'center'}}>{l.icon}</div>
                             <div style={{fontSize:'0.87rem',fontWeight:700,color:'var(--text-primary)',textAlign:'center',marginBottom:4}}>{l.name}</div>
                             <div style={{fontSize:'0.72rem',color:'var(--text-muted)',textAlign:'center'}}>{l.desc}</div>
-                            {isActive && <div style={{textAlign:'center',marginTop:8,fontSize:'0.65rem',fontWeight:700,color:'var(--accent-primary)',fontFamily:'var(--font-mono)',textTransform:'uppercase'}}>● ACTIVE</div>}
+                            {isActive && <div style={{textAlign:'center',marginTop:8,fontSize:'0.65rem',fontWeight:700,color:'var(--accent-primary)',fontFamily:'var(--font-mono)',textTransform:'uppercase'}}> ACTIVE</div>}
                           </div>
                         );
                       })}
                     </div>
                   </div>
                   <div style={{marginTop:24,display:'flex',alignItems:'center',gap:12}}>
-                    <a href="/home" target="_blank" className="btn btn-primary" style={{textDecoration:'none'}}>🌐 Preview Homepage</a>
+                    <a href="/home" target="_blank" className="btn btn-primary" style={{textDecoration:'none'}}> Preview Homepage</a>
                     <span style={{fontSize:'0.8rem',color:'var(--text-muted)'}}>Click a theme or layout above — it updates instantly.</span>
                   </div>
                 </>)}
@@ -2586,7 +2586,7 @@ export default function SettingsPage() {
             <div>
               <div className="card" style={{ marginBottom: 16 }}>
                 <div className="card-header" style={{ marginBottom: 20 }}>
-                  <div className="card-title">🌐 Homepage Content Manager</div>
+                  <div className="card-title"> Homepage Content Manager</div>
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: 4 }}>
                     All changes here instantly update the public homepage at <a href="/home" target="_blank" style={{ color: 'var(--accent-primary)' }}>/home</a>
                   </p>
@@ -2629,7 +2629,7 @@ export default function SettingsPage() {
                             const r = await fetch(`{BASE_URL}/settings/favicon`, { method: 'POST', headers: { Authorization: `Bearer {getToken()}` }, body: fd });
                             const d = await r.json(); if (d.favicon) setHomepageData(prev => ({ ...prev, favicon: d.favicon }));
                           }} />
-                          <button className="btn btn-secondary btn-sm" onClick={() => faviconRef.current?.click()}>📁 Upload Favicon</button>
+                          <button className="btn btn-secondary btn-sm" onClick={() => faviconRef.current?.click()}> Upload Favicon</button>
                           <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>PNG, ICO, WebP recommended. 32×32 or 64×64px.</span>
                         </div>
                       </div>
@@ -2653,11 +2653,11 @@ export default function SettingsPage() {
                       <div className="form-row-2">
                         <div className="form-group">
                           <label className="form-label">Primary CTA Button</label>
-                          <input className="form-input" value={homepageData.cta_primary || ''} onChange={e => setHomepageData(d => ({ ...d, cta_primary: e.target.value }))} placeholder="🚀 Launch Platform" />
+                          <input className="form-input" value={homepageData.cta_primary || ''} onChange={e => setHomepageData(d => ({ ...d, cta_primary: e.target.value }))} placeholder=" Launch Platform" />
                         </div>
                         <div className="form-group">
                           <label className="form-label">Secondary CTA Button</label>
-                          <input className="form-input" value={homepageData.cta_secondary || ''} onChange={e => setHomepageData(d => ({ ...d, cta_secondary: e.target.value }))} placeholder="📋 Track My Case" />
+                          <input className="form-input" value={homepageData.cta_secondary || ''} onChange={e => setHomepageData(d => ({ ...d, cta_secondary: e.target.value }))} placeholder=" Track My Case" />
                         </div>
                       </div>
                     </fieldset>
@@ -2698,10 +2698,10 @@ export default function SettingsPage() {
                           setHomepageSaved(true); setTimeout(() => setHomepageSaved(false), 2500);
                         } catch(e) { alert(e.message); } finally { setSavingHomepage(false); }
                       }}>
-                        {savingHomepage ? '⏳ Saving...' : '💾 Save Homepage Settings'}
+                        {savingHomepage ? ' Saving...' : ' Save Homepage Settings'}
                       </button>
-                      {homepageSaved && <span style={{ color: 'var(--status-success)', fontSize: '0.85rem', fontWeight: 600 }}>✅ Saved! Homepage updated.</span>}
-                      <a href="/home" target="_blank" className="btn btn-secondary btn-sm" style={{ textDecoration: 'none' }}>🌐 View Homepage</a>
+                      {homepageSaved && <span style={{ color: 'var(--status-success)', fontSize: '0.85rem', fontWeight: 600 }}> Saved! Homepage updated.</span>}
+                      <a href="/home" target="_blank" className="btn btn-secondary btn-sm" style={{ textDecoration: 'none' }}> View Homepage</a>
                     </div>
                   </div>
                 )}
@@ -2714,7 +2714,7 @@ export default function SettingsPage() {
             <div>
               <div className="card">
                 <div className="card-header" style={{ marginBottom: 20 }}>
-                  <div className="card-title">🔍 SEO Settings</div>
+                  <div className="card-title"> SEO Settings</div>
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: 4 }}>Control how your platform appears in search engines.</p>
                 </div>
                 {!seoData ? (
@@ -2799,8 +2799,8 @@ export default function SettingsPage() {
                           await fetch(`{BASE_URL}/settings/seo`, { method: 'PATCH', headers: { Authorization: `Bearer {getToken()}`, 'Content-Type': 'application/json' }, body: JSON.stringify(seoData) });
                           setHomepageSaved(true); setTimeout(() => setHomepageSaved(false), 2500);
                         } catch(e) { alert(e.message); }
-                      }}>💾 Save SEO Settings</button>
-                      {homepageSaved && <span style={{ color: 'var(--status-success)', fontSize: '0.85rem', fontWeight: 600 }}>✅ Saved!</span>}
+                      }}> Save SEO Settings</button>
+                      {homepageSaved && <span style={{ color: 'var(--status-success)', fontSize: '0.85rem', fontWeight: 600 }}> Saved!</span>}
                     </div>
                   </div>
                 )}
@@ -2812,7 +2812,7 @@ export default function SettingsPage() {
           {activeTab === 'about' && (
             <div className="card">
               <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginBottom: 24 }}>
-                <div style={{ width: 56, height: 56, background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))', borderRadius: 'var(--radius-lg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26 }}>💾</div>
+                <div style={{ width: 56, height: 56, background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))', borderRadius: 'var(--radius-lg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26 }}></div>
                 <div>
                   <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.3rem', fontWeight: 800 }}>RecoverLab CRM</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>v2.0.0 — Enterprise Data Recovery Platform</div>

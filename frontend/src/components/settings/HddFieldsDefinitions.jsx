@@ -62,7 +62,7 @@ export default function HddFieldsDefinitions() {
       <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: 0 }}>
         Define all HDD fields used across cases and inventory. These appear automatically in Field Config for brand mapping.
       </p>
-      {error && <div className="alert alert-danger"><span className="alert-icon">⚠</span> {error}</div>}
+      {error && <div className="alert alert-danger"><span className="alert-icon"></span> {error}</div>}
 
       {loading ? (
         <div style={{ textAlign: 'center', padding: 24 }}><div className="spinner" style={{ width: 24, height: 24 }} /></div>
@@ -83,8 +83,8 @@ export default function HddFieldsDefinitions() {
                     <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{f.field_key} · {f.field_type}</div>
                   </div>
                   <div style={{ display: 'flex', gap: 6 }}>
-                    <button className="btn btn-secondary btn-sm" onClick={() => { setEditing(f.field_key); setEditLabel(f.field_label); }}>✏️</button>
-                    <button className="btn btn-ghost btn-sm" style={{ color: 'var(--danger)' }} onClick={() => handleDelete(f.field_key)}>🗑</button>
+                    <button className="btn btn-secondary btn-sm" onClick={() => { setEditing(f.field_key); setEditLabel(f.field_label); }}></button>
+                    <button className="btn btn-ghost btn-sm" style={{ color: 'var(--danger)' }} onClick={() => handleDelete(f.field_key)}></button>
                   </div>
                 </>
               )}
@@ -95,7 +95,7 @@ export default function HddFieldsDefinitions() {
       )}
 
       <div style={{ background: 'var(--bg-elevated)', borderRadius: 8, border: '1px solid var(--border-subtle)', padding: 14 }}>
-        <div style={{ fontWeight: 700, fontSize: '0.8rem', marginBottom: 10 }}>➕ Add HDD Field</div>
+        <div style={{ fontWeight: 700, fontSize: '0.8rem', marginBottom: 10 }}> Add HDD Field</div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <input className="form-input" style={{ flex: 1, minWidth: 180 }} placeholder="Label e.g. RMA Number" value={newLabel} onChange={e => setNewLabel(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAdd()} />
           <select className="form-select" style={{ width: 120 }} value={newType} onChange={e => setNewType(e.target.value)}>

@@ -20,7 +20,7 @@ function formatSize(bytes) {
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
-// ─── Status Badge ─────────────────────────────────────────────────────────────
+//  Status Badge 
 function StatusBadge({ status }) {
   const map = {
     available: { color: '#10b981', bg: 'rgba(16,185,129,0.12)' },
@@ -64,7 +64,7 @@ function InventoryFormField({ label, field, type = 'text', placeholder = '', req
   );
 }
 
-// ─── Add / Edit Stock Item Modal ──────────────────────────────────────────────
+//  Add / Edit Stock Item Modal 
 function NewItemModal({ onClose, onCreated, editItem, hddCompanies }) {
   const isEdit = !!editItem;
   const formCategories = FORM_INV_CATEGORIES;
@@ -175,11 +175,11 @@ function NewItemModal({ onClose, onCreated, editItem, hddCompanies }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal modal-lg" onClick={e => e.stopPropagation()} style={{ maxWidth: 700, maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
         <div className="modal-header">
-          <h3 className="modal-title">{isEdit ? '✏️ Edit Stock Item' : '+ Add Stock Item'}</h3>
-          <button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button>
+          <h3 className="modal-title">{isEdit ? ' Edit Stock Item' : '+ Add Stock Item'}</h3>
+          <button className="btn btn-ghost btn-icon" onClick={onClose}></button>
         </div>
         <div className="modal-body" style={{ overflowY: 'auto', flex: 1 }}>
-          {error && <div className="alert alert-danger" style={{ marginBottom: 16 }}><span className="alert-icon">⚠</span> {error}</div>}
+          {error && <div className="alert alert-danger" style={{ marginBottom: 16 }}><span className="alert-icon"></span> {error}</div>}
           <form onSubmit={handleSubmit}>
             {/* Category & Stock ID — required for all item types */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
@@ -278,7 +278,7 @@ function NewItemModal({ onClose, onCreated, editItem, hddCompanies }) {
                   </InventoryFormField>
                   <InventoryFormField label="Status" field="status" form={form} setForm={setForm}>
                     <select className="form-select" value={form.status || 'available'} onChange={e => setForm(f => ({ ...f, status: e.target.value }))}>
-                      {[['available','✅ Available'],['reserved','🔒 Reserved'],['used','📤 Used/Consumed'],['damaged','⚠️ Damaged'],['donated','💿 Donated to Case']].map(([v,l]) => <option key={v} value={v}>{l}</option>)}
+                      {[['available',' Available'],['reserved',' Reserved'],['used',' Used/Consumed'],['damaged',' Damaged'],['donated',' Donated to Case']].map(([v,l]) => <option key={v} value={v}>{l}</option>)}
                     </select>
                   </InventoryFormField>
                   <InventoryFormField label="Quantity" field="quantity" type="number" form={form} setForm={setForm} />
@@ -306,7 +306,7 @@ function NewItemModal({ onClose, onCreated, editItem, hddCompanies }) {
         <div className="modal-footer">
           <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
           <button className="btn btn-primary" disabled={loading || (showStockNumber && !form.stock_number)} onClick={handleSubmit}>
-            {loading ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Saving...</> : isEdit ? '💾 Save Changes' : '+ Add to Stock'}
+            {loading ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Saving...</> : isEdit ? ' Save Changes' : '+ Add to Stock'}
           </button>
         </div>
       </div>
@@ -314,7 +314,7 @@ function NewItemModal({ onClose, onCreated, editItem, hddCompanies }) {
   );
 }
 
-// ─── Adjust Stock Modal ────────────────────────────────────────────────────────
+//  Adjust Stock Modal 
 function AdjustStockModal({ item, onClose, onDone }) {
   const [form, setForm] = useState({ type: 'in', quantity: 1, notes: '' });
   const [loading, setLoading] = useState(false);
@@ -328,8 +328,8 @@ function AdjustStockModal({ item, onClose, onDone }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
-          <h3 className="modal-title">📦 Stock Adjustment — {item.stock_number || item.name}</h3>
-          <button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button>
+          <h3 className="modal-title"> Stock Adjustment — {item.stock_number || item.name}</h3>
+          <button className="btn btn-ghost btn-icon" onClick={onClose}></button>
         </div>
         <div className="modal-body">
           <div style={{ padding: '10px 14px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)', marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
@@ -340,10 +340,10 @@ function AdjustStockModal({ item, onClose, onDone }) {
             <div className="form-group">
               <label className="form-label">Transaction Type</label>
               <select className="form-select" value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}>
-                <option value="in">📥 Stock In (Add)</option>
-                <option value="out">📤 Stock Out (Remove)</option>
-                <option value="reserved">🔒 Reserve for Case</option>
-                <option value="disposed">🗑️ Disposed</option>
+                <option value="in"> Stock In (Add)</option>
+                <option value="out"> Stock Out (Remove)</option>
+                <option value="reserved"> Reserve for Case</option>
+                <option value="disposed"> Disposed</option>
               </select>
             </div>
             <div className="form-group">
@@ -359,7 +359,7 @@ function AdjustStockModal({ item, onClose, onDone }) {
         <div className="modal-footer">
           <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
           <button className="btn btn-primary" disabled={loading} onClick={handleSubmit}>
-            {loading ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Updating...</> : '✓ Confirm'}
+            {loading ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Updating...</> : ' Confirm'}
           </button>
         </div>
       </div>
@@ -367,7 +367,7 @@ function AdjustStockModal({ item, onClose, onDone }) {
   );
 }
 
-// ─── Import Modal ──────────────────────────────────────────────────────────────
+//  Import Modal 
 function ImportModal({ onClose, onDone }) {
   const [mode, setMode] = useState('append');
   const [loading, setLoading] = useState(false);
@@ -416,7 +416,7 @@ function ImportModal({ onClose, onDone }) {
       });
       const result = await resp.json();
       if (!resp.ok) throw new Error(result.error || 'Import failed');
-      alert(`✅ ${mode === 'overwrite' ? 'Overwrote' : 'Appended'} ${result.imported || parsedRows.length} items successfully!`);
+      alert(` ${mode === 'overwrite' ? 'Overwrote' : 'Appended'} ${result.imported || parsedRows.length} items successfully!`);
       onDone();
       onClose();
     } catch (err) { setError(err.message); }
@@ -427,17 +427,17 @@ function ImportModal({ onClose, onDone }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal modal-lg" onClick={e => e.stopPropagation()} style={{ maxWidth: 720 }}>
         <div className="modal-header">
-          <h3 className="modal-title">📥 Import Stock</h3>
-          <button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button>
+          <h3 className="modal-title"> Import Stock</h3>
+          <button className="btn btn-ghost btn-icon" onClick={onClose}></button>
         </div>
         <div className="modal-body">
-          {error && <div className="alert alert-danger" style={{ marginBottom: 12 }}><span className="alert-icon">⚠</span> {error}</div>}
+          {error && <div className="alert alert-danger" style={{ marginBottom: 12 }}><span className="alert-icon"></span> {error}</div>}
           
           {/* Import Mode */}
           <div className="card" style={{ padding: 16, marginBottom: 16 }}>
             <div style={{ fontWeight: 700, marginBottom: 12 }}>Import Mode</div>
             <div style={{ display: 'flex', gap: 12 }}>
-              {[['append','📥 Append','Add new items, existing unchanged'],['overwrite','📝 Overwrite','Replace existing items by stock_number, add new ones']].map(([v,label,desc]) => (
+              {[['append',' Append','Add new items, existing unchanged'],['overwrite',' Overwrite','Replace existing items by stock_number, add new ones']].map(([v,label,desc]) => (
                 <label key={v} style={{ flex: 1, display: 'flex', alignItems: 'flex-start', gap: 10, padding: 12, borderRadius: 'var(--radius-md)', border: `2px solid ${mode===v?'var(--accent-primary)':'var(--border-default)'}`, cursor: 'pointer', background: mode===v?'var(--accent-glow)':'transparent' }}>
                   <input type="radio" name="mode" value={v} checked={mode===v} onChange={() => setMode(v)} style={{ marginTop: 2 }} />
                   <div>
@@ -451,10 +451,10 @@ function ImportModal({ onClose, onDone }) {
 
           {/* Template download */}
           <div className="alert alert-info" style={{ marginBottom: 16 }}>
-            <span className="alert-icon">💡</span>
+            <span className="alert-icon"></span>
             <div>
               Download the CSV template with all required fields. Fill it in and upload below.
-              <button className="btn btn-secondary btn-sm" style={{ marginLeft: 12 }} onClick={downloadTemplate}>⬇️ Download Template.csv</button>
+              <button className="btn btn-secondary btn-sm" style={{ marginLeft: 12 }} onClick={downloadTemplate}> Download Template.csv</button>
             </div>
           </div>
 
@@ -463,7 +463,7 @@ function ImportModal({ onClose, onDone }) {
             style={{ border: '2px dashed var(--border-default)', borderRadius: 'var(--radius-xl)', padding: 32, textAlign: 'center', cursor: 'pointer', background: 'var(--bg-elevated)', marginBottom: 16 }}
             onClick={() => fileRef.current?.click()}
           >
-            <div style={{ fontSize: '2rem', marginBottom: 8 }}>📂</div>
+            <div style={{ fontSize: '2rem', marginBottom: 8 }}></div>
             <div style={{ fontWeight: 600, marginBottom: 4 }}>Click to select CSV or Excel file</div>
             <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>.csv files supported (Excel: save as CSV first)</div>
             <input ref={fileRef} type="file" accept=".csv,.xlsx,.xls" style={{ display: 'none' }}
@@ -499,7 +499,7 @@ function ImportModal({ onClose, onDone }) {
         <div className="modal-footer">
           <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
           <button className="btn btn-primary" disabled={loading || !parsedRows.length} onClick={handleImport}>
-            {loading ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Importing...</> : `📥 Import ${parsedRows.length} Items`}
+            {loading ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Importing...</> : ` Import ${parsedRows.length} Items`}
           </button>
         </div>
       </div>
@@ -507,7 +507,7 @@ function ImportModal({ onClose, onDone }) {
   );
 }
 
-// ─── Export helpers ────────────────────────────────────────────────────────────
+//  Export helpers 
 function exportToCSV(items) {
   const headers = ['stock_number','category','company','brand','model','serial_number','pcb_number','capacity','interface','firmware','site_code','date_code','condition','status','quantity','unit_cost','location','notes'];
   const rows = items.map(i => headers.map(h => `"${(i[h]||'').toString().replace(/"/g,'""')}"`).join(','));
@@ -546,8 +546,8 @@ function exportToPDF(items, catFilter) {
   const w = window.open('', '_blank'); w.document.write(html); w.document.close(); setTimeout(() => w.print(), 400);
 }
 
-// ─── Main InventoryPage ────────────────────────────────────────────────────────
-// ─── Delete Confirmation Modal ─────────────────────────────────────────────────
+//  Main InventoryPage 
+//  Delete Confirmation Modal 
 function DeleteConfirmModal({ selectedCount, onConfirm, onCancel }) {
   const [loading, setLoading] = useState(false);
   const handleDelete = async () => {
@@ -559,7 +559,7 @@ function DeleteConfirmModal({ selectedCount, onConfirm, onCancel }) {
     }
   };
 
-  const title = '🗑️ Move to Recycle Bin';
+  const title = ' Move to Recycle Bin';
   const message = `Move ${selectedCount} item${selectedCount > 1 ? 's' : ''} to the recycle bin? You can restore them from the Recycle Bin tab.`;
   const btnText = 'Move to Recycle Bin';
   const btnStyle = 'btn-secondary';
@@ -569,7 +569,7 @@ function DeleteConfirmModal({ selectedCount, onConfirm, onCancel }) {
       <div className="modal" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
           <h3 className="modal-title">{title}</h3>
-          <button className="btn btn-ghost btn-icon" onClick={onCancel}>✕</button>
+          <button className="btn btn-ghost btn-icon" onClick={onCancel}></button>
         </div>
         <div className="modal-body">
           <p style={{ marginBottom: 16, color: 'var(--text-primary)' }}>{message}</p>
@@ -603,8 +603,8 @@ function PermanentDeleteModal({ selectedCount, onConfirm, onCancel }) {
     <div className="modal-overlay" onClick={onCancel}>
       <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 420, border: '1px solid rgba(239,68,68,0.35)' }}>
         <div className="modal-header" style={{ background: 'rgba(239,68,68,0.06)' }}>
-          <h3 className="modal-title" style={{ color: 'var(--status-danger)' }}>⚠️ Delete Permanently</h3>
-          <button className="btn btn-ghost btn-icon" onClick={onCancel}>✕</button>
+          <h3 className="modal-title" style={{ color: 'var(--status-danger)' }}> Delete Permanently</h3>
+          <button className="btn btn-ghost btn-icon" onClick={onCancel}></button>
         </div>
         <div className="modal-body">
           <p style={{ fontSize: '0.85rem', marginBottom: 12 }}>
@@ -695,9 +695,9 @@ export default function InventoryPage() {
   const totalValue = items.reduce((s, i) => s + (i.quantity * (parseFloat(i.unit_cost) || 0)), 0);
 
   const TABS = [
-    { key: 'all', label: '📦 All', icon: '' },
+    { key: 'all', label: ' All', icon: '' },
     ...INV_CATEGORIES.map(c => ({ key: c.key, label: `${c.icon} ${c.label}`, icon: c.icon, color: c.color })),
-    { key: 'low_stock', label: `⚠️ Donor Drive${lowStockAlerts > 0 ? ` (${lowStockAlerts})` : ''}` },
+    { key: 'low_stock', label: ` Donor Drive${lowStockAlerts > 0 ? ` (${lowStockAlerts})` : ''}` },
   ];
 
   const catForExport = activeTab !== 'all' && activeTab !== 'low_stock' ? INV_CATEGORIES.find(c => c.key === activeTab)?.label : '';
@@ -784,7 +784,7 @@ export default function InventoryPage() {
         <div className="inventory-toolbar">
           {selectedCount > 0 && viewMode === 'stock' && (
             <>
-              <button className="btn btn-secondary btn-sm" onClick={() => setShowDeleteConfirm(true)}>🗑️ Delete ({selectedCount})</button>
+              <button className="btn btn-secondary btn-sm" onClick={() => setShowDeleteConfirm(true)}> Delete ({selectedCount})</button>
               <button className="btn btn-ghost btn-sm" onClick={() => setSelectedIds(new Set())}>Clear</button>
             </>
           )}
@@ -796,9 +796,9 @@ export default function InventoryPage() {
           )}
           {selectedCount === 0 && viewMode === 'stock' && (
             <>
-              <button className="btn btn-secondary btn-sm" onClick={() => setShowImport(true)}>📥 Import</button>
-              <button className="btn btn-secondary btn-sm" onClick={() => exportToPDF(items, catForExport)}>📄 PDF</button>
-              <button className="btn btn-secondary btn-sm" onClick={() => exportToCSV(items)}>📊 CSV</button>
+              <button className="btn btn-secondary btn-sm" onClick={() => setShowImport(true)}> Import</button>
+              <button className="btn btn-secondary btn-sm" onClick={() => exportToPDF(items, catForExport)}> PDF</button>
+              <button className="btn btn-secondary btn-sm" onClick={() => exportToCSV(items)}> CSV</button>
               {canAccess('junior_engineer') && (
                 <button className="btn btn-primary btn-sm" onClick={() => setShowNew(true)}>+ Add Item</button>
               )}
@@ -808,17 +808,17 @@ export default function InventoryPage() {
       </div>
 
       <div className="tabs" style={{ flexShrink: 0 }}>
-        <button type="button" className={`tab-btn ${viewMode === 'stock' ? 'active' : ''}`} onClick={() => { setViewMode('stock'); setSelectedIds(new Set()); setPage(1); }}>📦 Stock</button>
-        <button type="button" className={`tab-btn ${viewMode === 'recycle' ? 'active' : ''}`} onClick={() => { setViewMode('recycle'); setSelectedIds(new Set()); setRecyclePage(1); }}>🗑️ Recycle Bin{recyclePagination.total ? ` (${recyclePagination.total})` : ''}</button>
+        <button type="button" className={`tab-btn ${viewMode === 'stock' ? 'active' : ''}`} onClick={() => { setViewMode('stock'); setSelectedIds(new Set()); setPage(1); }}> Stock</button>
+        <button type="button" className={`tab-btn ${viewMode === 'recycle' ? 'active' : ''}`} onClick={() => { setViewMode('recycle'); setSelectedIds(new Set()); setRecyclePage(1); }}> Recycle Bin{recyclePagination.total ? ` (${recyclePagination.total})` : ''}</button>
       </div>
 
       {viewMode === 'stock' && (
       <div className="inventory-stats-grid stats-grid">
         {[
-          { icon: '📦', value: totalItems, label: 'Total Items', color: 'var(--accent-primary)', bg: 'rgba(0,212,255,0.1)' },
-          { icon: '✅', value: availableCount, label: 'Available', color: 'var(--status-success)', bg: 'rgba(16,185,129,0.1)' },
-          { icon: '⚠️', value: lowStockAlerts, label: 'Donor Drive', color: lowStockAlerts > 0 ? 'var(--status-danger)' : 'var(--status-success)', bg: lowStockAlerts > 0 ? 'rgba(239,68,68,0.1)' : 'rgba(16,185,129,0.1)' },
-          { icon: '💰', value: `₹${totalValue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`, label: 'Stock Value', color: 'var(--status-success)', bg: 'rgba(16,185,129,0.1)' },
+          { icon: '', value: totalItems, label: 'Total Items', color: 'var(--accent-primary)', bg: 'rgba(0,212,255,0.1)' },
+          { icon: '', value: availableCount, label: 'Available', color: 'var(--status-success)', bg: 'rgba(16,185,129,0.1)' },
+          { icon: '', value: lowStockAlerts, label: 'Donor Drive', color: lowStockAlerts > 0 ? 'var(--status-danger)' : 'var(--status-success)', bg: lowStockAlerts > 0 ? 'rgba(239,68,68,0.1)' : 'rgba(16,185,129,0.1)' },
+          { icon: '', value: `₹${totalValue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`, label: 'Stock Value', color: 'var(--status-success)', bg: 'rgba(16,185,129,0.1)' },
         ].map(s => (
           <div key={s.label} className="stat-card" style={{ '--stat-color': s.color, '--stat-bg': s.bg }}>
             <div className="stat-icon">{s.icon}</div>
@@ -846,7 +846,7 @@ export default function InventoryPage() {
 
       <div className="filters-bar" style={{ marginBottom: 0, flexShrink: 0 }}>
         <div className="search-bar">
-          <span className="search-icon">🔍</span>
+          <span className="search-icon"></span>
           <input className="search-input" placeholder="Search stock#, serial, PCB, model…" value={search}
             onChange={e => { setSearch(e.target.value); setPage(1); }} />
         </div>
@@ -913,7 +913,7 @@ export default function InventoryPage() {
                       <td className="text-xs font-mono">{item.pcb_number || dyn.pcb_number || '—'}</td>
                       <td className="text-xs text-muted">{item.capacity || dyn.capacity || '—'}</td>
                       {viewMode === 'stock' && <td><StatusBadge status={item.status || 'available'} /></td>}
-                      {viewMode === 'stock' && <td style={{ fontSize: '0.8rem', fontWeight: 600, color: item.is_transferred_to_client ? '#10b981' : '#94a3b8' }}>{item.is_transferred_to_client ? '✓ Yes' : '—'}</td>}
+                      {viewMode === 'stock' && <td style={{ fontSize: '0.8rem', fontWeight: 600, color: item.is_transferred_to_client ? '#10b981' : '#94a3b8' }}>{item.is_transferred_to_client ? ' Yes' : '—'}</td>}
                       <td>
                         <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '0.85rem', color: isLow ? 'var(--status-danger)' : 'inherit' }}>
                           {item.quantity}
@@ -954,10 +954,10 @@ export default function InventoryPage() {
                 {!displayList.length && (
                   <tr><td colSpan={viewMode === 'recycle' ? 10 : 11}>
                     <div className="empty-state">
-                      <div className="empty-icon">{viewMode === 'recycle' ? '🗑️' : '📦'}</div>
+                      <div className="empty-icon">{viewMode === 'recycle' ? '' : ''}</div>
                       <div className="empty-title">{viewMode === 'recycle' ? 'Recycle bin is empty' : 'No items found'}</div>
                       <div className="empty-desc">
-                        {viewMode === 'recycle' ? 'Deleted stock items appear here until restored or permanently removed.' : (activeTab === 'low_stock' ? '✅ No low-stock alerts!' : 'Add stock items or import from CSV.')}
+                        {viewMode === 'recycle' ? 'Deleted stock items appear here until restored or permanently removed.' : (activeTab === 'low_stock' ? ' No low-stock alerts!' : 'Add stock items or import from CSV.')}
                       </div>
                     </div>
                   </td></tr>

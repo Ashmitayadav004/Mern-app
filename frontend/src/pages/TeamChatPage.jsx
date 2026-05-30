@@ -231,7 +231,7 @@ export default function TeamChatPage() {
                 className={`chat-room-item ${String(selectedUserId) === String(contact.id) ? 'active' : ''}`}
                 onClick={() => setSelectedUserId(String(contact.id))}
               >
-                <span>{online ? '🟢' : '⚪'}</span>
+                <span>{online ? '' : ''}</span>
                 <span style={{ fontWeight: contact.unread > 0 ? 600 : 400 }}>{contact.full_name || contact.username}</span>
                 {contact.unread > 0 && (
                   <span style={{ marginLeft: 8, minWidth: 22, height: 22, lineHeight: '22px', borderRadius: 999, background: '#ef4444', color: '#fff', fontSize: 12, padding: '0 8px' }}>
@@ -304,7 +304,7 @@ export default function TeamChatPage() {
               accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt,.zip"
             />
             <button type="button" onClick={() => fileInputRef.current?.click()} style={{ background: 'none', border: 'none' }}>
-              📎
+              
             </button>
             <input
               className="chat-input"
@@ -314,7 +314,7 @@ export default function TeamChatPage() {
               disabled={!selectedContact || sending}
             />
             <button className="chat-send-btn" type="submit" disabled={!selectedContact || (!input.trim() && !file) || sending}>
-              ➤
+              
             </button>
           </form>
         </div>

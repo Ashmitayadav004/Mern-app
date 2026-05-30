@@ -56,15 +56,15 @@ function PasswordModal({ item, onConfirm, onClose }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 400 }}>
         <div className="modal-header">
-          <h3 className="modal-title">🔐 Recycle Bin Password Required</h3>
-          <button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button>
+          <h3 className="modal-title"> Recycle Bin Password Required</h3>
+          <button className="btn btn-ghost btn-icon" onClick={onClose}></button>
         </div>
         <div className="modal-body">
           <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: 16 }}>
             Enter the Recycle Bin password to restore <strong>{item.case_number}</strong>.
             This password is different from your login password and is set in Settings → Recycle Bin.
           </p>
-          {error && <div className="alert alert-danger" style={{ marginBottom: 12 }}><span className="alert-icon">⚠</span> {error}</div>}
+          {error && <div className="alert alert-danger" style={{ marginBottom: 12 }}><span className="alert-icon"></span> {error}</div>}
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label className="form-label required">Recycle Bin Password</label>
@@ -75,7 +75,7 @@ function PasswordModal({ item, onConfirm, onClose }) {
         <div className="modal-footer">
           <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
           <button className="btn btn-primary" disabled={loading || !password} onClick={handleSubmit}>
-            {loading ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Restoring...</> : '↩ Restore Case'}
+            {loading ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Restoring...</> : ' Restore Case'}
           </button>
         </div>
       </div>
@@ -103,15 +103,15 @@ function PermanentDeleteModal({ item, onConfirm, onClose }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 460, border: '1px solid rgba(239,68,68,0.4)' }}>
         <div className="modal-header" style={{ background: 'rgba(239,68,68,0.08)' }}>
-          <h3 className="modal-title" style={{ color: 'var(--status-danger)' }}>⚠️ Permanent Delete — {item.case_number}</h3>
-          <button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button>
+          <h3 className="modal-title" style={{ color: 'var(--status-danger)' }}> Permanent Delete — {item.case_number}</h3>
+          <button className="btn btn-ghost btn-icon" onClick={onClose}></button>
         </div>
         <div className="modal-body">
           <div className="alert alert-danger" style={{ marginBottom: 16 }}>
-            <span className="alert-icon">🗑️</span>
+            <span className="alert-icon"></span>
             <div><strong>This action cannot be undone.</strong> The case and all related data (files, payments, timeline, solution) will be permanently destroyed.</div>
           </div>
-          {error && <div className="alert alert-danger" style={{ marginBottom: 12 }}><span className="alert-icon">⚠</span> {error}</div>}
+          {error && <div className="alert alert-danger" style={{ marginBottom: 12 }}><span className="alert-icon"></span> {error}</div>}
           <form onSubmit={handle}>
             <div className="form-group">
               <label className="form-label required">Type case number to confirm: <code style={{ color: 'var(--status-danger)', background: 'rgba(239,68,68,0.1)', padding: '2px 6px', borderRadius: 4 }}>{item.case_number}</code></label>
@@ -126,7 +126,7 @@ function PermanentDeleteModal({ item, onConfirm, onClose }) {
         <div className="modal-footer">
           <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
           <button className="btn btn-danger" disabled={loading || confirm !== item.case_number || !password} onClick={handle}>
-            {loading ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Deleting...</> : '🗑️ Permanently Delete'}
+            {loading ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Deleting...</> : ' Permanently Delete'}
           </button>
         </div>
       </div>
@@ -180,7 +180,7 @@ export default function RecycleBinPage() {
     if (result.error) throw new Error(result.error);
     setRestoreTarget(null);
     load();
-    alert('✅ Case restored successfully.');
+    alert(' Case restored successfully.');
   };
 
   const handlePermanentDelete = async (id, password) => {
@@ -188,14 +188,14 @@ export default function RecycleBinPage() {
     if (result.error) throw new Error(result.error);
     setDeleteTarget(null);
     load();
-    alert('🗑️ Case permanently deleted.');
+    alert(' Case permanently deleted.');
   };
 
   const handleInvRestore = async (id) => {
     try {
       await inventoryApi.restore(id);
       await loadInventory();
-      alert('✅ Stock item restored.');
+      alert(' Stock item restored.');
     } catch (e) { alert(e.message); }
   };
 
@@ -211,7 +211,7 @@ export default function RecycleBinPage() {
     try {
       await mediaRecycleApi.restore(id);
       await loadMedia();
-      alert('✅ Media restored to original location.');
+      alert(' Media restored to original location.');
     } catch (e) { alert(e.message); }
   };
 
@@ -227,21 +227,21 @@ export default function RecycleBinPage() {
     <div>
       <div style={{ display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16 }}>
         <div>
-          <h2 style={{ marginBottom:4 }}>🗑️ Recycle Bin</h2>
+          <h2 style={{ marginBottom:4 }}> Recycle Bin</h2>
           <p style={{ color:'var(--text-muted)',fontSize:'0.82rem' }}>Soft-deleted cases, inventory stock, and media files — restore or permanently remove.</p>
         </div>
-        <button type="button" className="btn btn-secondary btn-sm" onClick={() => navigate('/inventory')}>📦 Inventory</button>
+        <button type="button" className="btn btn-secondary btn-sm" onClick={() => navigate('/inventory')}> Inventory</button>
       </div>
 
       <div className="tabs" style={{ marginBottom: 16 }}>
-        <button type="button" className={`tab-btn ${binTab === 'cases' ? 'active' : ''}`} onClick={() => setBinTab('cases')}>📂 Cases</button>
-        <button type="button" className={`tab-btn ${binTab === 'inventory' ? 'active' : ''}`} onClick={() => setBinTab('inventory')}>📦 Inventory Stock</button>
-        <button type="button" className={`tab-btn ${binTab === 'media' ? 'active' : ''}`} onClick={() => setBinTab('media')}>📎 Media{mediaItems.length ? ` (${mediaItems.length})` : ''}</button>
+        <button type="button" className={`tab-btn ${binTab === 'cases' ? 'active' : ''}`} onClick={() => setBinTab('cases')}> Cases</button>
+        <button type="button" className={`tab-btn ${binTab === 'inventory' ? 'active' : ''}`} onClick={() => setBinTab('inventory')}> Inventory Stock</button>
+        <button type="button" className={`tab-btn ${binTab === 'media' ? 'active' : ''}`} onClick={() => setBinTab('media')}> Media{mediaItems.length ? ` (${mediaItems.length})` : ''}</button>
       </div>
 
       {binTab === 'cases' && (
       <div style={{ padding:'10px 16px',background:'rgba(245,158,11,0.08)',border:'1px solid rgba(245,158,11,0.25)',borderRadius:'var(--radius-md)',marginBottom:16,display:'flex',alignItems:'center',gap:10,fontSize:'0.8rem',color:'var(--status-warning)' }}>
-        <span>⚠️</span>
+        <span></span>
         <span>Case restore requires the Recycle Bin password (Settings → Recycle Bin). Permanent case deletion is for Admins only.</span>
       </div>
       )}
@@ -250,19 +250,19 @@ export default function RecycleBinPage() {
         <div style={{ display:'flex',justifyContent:'center',padding:60 }}><div className="spinner" style={{ width:32,height:32 }} /></div>
       ) : binTab === 'cases' && items.length === 0 ? (
         <div className="empty-state" style={{ padding:80 }}>
-          <div className="empty-icon">🗑️</div>
+          <div className="empty-icon"></div>
           <div className="empty-title">No deleted cases</div>
           <div className="empty-desc">Deleted cases appear here and can be restored using the Recycle Bin password.</div>
         </div>
       ) : binTab === 'inventory' && invItems.length === 0 ? (
         <div className="empty-state" style={{ padding:80 }}>
-          <div className="empty-icon">📦</div>
+          <div className="empty-icon"></div>
           <div className="empty-title">No deleted stock items</div>
           <div className="empty-desc">Delete items from Inventory → Stock to move them here. Manage fully in Inventory → Recycle Bin tab.</div>
         </div>
       ) : binTab === 'media' && mediaItems.length === 0 ? (
         <div className="empty-state" style={{ padding:80 }}>
-          <div className="empty-icon">📎</div>
+          <div className="empty-icon"></div>
           <div className="empty-title">No deleted media</div>
           <div className="empty-desc">Deleted files from cases, solutions, and inventory appear here for recovery.</div>
         </div>
@@ -343,8 +343,8 @@ export default function RecycleBinPage() {
                   <td className="text-xs text-muted">{daysAgo(item.deleted_at)}</td>
                   <td>
                     <div style={{ display: 'flex', gap: 6 }}>
-                      <button className="btn btn-secondary btn-sm" onClick={() => setRestoreTarget(item)}>🔐 Restore</button>
-                      {isSuperAdmin && <button className="btn btn-danger btn-sm" onClick={() => setDeleteTarget(item)} style={{ fontSize: '0.72rem' }}>🗑 Delete</button>}
+                      <button className="btn btn-secondary btn-sm" onClick={() => setRestoreTarget(item)}> Restore</button>
+                      {isSuperAdmin && <button className="btn btn-danger btn-sm" onClick={() => setDeleteTarget(item)} style={{ fontSize: '0.72rem' }}> Delete</button>}
                     </div>
                   </td>
                 </tr>
@@ -356,7 +356,7 @@ export default function RecycleBinPage() {
 
       <div className="card" style={{ marginTop:24,border:'1px solid rgba(239,68,68,0.2)',background:'rgba(239,68,68,0.02)' }}>
         <div style={{ display:'flex',alignItems:'center',gap:12 }}>
-          <span style={{ fontSize:'1.5rem' }}>🔒</span>
+          <span style={{ fontSize:'1.5rem' }}></span>
           <div>
             <div style={{ fontWeight:700,fontSize:'0.85rem',color:'var(--status-danger)',marginBottom:4 }}>Permanent Deletion Policy</div>
             <div style={{ fontSize:'0.78rem',color:'var(--text-muted)',lineHeight:1.6 }}>

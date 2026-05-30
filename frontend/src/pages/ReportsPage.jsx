@@ -5,7 +5,7 @@ import { casesApi, clientsApi, accountingApi } from '../services/api';
 const fmtDate = d => d ? new Date(d).toLocaleDateString('en-IN') : '—';
 const fmt = n => `₹${parseFloat(n||0).toLocaleString('en-IN')}`;
 
-// ── Excel Export (xlsx) ─────────────────────────────────────────
+//  Excel Export (xlsx) 
 async function exportExcel(filename, headers, rows) {
   try {
     const XLSX = await import('xlsx');
@@ -25,7 +25,7 @@ async function exportExcel(filename, headers, rows) {
   }
 }
 
-// ── CSV Export Utility ──────────────────────────────────────────
+//  CSV Export Utility 
 function exportCSV(filename, headers, rows) {
   const escape = v => {
     const s = String(v ?? '');
@@ -38,7 +38,7 @@ function exportCSV(filename, headers, rows) {
   URL.revokeObjectURL(url);
 }
 
-// ── PDF Export (proper colorful HTML → PDF) ─────────────────────
+//  PDF Export (proper colorful HTML → PDF) 
 function exportPDF(title, headers, rows, summaryStats) {
   const styles = `
     @page { margin: 15mm; size: A4 landscape; }
@@ -74,7 +74,7 @@ function exportPDF(title, headers, rows, summaryStats) {
         <h1>${title}</h1>
         <div class="meta">Generated: ${new Date().toLocaleString('en-IN')} | RecoverLab CRM</div>
       </div>
-      <div class="logo">💾</div>
+      <div class="logo"></div>
     </div>
     ${summaryHtml}
     <div class="content">
@@ -95,11 +95,11 @@ function exportPDF(title, headers, rows, summaryStats) {
 }
 
 const REPORT_TYPES = [
-  { key: 'cases', icon: '📂', label: 'Case Report', desc: 'All cases with status, diagnosis, device, and financial summary' },
-  { key: 'revenue', icon: '💰', label: 'Revenue Report', desc: 'Invoice & payment history, collected vs pending amounts' },
-  { key: 'expenses', icon: '💸', label: 'Expense Report', desc: 'All expenses by category, vendor, and date range' },
-  { key: 'inventory', icon: '📦', label: 'Inventory / Stock Report', desc: 'Full stock list with condition, status, and transfer info' },
-  { key: 'clients', icon: '👥', label: 'Client Report', desc: 'Client list with contact info, status, and case count' },
+  { key: 'cases', icon: '', label: 'Case Report', desc: 'All cases with status, diagnosis, device, and financial summary' },
+  { key: 'revenue', icon: '', label: 'Revenue Report', desc: 'Invoice & payment history, collected vs pending amounts' },
+  { key: 'expenses', icon: '', label: 'Expense Report', desc: 'All expenses by category, vendor, and date range' },
+  { key: 'inventory', icon: '', label: 'Inventory / Stock Report', desc: 'Full stock list with condition, status, and transfer info' },
+  { key: 'clients', icon: '', label: 'Client Report', desc: 'Client list with contact info, status, and case count' },
 ];
 
 export default function ReportsPage() {
@@ -232,14 +232,14 @@ export default function ReportsPage() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
-          <h2 style={{ marginBottom: 4 }}>📊 Reports & Export</h2>
+          <h2 style={{ marginBottom: 4 }}> Reports & Export</h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>Generate, filter, and export all business reports as Excel, PDF, or CSV</p>
         </div>
         {generated && data.length > 0 && (
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <button className="btn btn-secondary btn-sm" onClick={handleExportCSV}>📄 CSV</button>
-            <button className="btn btn-secondary btn-sm" onClick={handleExportExcel} style={{ background:'rgba(16,185,129,0.1)', color:'var(--status-success)', border:'1px solid rgba(16,185,129,0.2)' }}>📊 Excel (.xlsx)</button>
-            <button className="btn btn-secondary btn-sm" onClick={handleExportPDF} style={{ background:'rgba(0,212,255,0.1)', color:'var(--accent-primary)', border:'1px solid rgba(0,212,255,0.2)' }}>🖨️ PDF (Colorful)</button>
+            <button className="btn btn-secondary btn-sm" onClick={handleExportCSV}> CSV</button>
+            <button className="btn btn-secondary btn-sm" onClick={handleExportExcel} style={{ background:'rgba(16,185,129,0.1)', color:'var(--status-success)', border:'1px solid rgba(16,185,129,0.2)' }}> Excel (.xlsx)</button>
+            <button className="btn btn-secondary btn-sm" onClick={handleExportPDF} style={{ background:'rgba(0,212,255,0.1)', color:'var(--accent-primary)', border:'1px solid rgba(0,212,255,0.2)' }}> PDF (Colorful)</button>
           </div>
         )}
       </div>
@@ -268,7 +268,7 @@ export default function ReportsPage() {
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'flex-end' }}>
               <div className="form-group" style={{ margin: 0, flex: 1, minWidth: 180 }}>
                 <label className="form-label">Search</label>
-                <div className="search-bar"><span className="search-icon">🔍</span><input className="search-input" placeholder="Search…" value={filters.search} onChange={e => setFilters(f=>({...f,search:e.target.value}))} /></div>
+                <div className="search-bar"><span className="search-icon"></span><input className="search-input" placeholder="Search…" value={filters.search} onChange={e => setFilters(f=>({...f,search:e.target.value}))} /></div>
               </div>
               <div className="form-group" style={{ margin: 0 }}>
                 <label className="form-label">From Date</label>
@@ -290,9 +290,9 @@ export default function ReportsPage() {
                 </div>
               )}
               <button className="btn btn-primary" style={{ height: 38 }} disabled={loading} onClick={generate}>
-                {loading ? <><div className="spinner" style={{width:14,height:14}}/> Generating…</> : '▶ Generate'}
+                {loading ? <><div className="spinner" style={{width:14,height:14}}/> Generating…</> : ' Generate'}
               </button>
-              {generated && <button className="btn btn-ghost btn-sm" onClick={()=>{setData([]);setGenerated(false);setFilters({from:'',to:'',status:'',search:''});}}>✕ Clear</button>}
+              {generated && <button className="btn btn-ghost btn-sm" onClick={()=>{setData([]);setGenerated(false);setFilters({from:'',to:'',status:'',search:''});}}> Clear</button>}
             </div>
           </div>
 
@@ -319,7 +319,7 @@ export default function ReportsPage() {
             <div style={{ display:'flex',justifyContent:'center',padding:60 }}><div className="spinner" style={{width:32,height:32}}/></div>
           ) : data.length === 0 ? (
             <div className="empty-state" style={{ padding: 40 }}>
-              <div className="empty-icon">🔎</div>
+              <div className="empty-icon"></div>
               <div className="empty-title">No records match your filters</div>
               <div className="empty-desc">Try adjusting your date range or status filter</div>
             </div>
@@ -328,9 +328,9 @@ export default function ReportsPage() {
               <div style={{ padding: '8px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-subtle)', fontSize: '0.75rem', flexWrap:'wrap', gap:8 }}>
                 <span style={{ color: 'var(--text-muted)' }}>{rpt?.icon} {rpt?.label} — <strong style={{ color: 'var(--text-primary)' }}>{data.length} records</strong></span>
                 <div style={{ display: 'flex', gap: 8 }}>
-                  <button className="btn btn-secondary btn-sm" onClick={handleExportCSV}>📄 CSV</button>
-                  <button className="btn btn-sm" style={{ background:'rgba(16,185,129,0.1)',color:'var(--status-success)',border:'1px solid rgba(16,185,129,0.2)' }} onClick={handleExportExcel}>📊 Excel</button>
-                  <button className="btn btn-sm" style={{ background:'rgba(0,212,255,0.1)',color:'var(--accent-primary)',border:'1px solid rgba(0,212,255,0.2)' }} onClick={handleExportPDF}>🖨️ PDF</button>
+                  <button className="btn btn-secondary btn-sm" onClick={handleExportCSV}> CSV</button>
+                  <button className="btn btn-sm" style={{ background:'rgba(16,185,129,0.1)',color:'var(--status-success)',border:'1px solid rgba(16,185,129,0.2)' }} onClick={handleExportExcel}> Excel</button>
+                  <button className="btn btn-sm" style={{ background:'rgba(0,212,255,0.1)',color:'var(--accent-primary)',border:'1px solid rgba(0,212,255,0.2)' }} onClick={handleExportPDF}> PDF</button>
                 </div>
               </div>
               <div style={{ overflowX: 'auto' }}>

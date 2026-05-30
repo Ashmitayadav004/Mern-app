@@ -5,17 +5,17 @@ const BASE_URL = '/api';
 const getToken = () => localStorage.getItem('accessToken');
 
 const WEBHOOK_EVENTS = [
-  { key: 'case_created',    label: '📂 Case Created',       desc: 'Fires when a new case is opened' },
-  { key: 'case_updated',    label: '✏️ Case Updated',        desc: 'Any case field edit' },
-  { key: 'stage_changed',   label: '⚡ Stage Changed',       desc: 'Case moves to new stage' },
-  { key: 'case_delivered',  label: '🚀 Case Delivered',      desc: 'Device delivered to client' },
-  { key: 'case_recovered',  label: '🏆 Data Recovered',      desc: 'Recovery marked complete' },
-  { key: 'case_stored',     label: '🗄️ Case Stored',         desc: 'Device stored after recovery' },
-  { key: 'case_failed',     label: '❌ Case Failed',          desc: 'Case marked as failed/not recoverable' },
-  { key: 'payment_received',label: '💰 Payment Received',    desc: 'A payment is recorded' },
-  { key: 'invoice_created', label: '🧾 Invoice Created',     desc: 'New invoice generated' },
-  { key: 'client_added',    label: '👤 Client Added',        desc: 'New client registered' },
-  { key: 'stock_transferred',label: '🔄 Stock Transferred',  desc: 'Case HDD transferred to inventory' },
+  { key: 'case_created',    label: ' Case Created',       desc: 'Fires when a new case is opened' },
+  { key: 'case_updated',    label: ' Case Updated',        desc: 'Any case field edit' },
+  { key: 'stage_changed',   label: ' Stage Changed',       desc: 'Case moves to new stage' },
+  { key: 'case_delivered',  label: ' Case Delivered',      desc: 'Device delivered to client' },
+  { key: 'case_recovered',  label: ' Data Recovered',      desc: 'Recovery marked complete' },
+  { key: 'case_stored',     label: ' Case Stored',         desc: 'Device stored after recovery' },
+  { key: 'case_failed',     label: ' Case Failed',          desc: 'Case marked as failed/not recoverable' },
+  { key: 'payment_received',label: ' Payment Received',    desc: 'A payment is recorded' },
+  { key: 'invoice_created', label: ' Invoice Created',     desc: 'New invoice generated' },
+  { key: 'client_added',    label: ' Client Added',        desc: 'New client registered' },
+  { key: 'stock_transferred',label: ' Stock Transferred',  desc: 'Case HDD transferred to inventory' },
 ];
 
 function generateId() {
@@ -106,7 +106,7 @@ export default function WebhooksPage() {
     <div>
       <div className="page-header">
         <div>
-          <h2 style={{ fontFamily:'var(--font-display)', fontWeight:800 }}>🔗 Webhooks</h2>
+          <h2 style={{ fontFamily:'var(--font-display)', fontWeight:800 }}> Webhooks</h2>
           <p style={{ color:'var(--text-muted)', fontSize:'0.82rem', marginTop:4 }}>
             Send real-time HTTP POST events to external services when CRM actions occur. Multiple webhooks can be active simultaneously.
           </p>
@@ -116,7 +116,7 @@ export default function WebhooksPage() {
 
       {/* Tabs */}
       <div style={{ display:'flex', gap:0, marginBottom:20, borderBottom:'1px solid var(--border-subtle)' }}>
-        {[['webhooks',`🔗 Webhooks (${webhooks.length})`],['logs',`📋 Queue & Logs (${logs.length})`]].map(([k,l]) => (
+        {[['webhooks',` Webhooks (${webhooks.length})`],['logs',` Queue & Logs (${logs.length})`]].map(([k,l]) => (
           <button key={k} onClick={() => setActiveTab(k)} style={{
             padding:'10px 20px', border:'none', cursor:'pointer', fontSize:'0.82rem', fontWeight:600,
             background:'transparent', borderBottom: activeTab===k ? '2px solid var(--accent-primary)' : '2px solid transparent',
@@ -131,7 +131,7 @@ export default function WebhooksPage() {
         <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
           {webhooks.length === 0 && (
             <div className="empty-state" style={{ padding:60 }}>
-              <div className="empty-icon">🔗</div>
+              <div className="empty-icon"></div>
               <div className="empty-title">No Webhooks Yet</div>
               <div className="empty-desc">Add a webhook to send real-time events to n8n, Zapier, Slack, your own server, or any HTTP endpoint.</div>
               <button className="btn btn-primary" style={{ marginTop:16 }} onClick={() => setShowAdd(true)}>+ Add First Webhook</button>
@@ -163,21 +163,21 @@ export default function WebhooksPage() {
                     })}
                   </div>
                   <div style={{ display:'flex', gap:16, fontSize:'0.72rem', color:'var(--text-muted)' }}>
-                    <span>✅ {wh.success_count||0} success</span>
-                    <span>❌ {wh.fail_count||0} failed</span>
+                    <span> {wh.success_count||0} success</span>
+                    <span> {wh.fail_count||0} failed</span>
                     {wh.last_triggered && <span>Last: {new Date(wh.last_triggered).toLocaleString('en-IN')}</span>}
                   </div>
                 </div>
                 <div style={{ display:'flex', gap:8, flexShrink:0, flexWrap:'wrap', justifyContent:'flex-end' }}>
                   <button className="btn btn-sm" style={{ background:'rgba(0,212,255,0.08)', color:'var(--accent-primary)', border:'1px solid rgba(0,212,255,0.2)' }}
                     onClick={() => testWebhook(wh)} disabled={testingId === wh.id}>
-                    {testingId === wh.id ? <><div className="spinner" style={{width:12,height:12}}/> Testing…</> : '🧪 Test'}
+                    {testingId === wh.id ? <><div className="spinner" style={{width:12,height:12}}/> Testing…</> : ' Test'}
                   </button>
                   <button className="btn btn-sm" style={{ background:'rgba(16,185,129,0.08)', color:'var(--status-success)', border:'1px solid rgba(16,185,129,0.2)' }}
                     onClick={() => toggleEnabled(wh.id)}>
-                    {wh.enabled ? '⏸ Disable' : '▶ Enable'}
+                    {wh.enabled ? ' Disable' : ' Enable'}
                   </button>
-                  <button className="btn btn-sm btn-danger" onClick={() => deleteWebhook(wh.id)}>🗑 Delete</button>
+                  <button className="btn btn-sm btn-danger" onClick={() => deleteWebhook(wh.id)}> Delete</button>
                 </div>
               </div>
             </div>
@@ -190,7 +190,7 @@ export default function WebhooksPage() {
         <div>
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:14 }}>
             <div style={{ display:'flex', gap:8 }}>
-              {[['all','All'],['success','✅ Success'],['failed','❌ Failed'],['pending','⏳ Pending']].map(([k,l]) => (
+              {[['all','All'],['success',' Success'],['failed',' Failed'],['pending',' Pending']].map(([k,l]) => (
                 <button key={k} onClick={() => setLogFilter(k)} style={{
                   padding:'5px 12px', borderRadius:999, border:'1px solid var(--border-default)',
                   background: logFilter===k ? 'var(--accent-primary)' : 'transparent',
@@ -198,7 +198,7 @@ export default function WebhooksPage() {
                 }}>{l}</button>
               ))}
             </div>
-            <button className="btn btn-sm btn-danger" onClick={clearLogs}>🗑 Clear Logs</button>
+            <button className="btn btn-sm btn-danger" onClick={clearLogs}> Clear Logs</button>
           </div>
 
           <div style={{ background:'var(--bg-card)', borderRadius:'var(--radius-lg)', border:'1px solid var(--border-subtle)', overflow:'hidden' }}>
@@ -220,14 +220,14 @@ export default function WebhooksPage() {
                     <span style={{ color:'var(--text-muted)', fontSize:'0.68rem', marginLeft:'auto' }}>{new Date(log.timestamp).toLocaleString('en-IN')}</span>
                   </div>
                   <div style={{ fontFamily:'var(--font-mono)', fontSize:'0.68rem', color:'var(--text-muted)', wordBreak:'break-all' }}>{log.url}</div>
-                  {log.error && <div style={{ fontSize:'0.68rem', color:'var(--status-danger)', marginTop:3 }}>⚠ {log.error}</div>}
+                  {log.error && <div style={{ fontSize:'0.68rem', color:'var(--status-danger)', marginTop:3 }}> {log.error}</div>}
                 </div>
               </div>
             ))}
           </div>
 
           <div style={{ marginTop:12, padding:'10px 14px', background:'var(--bg-elevated)', borderRadius:'var(--radius-md)', fontSize:'0.72rem', color:'var(--text-muted)' }}>
-            📊 Total: {logs.length} logs | ✅ Success: {logs.filter(l=>l.status==='success').length} | ❌ Failed: {logs.filter(l=>l.status==='failed').length} | ⏳ Pending: {logs.filter(l=>l.status==='pending').length}
+             Total: {logs.length} logs |  Success: {logs.filter(l=>l.status==='success').length} |  Failed: {logs.filter(l=>l.status==='failed').length} |  Pending: {logs.filter(l=>l.status==='pending').length}
           </div>
         </div>
       )}
@@ -237,8 +237,8 @@ export default function WebhooksPage() {
         <div className="modal-overlay" onClick={() => setShowAdd(false)}>
           <div className="modal modal-xl" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3 className="modal-title">🔗 Add New Webhook</h3>
-              <button className="btn btn-ghost btn-icon" onClick={() => setShowAdd(false)}>✕</button>
+              <h3 className="modal-title"> Add New Webhook</h3>
+              <button className="btn btn-ghost btn-icon" onClick={() => setShowAdd(false)}></button>
             </div>
             <div className="modal-body">
               <div className="form-row form-row-2">
@@ -276,7 +276,7 @@ export default function WebhooksPage() {
             </div>
             <div className="modal-footer">
               <button className="btn btn-secondary" onClick={() => setShowAdd(false)}>Cancel</button>
-              <button className="btn btn-primary" onClick={addWebhook}>💾 Save Webhook</button>
+              <button className="btn btn-primary" onClick={addWebhook}> Save Webhook</button>
             </div>
           </div>
         </div>

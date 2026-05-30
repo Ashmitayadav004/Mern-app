@@ -7,7 +7,7 @@ import MediaFileGrid from '../components/MediaFileGrid';
 
 const DEVICE_TYPES = ['HDD', 'SSD', 'Phone', 'PCB', 'NAS', 'Server', 'Flash Drive', 'RAID', 'Other'];
 const PROB_TAGS = ['Head Crash', 'Firmware Corruption', 'Logical Error', 'PCB Damage', 'BSY Error', 'Bad Sectors', 'Motor Seized', 'Not Detected', 'Water Damage', 'Fire Damage', 'Encrypted', 'RAID Rebuild', 'Deleted Files'];
-const TYPE_ICONS = { HDD: '💿', SSD: '⚡', Phone: '📱', PCB: '🔌', NAS: '🖥️', Server: '🖧', 'Flash Drive': '🔌', RAID: '🗃️', Other: '🔧' };
+const TYPE_ICONS = { HDD: '', SSD: '', Phone: '', PCB: '', NAS: '', Server: '', 'Flash Drive': '', RAID: '', Other: '' };
 
 function formatSize(bytes) {
   if (!bytes) return '—';
@@ -53,7 +53,7 @@ function SolutionFormModal({ title, initial, onClose, onDone }) {
       <div className="modal modal-xl" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
           <h3 className="modal-title">{title}</h3>
-          <button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button>
+          <button className="btn btn-ghost btn-icon" onClick={onClose}></button>
         </div>
         <div className="modal-body">
           <div className="form-row form-row-2">
@@ -111,7 +111,7 @@ function SolutionFormModal({ title, initial, onClose, onDone }) {
                   <div key={id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 10px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-sm)' }}>
                     <span>{fileTypeIcon({ mimeType: file.type, name: file.name })}</span>
                     <span style={{ flex: 1, fontSize: '0.78rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{file.name}</span>
-                    <button type="button" onClick={() => setFiles(prev => prev.filter(f => f.id !== id))} style={{ background: 'none', border: 'none', color: 'var(--status-danger)', cursor: 'pointer' }}>✕</button>
+                    <button type="button" onClick={() => setFiles(prev => prev.filter(f => f.id !== id))} style={{ background: 'none', border: 'none', color: 'var(--status-danger)', cursor: 'pointer' }}></button>
                   </div>
                 ))}
               </div>
@@ -164,7 +164,7 @@ function SolutionDetailModal({ sol, onClose, onDelete, onEdit, canDelete, canEdi
               {sol.created_by_name && ` · ${sol.created_by_name}`}
             </div>
           </div>
-          <button className="btn btn-ghost btn-icon" onClick={onClose}>✕</button>
+          <button className="btn btn-ghost btn-icon" onClick={onClose}></button>
         </div>
         <div className="modal-body">
           {sol.problem && (
@@ -183,7 +183,7 @@ function SolutionDetailModal({ sol, onClose, onDelete, onEdit, canDelete, canEdi
           <KbNotesTimeline noteHistory={noteHistory} />
 
           <div className="card" style={{ marginBottom: 16 }}>
-            <div className="card-title" style={{ marginBottom: 10 }}>📝 Solution Notes</div>
+            <div className="card-title" style={{ marginBottom: 10 }}> Solution Notes</div>
             {noteHistory.length ? noteHistory.map((n, i) => (
               <div key={n.id || i} style={{ marginBottom: i < noteHistory.length - 1 ? 12 : 0, paddingBottom: i < noteHistory.length - 1 ? 12 : 0, borderBottom: i < noteHistory.length - 1 ? '1px solid var(--border-subtle)' : 'none' }}>
                 <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginBottom: 6, fontFamily: 'var(--font-mono)' }}>
@@ -196,7 +196,7 @@ function SolutionDetailModal({ sol, onClose, onDelete, onEdit, canDelete, canEdi
 
           {caseRefs.length > 0 && (
             <div className="card" style={{ marginBottom: 16 }}>
-              <div className="card-title" style={{ marginBottom: 10 }}>📂 Related Cases ({caseRefs.length})</div>
+              <div className="card-title" style={{ marginBottom: 10 }}> Related Cases ({caseRefs.length})</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 {caseRefs.map(ref => (
                   <Link key={ref.case_id} to={`/cases/${ref.case_id}`} className="btn btn-sm btn-secondary" onClick={e => e.stopPropagation()}>
@@ -209,14 +209,14 @@ function SolutionDetailModal({ sol, onClose, onDelete, onEdit, canDelete, canEdi
 
           {sol.files?.length > 0 && (
             <div>
-              <div className="card-title" style={{ marginBottom: 12 }}>📎 Attachments ({sol.files.length})</div>
+              <div className="card-title" style={{ marginBottom: 12 }}> Attachments ({sol.files.length})</div>
               <MediaFileGrid items={sol.files} variant="gallery" />
             </div>
           )}
         </div>
         <div className="modal-footer">
-          {canEdit && <button className="btn btn-primary" onClick={() => { onEdit(sol); onClose(); }}>✏️ Edit Solution</button>}
-          {canDelete && <button className="btn btn-danger" onClick={() => { if (confirm('Delete this solution?')) { onDelete(sol.id); onClose(); } }}>🗑 Delete</button>}
+          {canEdit && <button className="btn btn-primary" onClick={() => { onEdit(sol); onClose(); }}> Edit Solution</button>}
+          {canDelete && <button className="btn btn-danger" onClick={() => { if (confirm('Delete this solution?')) { onDelete(sol.id); onClose(); } }}> Delete</button>}
           <button className="btn btn-secondary" onClick={onClose}>Close</button>
         </div>
       </div>
@@ -265,7 +265,7 @@ export default function SolutionsPage() {
 
       <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
         <div className="search-bar" style={{ flex: 1, minWidth: 200 }}>
-          <span className="search-icon">🔍</span>
+          <span className="search-icon"></span>
           <input className="search-input" placeholder="Search solutions…" value={search} onChange={e => setSearch(e.target.value)} />
         </div>
         <select className="form-select" style={{ width: 'auto' }} value={deviceFilter} onChange={e => setDeviceFilter(e.target.value)}>
@@ -295,7 +295,7 @@ export default function SolutionsPage() {
         <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}><div className="spinner" style={{ width: 32, height: 32 }} /></div>
       ) : solutions.length === 0 ? (
         <div className="empty-state" style={{ padding: 60 }}>
-          <div className="empty-icon">📚</div>
+          <div className="empty-icon"></div>
           <div className="empty-title">No solutions found</div>
           <div className="empty-desc">Save solution notes on completed cases or add entries manually</div>
           {canAccess('junior_engineer') && <button className="btn btn-primary" style={{ marginTop: 16 }} onClick={() => setShowNew(true)}>+ Add First Solution</button>}
@@ -311,7 +311,7 @@ export default function SolutionsPage() {
                 onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent-primary)'; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = ''; }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
-                  <span style={{ fontSize: '1.5rem' }}>{TYPE_ICONS[sol.device_type] || '🔧'}</span>
+                  <span style={{ fontSize: '1.5rem' }}>{TYPE_ICONS[sol.device_type] || ''}</span>
                   <span style={{ fontSize: '0.68rem', padding: '2px 8px', borderRadius: 999, background: 'rgba(0,212,255,0.1)', color: 'var(--accent-primary)', fontFamily: 'var(--font-mono)' }}>
                     {sol.category || sol.device_type}
                   </span>
@@ -326,7 +326,7 @@ export default function SolutionsPage() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.7rem', color: 'var(--text-muted)' }}>
                   <span>{caseCount} case{caseCount !== 1 ? 's' : ''}</span>
                   <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    {(sol.has_media || sol.files?.length > 0) && <span>📎</span>}
+                    {(sol.has_media || sol.files?.length > 0) && <span></span>}
                     <span>{formatSolutionTime(sol.created_at)}</span>
                   </span>
                 </div>
@@ -337,11 +337,11 @@ export default function SolutionsPage() {
       )}
 
       {showNew && (
-        <SolutionFormModal title="📚 Add Solution / Knowledge Entry" initial={emptyForm} onClose={() => setShowNew(false)} onDone={load} />
+        <SolutionFormModal title=" Add Solution / Knowledge Entry" initial={emptyForm} onClose={() => setShowNew(false)} onDone={load} />
       )}
       {editSol && (
         <SolutionFormModal
-          title="✏️ Edit Solution"
+          title=" Edit Solution"
           initial={{
             id: editSol.id,
             title: editSol.title,
