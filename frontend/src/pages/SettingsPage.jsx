@@ -6,9 +6,6 @@ import HddFieldConfigManager from '../components/settings/HddFieldConfigManager'
 import InventoryStockConfigManager from '../components/settings/InventoryStockConfigManager';
 import { INV_DEFAULTS, loadInventoryFields } from '../utils/inventoryFieldSettings';
 
-<<<<<<< HEAD
-//  Per-family Inventory field/dropdown manager 
-=======
 // ── Confirmation Modal ────────────────────────────────────────────
 function ConfirmDeleteModal({ title, message, itemName, onConfirm, onCancel }) {
   return (
@@ -32,7 +29,6 @@ function ConfirmDeleteModal({ title, message, itemName, onConfirm, onCancel }) {
 }
 
 // ── Per-family Inventory field/dropdown manager ────────────────────────────────
->>>>>>> fb6fda3176ae028cc5828fa16b678f994c696746
 const stripDecorativeIcon = (label = '') => String(label).replace(/^[\p{Extended_Pictographic}\uFE0F]+\s*/gu, '').trim();
 
 function InvCategorySettings({ deviceFamily }) {
@@ -473,11 +469,7 @@ function StageCategoriesManager({ stages, onChange }) {
               <input className="form-input" value={s} onChange={e=>{ const n=[...items]; n[i]=e.target.value; save(n); }} style={{ flex:1 }} />
               <button className="btn btn-secondary btn-sm" onClick={()=>moveUp(i)}>↑</button>
               <button className="btn btn-secondary btn-sm" onClick={()=>moveDown(i)}>↓</button>
-<<<<<<< HEAD
-              <button className="btn btn-danger btn-sm" onClick={()=>save(items.filter((_,j)=>j!==i))}></button>
-=======
               <button className="btn btn-danger btn-sm" onClick={()=>handleDelete(i)}>✕</button>
->>>>>>> fb6fda3176ae028cc5828fa16b678f994c696746
             </div>
           ))}
         </div>
@@ -523,11 +515,7 @@ function SymptomCategoriesManager({ symptoms, onChange }) {
           {items.map((s,i) => (
             <div key={i} style={{ display:'flex',alignItems:'center',gap:4,background:'var(--bg-elevated)',padding:'4px 10px',borderRadius:999,border:'1px solid var(--border-subtle)' }}>
               <input className="form-input" value={s} onChange={e=>{ const n=[...items]; n[i]=e.target.value; save(n); }} style={{ background:'transparent',border:'none',padding:0,width:Math.max(80,s.length*8),fontSize:'0.75rem',fontFamily:'var(--font-mono)',color:'var(--text-primary)' }} />
-<<<<<<< HEAD
-              <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.75rem',padding:0,lineHeight:1 }} onClick={()=>save(items.filter((_,j)=>j!==i))}></button>
-=======
               <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.75rem',padding:0,lineHeight:1 }} onClick={()=>setConfirmDelete({idx:i, itemName:s})}>✕</button>
->>>>>>> fb6fda3176ae028cc5828fa16b678f994c696746
             </div>
           ))}
         </div>
@@ -572,11 +560,7 @@ function FailureTypesManager({ items: initialItems, onChange }) {
         {items.map((s,i) => (
           <div key={i} style={{ display:'flex',alignItems:'center',gap:4,background:'var(--bg-elevated)',padding:'5px 12px',borderRadius:999,border:'1px solid var(--border-default)' }}>
             <input className="form-input" value={s} onChange={e=>{ const n=[...items]; n[i]=e.target.value; save(n); }} style={{ background:'transparent',border:'none',padding:0,width:Math.max(80,s.length*8),fontSize:'0.78rem',fontFamily:'var(--font-mono)',color:'var(--text-primary)' }} />
-<<<<<<< HEAD
-            <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.78rem',padding:0,lineHeight:1 }} onClick={()=>save(items.filter((_,j)=>j!==i))}></button>
-=======
             <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.78rem',padding:0,lineHeight:1 }} onClick={()=>setConfirmDelete({idx:i, itemName:s})}>✕</button>
->>>>>>> fb6fda3176ae028cc5828fa16b678f994c696746
           </div>
         ))}
       </div>
@@ -620,11 +604,7 @@ function BrandsManager({ items: initialItems, onChange }) {
         {items.map((s,i) => (
           <div key={i} style={{ display:'flex',alignItems:'center',gap:4,background:'var(--bg-elevated)',padding:'5px 12px',borderRadius:999,border:'1px solid var(--border-default)' }}>
             <input className="form-input" value={s} onChange={e=>{ const n=[...items]; n[i]=e.target.value; save(n); }} style={{ background:'transparent',border:'none',padding:0,width:Math.max(80,s.length*8),fontSize:'0.78rem',color:'var(--text-primary)' }} />
-<<<<<<< HEAD
-            <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.78rem',padding:0 }} onClick={()=>save(items.filter((_,j)=>j!==i))}></button>
-=======
             <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.78rem',padding:0 }} onClick={()=>setConfirmDelete({idx:i, itemName:s})}>✕</button>
->>>>>>> fb6fda3176ae028cc5828fa16b678f994c696746
           </div>
         ))}
       </div>
@@ -666,11 +646,7 @@ function ManufactureCountriesManager({ items: initialItems, onChange }) {
         {items.map((s,i) => (
           <div key={i} style={{ display:'flex',alignItems:'center',gap:4,background:'var(--bg-elevated)',padding:'5px 12px',borderRadius:999,border:'1px solid var(--border-default)' }}>
             <input className="form-input" value={s} onChange={e=>{ const n=[...items]; n[i]=e.target.value; save(n); }} style={{ background:'transparent',border:'none',padding:0,width:Math.max(80,s.length*8),fontSize:'0.78rem',color:'var(--text-primary)' }} />
-<<<<<<< HEAD
-            <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.78rem',padding:0 }} onClick={()=>save(items.filter((_,j)=>j!==i))}></button>
-=======
             <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.78rem',padding:0 }} onClick={()=>setConfirmDelete({idx:i, itemName:s})}>✕</button>
->>>>>>> fb6fda3176ae028cc5828fa16b678f994c696746
           </div>
         ))}
       </div>
@@ -712,11 +688,7 @@ function InterfacesManager({ items: initialItems, onChange }) {
         {items.map((s,i) => (
           <div key={i} style={{ display:'flex',alignItems:'center',gap:4,background:'var(--bg-elevated)',padding:'5px 12px',borderRadius:999,border:'1px solid var(--border-default)' }}>
             <input className="form-input" value={s} onChange={e=>{ const n=[...items]; n[i]=e.target.value; save(n); }} style={{ background:'transparent',border:'none',padding:0,width:Math.max(80,s.length*8),fontSize:'0.78rem',color:'var(--text-primary)' }} />
-<<<<<<< HEAD
-            <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.78rem',padding:0 }} onClick={()=>save(items.filter((_,j)=>j!==i))}></button>
-=======
             <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.78rem',padding:0 }} onClick={()=>setConfirmDelete({idx:i, itemName:s})}>✕</button>
->>>>>>> fb6fda3176ae028cc5828fa16b678f994c696746
           </div>
         ))}
       </div>
@@ -758,11 +730,7 @@ function HddTypesManager({ items: initialItems, onChange }) {
         {items.map((s,i) => (
           <div key={i} style={{ display:'flex',alignItems:'center',gap:4,background:'var(--bg-elevated)',padding:'5px 12px',borderRadius:999,border:'1px solid var(--border-default)' }}>
             <input className="form-input" value={s} onChange={e=>{ const n=[...items]; n[i]=e.target.value; save(n); }} style={{ background:'transparent',border:'none',padding:0,width:Math.max(80,s.length*8),fontSize:'0.78rem',color:'var(--text-primary)' }} />
-<<<<<<< HEAD
-            <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.78rem',padding:0 }} onClick={()=>save(items.filter((_,j)=>j!==i))}></button>
-=======
             <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.78rem',padding:0 }} onClick={()=>setConfirmDelete({idx:i, itemName:s})}>✕</button>
->>>>>>> fb6fda3176ae028cc5828fa16b678f994c696746
           </div>
         ))}
       </div>
@@ -806,11 +774,7 @@ function PaymentMethodsManager({ items: initialItems, onChange }) {
         {items.map((s,i) => (
           <div key={i} style={{ display:'flex',alignItems:'center',gap:4,background:'var(--bg-elevated)',padding:'5px 12px',borderRadius:999,border:'1px solid var(--border-default)' }}>
             <input className="form-input" value={s} onChange={e=>{ const n=[...items]; n[i]=e.target.value; save(n); }} style={{ background:'transparent',border:'none',padding:0,width:Math.max(80,s.length*8),fontSize:'0.78rem',color:'var(--text-primary)' }} />
-<<<<<<< HEAD
-            <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.78rem',padding:0 }} onClick={()=>save(items.filter((_,j)=>j!==i))}></button>
-=======
             <button style={{ background:'none',border:'none',cursor:'pointer',color:'var(--status-danger)',fontSize:'0.78rem',padding:0 }} onClick={()=>setConfirmDelete({idx:i, itemName:s})}>✕</button>
->>>>>>> fb6fda3176ae028cc5828fa16b678f994c696746
           </div>
         ))}
       </div>
