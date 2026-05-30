@@ -65,12 +65,12 @@ function Sidebar({ open, onClose }) {
     ...(hasPermission('inventory', 'view') || isAdmin ? [{ icon: '', label: 'Inventory', to: '/inventory' }] : []),
     ...(hasPermission('inventory', 'view') || isAdmin ? [{ icon: '', label: 'Donor Drive', to: '/donors' }] : []),
     ...(hasPermission('knowledge_base', 'view') || isAdmin ? [{ icon: '', label: 'Knowledge Base', to: '/solutions' }] : []),
-    ...(isAdmin ? [{ icon: '', label: 'Marketing', to: '/marketing' }] : []),
   ];
   const financeItems = isSuperAdmin ? [] : [
     ...(hasPermission('accounting', 'view') || isAdmin ? [{ icon: '', label: 'Accounting', to: '/accounting' }] : []),
     ...(hasPermission('reports', 'view') || isAdmin ? [{ icon: '', label: 'Reports', to: '/reports' }] : []),
     ...(hasPermission('analytics', 'view') || isAdmin ? [{ icon: '', label: 'Analytics', to: '/analytics' }] : []),
+    ...(isAdmin ? [{ icon: '', label: 'Marketing', to: '/marketing' }] : []),
   ];
   const systemItems = isSuperAdmin
     // Super Admin system items — platform-level only
@@ -82,7 +82,7 @@ function Sidebar({ open, onClose }) {
     : [
         ...(isOwner ? [{ icon: '', label: 'Subscription', to: '/subscription' }] : []),
         ...(isAdmin ? [{ icon: '', label: 'Security & Backup', to: '/security' }] : []),
-        { icon: '', label: 'Team Chat', to: '/chat' },
+        { icon: '', label: 'Team', to: '/chat' },
         ...(hasPermission('recycle_bin', 'view') || isAdmin ? [{ icon: '', label: 'Recycle Bin', to: '/recycle-bin' }] : []),
         ...(hasPermission('webhooks', 'view') || isAdmin ? [{ icon: '', label: 'Webhooks', to: '/webhooks' }] : []),
         ...(hasPermission('settings', 'view') || isAdmin ? [{ icon: '', label: 'Settings', to: '/settings' }] : []),
@@ -112,8 +112,8 @@ function Sidebar({ open, onClose }) {
         { icon: '', label: 'Email Deliverability', to: '/super-admin', saTab: 'email_delivery' },
       ]},
       { group: 'Access', items: [
-        { icon: '', label: 'Users & Roles', to: '/users' },
-        { icon: '', label: 'Team Chat', to: '/chat' },
+        { icon: '', label: 'Users', to: '/users' },
+        { icon: '', label: 'Team', to: '/chat' },
         { icon: '', label: 'Security & Backup', to: '/security' },
         { icon: '', label: 'Settings',           to: '/settings' },
       ]},

@@ -21,14 +21,14 @@ router.get('/', requireMinRole('senior_engineer'), async (req, res) => {
     }
 
     const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
-    const result = await query(`SELECT id, username, email, full_name, role, is_active, specializations, phone, permissions, last_login, created_at FROM users u ${where} ORDER BY role, full_name`, params);
+    const result = await query(`SELECT id, username, email, full_name, role, is_active, specializations, phone, permissions, assigned_admin_id, last_login, created_at FROM users u ${where} ORDER BY role, full_name`, params);
     res.json(result.rows);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 router.post('/', requireRole('admin', 'super_admin'), auditLog('create_user', 'user'), async (req, res) => {
   try {
-    const { username, email, password, full_name, role, phone, specializations, notes, permissions, tenant_id } = req.body;
+    const { username, email, password, full_name, role, phone, specializations, notes, permissions, tenant_id, assigned_admin_id } = req.body;
     if (!password || password.length < 8) return res.status(422).json({ error: 'Password must be at least 8 characters' });
     const hash = await bcrypt.hash(password, 12);
     const scopedTenantId = req.user.role === 'super_admin'
@@ -38,8 +38,8 @@ router.post('/', requireRole('admin', 'super_admin'), auditLog('create_user', 'u
       ? req.user.id
       : (req.user.role === 'super_admin' ? (scopedTenantId || null) : null);
     const result = await query(
-      `INSERT INTO users (username, email, password_hash, full_name, role, phone, specializations, notes, permissions, tenant_owner_id, tenant_id)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING id, username, email, full_name, role, is_active, created_at`,
+      `INSERT INTO users (username, email, password_hash, full_name, role, phone, specializations, notes, permissions, assigned_admin_id, tenant_owner_id, tenant_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING id, username, email, full_name, role, is_active, created_at`,
       [
         username.toLowerCase(),
         email.toLowerCase(),
@@ -50,6 +50,7 @@ router.post('/', requireRole('admin', 'super_admin'), auditLog('create_user', 'u
         specializations||[],
         notes||null,
         permissions ? JSON.stringify(permissions) : null,
+        assigned_admin_id || (req.user.role === 'admin' ? req.user.id : null),
         tenantOwnerId,
         scopedTenantId,
       ]
@@ -63,13 +64,13 @@ router.post('/', requireRole('admin', 'super_admin'), auditLog('create_user', 'u
 
 router.put('/:id', requireMinRole('senior_engineer'), auditLog('update_user', 'user'), async (req, res) => {
   try {
-    const { full_name, phone, specializations, notes, is_active, role, permissions } = req.body;
+    const { full_name, phone, specializations, notes, is_active, role, permissions, assigned_admin_id } = req.body;
     // Only admin can change roles
     if (role && req.user.role !== 'admin' && req.user.role !== 'super_admin') return res.status(403).json({ error: 'Only admin can change roles' });
-    let updateSql = `UPDATE users SET full_name=COALESCE($1,full_name), phone=COALESCE($2,phone), specializations=COALESCE($3,specializations), notes=COALESCE($4,notes), is_active=COALESCE($5,is_active), role=COALESCE($6,role), permissions=COALESCE($7,permissions), updated_at=NOW() WHERE id=$8`;
-    const updateParams = [full_name, phone, specializations, notes, is_active, role, permissions ? JSON.stringify(permissions) : null, req.params.id];
+    let updateSql = `UPDATE users SET full_name=COALESCE($1,full_name), phone=COALESCE($2,phone), specializations=COALESCE($3,specializations), notes=COALESCE($4,notes), is_active=COALESCE($5,is_active), role=COALESCE($6,role), permissions=COALESCE($7,permissions), assigned_admin_id=COALESCE($8,assigned_admin_id), updated_at=NOW() WHERE id=$9`;
+    const updateParams = [full_name, phone, specializations, notes, is_active, role, permissions ? JSON.stringify(permissions) : null, assigned_admin_id || null, req.params.id];
     if (!isSuperAdmin(req.user)) {
-      updateSql += ` AND ${tenantUserExpression('users')} = $9`;
+      updateSql += ` AND ${tenantUserExpression('users')} = $10`;
       updateParams.push(tenantAdminId(req.user));
     }
     updateSql += ` RETURNING id, username, full_name, role, is_active`;
@@ -81,12 +82,12 @@ router.put('/:id', requireMinRole('senior_engineer'), auditLog('update_user', 'u
 
 router.patch('/:id', requireMinRole('senior_engineer'), auditLog('update_user', 'user'), async (req, res) => {
   try {
-    const { full_name, phone, specializations, notes, is_active, role, permissions } = req.body;
+    const { full_name, phone, specializations, notes, is_active, role, permissions, assigned_admin_id } = req.body;
     if (role && req.user.role !== 'admin' && req.user.role !== 'super_admin') return res.status(403).json({ error: 'Only admin can change roles' });
-    let updateSql = `UPDATE users SET full_name=COALESCE($1,full_name), phone=COALESCE($2,phone), specializations=COALESCE($3,specializations), notes=COALESCE($4,notes), is_active=COALESCE($5,is_active), role=COALESCE($6,role), permissions=COALESCE($7,permissions), updated_at=NOW() WHERE id=$8`;
-    const updateParams = [full_name, phone, specializations, notes, is_active, role, permissions ? JSON.stringify(permissions) : null, req.params.id];
+    let updateSql = `UPDATE users SET full_name=COALESCE($1,full_name), phone=COALESCE($2,phone), specializations=COALESCE($3,specializations), notes=COALESCE($4,notes), is_active=COALESCE($5,is_active), role=COALESCE($6,role), permissions=COALESCE($7,permissions), assigned_admin_id=COALESCE($8,assigned_admin_id), updated_at=NOW() WHERE id=$9`;
+    const updateParams = [full_name, phone, specializations, notes, is_active, role, permissions ? JSON.stringify(permissions) : null, assigned_admin_id || null, req.params.id];
     if (!isSuperAdmin(req.user)) {
-      updateSql += ` AND ${tenantUserExpression('users')} = $9`;
+      updateSql += ` AND ${tenantUserExpression('users')} = $10`;
       updateParams.push(tenantAdminId(req.user));
     }
     updateSql += ` RETURNING id, username, full_name, role, is_active`;

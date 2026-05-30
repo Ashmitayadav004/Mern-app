@@ -207,7 +207,7 @@ function RoleModal({ role, restrictedPerms, onClose, onDone }) {
 }
 
 // ── User Modal ───────────────────────────────────────────────────────────
-function UserModal({ editUser, roles, maxUsers, currentCount, onClose, onDone }) {
+function UserModal({ editUser, roles, adminUsers, maxUsers, currentCount, onClose, onDone }) {
   const isNew = !editUser?.id;
   const [form, setForm] = useState({
     full_name: editUser?.full_name || '',
@@ -215,6 +215,7 @@ function UserModal({ editUser, roles, maxUsers, currentCount, onClose, onDone })
     email: editUser?.email || '',
     password: '',
     role_key: editUser?.role || roles[0]?.key || '',
+    assigned_admin_id: editUser?.assigned_admin_id || '',
     specializations: editUser?.specializations || [],
     phone: editUser?.phone || '',
     is_active: editUser?.is_active ?? true,
@@ -239,6 +240,7 @@ function UserModal({ editUser, roles, maxUsers, currentCount, onClose, onDone })
         ...form,
         role: form.role_key,
         permissions: form.useCustomPerms ? form.permissions : null,
+        assigned_admin_id: form.assigned_admin_id || undefined,
       };
       let res;
       if (isNew) res = await usersApi.create(payload);
@@ -291,6 +293,20 @@ function UserModal({ editUser, roles, maxUsers, currentCount, onClose, onDone })
                 <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: 4 }}>{selRole.description}</div>
               )}
             </div>
+            {adminUsers.length > 0 && (
+              <div className="form-group">
+                <label className="form-label">Assign Admin</label>
+                <select className="form-select" value={form.assigned_admin_id} onChange={e => setForm(f => ({ ...f, assigned_admin_id: e.target.value }))}>
+                  <option value="">Automatic</option>
+                  {adminUsers.map(admin => (
+                    <option key={admin.id} value={admin.id}>{admin.full_name || admin.username}</option>
+                  ))}
+                </select>
+                <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: 4 }}>
+                  Choose an admin who owns this team member. Defaults to your account when left blank.
+                </div>
+              </div>
+            )}
             <div className="form-group">
               <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: '0.8rem' }}>
                 <input type="checkbox" checked={form.useCustomPerms} onChange={e => setForm(f => ({ ...f, useCustomPerms: e.target.checked, permissions: e.target.checked ? (selRole?.permissions || buildEmptyPermissions()) : null }))} />
@@ -394,6 +410,7 @@ export default function UserManagementPage() {
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [editRole, setEditRole] = useState(null);
   const [viewPermissions, setViewPermissions] = useState(null);
+  const [assignedAdminFilter, setAssignedAdminFilter] = useState('');
 
   // Max users from company settings
   const maxUsers = (() => { try { return parseInt(JSON.parse(localStorage.getItem('crm_company') || '{}').max_team_users || 10); } catch { return 10; } })();
@@ -415,7 +432,9 @@ export default function UserManagementPage() {
     loadUsers();
   };
 
+  const adminUsers = users.filter(u => u.role === 'admin');
   const teamUsers = users.filter(u => u.role !== 'super_admin' && u.role !== 'admin');
+  const visibleUsers = teamUsers.filter(u => !assignedAdminFilter || u.assigned_admin_id === assignedAdminFilter);
 
   const TABS = isAdmin
     ? [{ key: 'users', label: '👥 Team Users' }, { key: 'roles', label: '🎭 Roles & Permissions' }, { key: 'my_perms', label: '🔒 My Permissions' }]
@@ -464,7 +483,21 @@ export default function UserManagementPage() {
             <div style={{ textAlign: 'center', padding: 60 }}><div className="spinner" style={{ width: 32, height: 32, margin: '0 auto' }} /></div>
           ) : (
             <div style={{ display: 'grid', gap: 10 }}>
-              {users.map(u => {
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', marginBottom: 10 }}>
+                <div style={{ minWidth: 220 }}>
+                  <label className="form-label" style={{ marginBottom: 6 }}>Filter by Assigned Admin</label>
+                  <select className="form-select" value={assignedAdminFilter} onChange={e => setAssignedAdminFilter(e.target.value)}>
+                    <option value="">All Team Members</option>
+                    {adminUsers.map(admin => (
+                      <option key={admin.id} value={admin.id}>{admin.full_name || admin.username}</option>
+                    ))}
+                  </select>
+                </div>
+                {assignedAdminFilter && (
+                  <button className="btn btn-secondary btn-sm" style={{ height: 34, marginTop: 24 }} onClick={() => setAssignedAdminFilter('')}>Clear filter</button>
+                )}
+              </div>
+              {visibleUsers.length ? visibleUsers.map(u => {
                 const role = roles.find(r => r.key === u.role);
                 return (
                   <div key={u.id} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 16px', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', opacity: u.is_active === false ? 0.5 : 1 }}>
@@ -486,6 +519,11 @@ export default function UserManagementPage() {
                         )}
                         {u.permissions && <span style={{ fontSize: '0.62rem', color: '#6366f1', fontWeight: 700 }}>🔒 Custom Perms</span>}
                         {u.email && <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{u.email}</span>}
+                        {u.assigned_admin_id && (
+                          <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', border: '1px solid var(--border-subtle)', padding: '3px 8px', borderRadius: 999 }}>
+                            Assigned to {adminUsers.find(a => a.id === u.assigned_admin_id)?.full_name || 'Admin'}
+                          </span>
+                        )}
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: 6 }}>
@@ -501,13 +539,13 @@ export default function UserManagementPage() {
                     </div>
                   </div>
                 );
-              })}
-              {!users.length && (
+              }) : null}
+              {!visibleUsers.length && (
                 <div className="empty-state">
                   <div className="empty-icon">👥</div>
-                  <div className="empty-title">No team users yet</div>
-                  <div className="empty-desc">Add your first team member to start collaborating</div>
-                  <button className="btn btn-primary" style={{ marginTop: 12 }} onClick={() => setShowUserModal(true)}>+ Add First Member</button>
+                  <div className="empty-title">No matching team users</div>
+                  <div className="empty-desc">Try clearing the assigned admin filter or add a new team member.</div>
+                  <button className="btn btn-primary" style={{ marginTop: 12 }} onClick={() => setShowUserModal(true)}>+ Add Team Member</button>
                 </div>
               )}
             </div>
@@ -563,6 +601,7 @@ export default function UserManagementPage() {
         <UserModal
           editUser={editUser}
           roles={roles}
+          adminUsers={adminUsers}
           maxUsers={maxUsers}
           currentCount={teamUsers.length}
           onClose={() => setShowUserModal(false)}

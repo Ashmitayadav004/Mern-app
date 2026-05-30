@@ -185,6 +185,17 @@ async function migrate() {
       console.warn('âš ï¸  Unified tenant_id migration warning (non-fatal):', unifiedTenantErr.message);
     }
 
+    try {
+      const assignedAdminSchema = fs.readFileSync(
+        path.join(__dirname, 'migrations', '017_add_assigned_admin_to_users.sql'),
+        'utf8'
+      );
+      await client.query(assignedAdminSchema);
+      console.log('✅ Assigned admin migration applied');
+    } catch (assignedAdminErr) {
+      console.warn('⚠️  Assigned admin migration warning (non-fatal):', assignedAdminErr.message);
+    }
+
     const hasRoleEnum = await client.query("SELECT 1 FROM pg_type WHERE typname = 'user_role'");
     if (hasRoleEnum.rows.length) {
       try {

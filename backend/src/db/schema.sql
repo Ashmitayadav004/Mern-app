@@ -86,6 +86,7 @@ CREATE TABLE users (
   phone VARCHAR(20),
   specializations TEXT[],     -- e.g. ['head_swap', 'firmware', 'SSD']
   permissions JSONB,
+  assigned_admin_id UUID REFERENCES users(id) ON DELETE SET NULL,
   notes TEXT,
   last_login TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW(),
